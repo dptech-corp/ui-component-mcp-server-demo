@@ -1,0 +1,130 @@
+"""Todo component MCP tools."""
+
+import time
+import uuid
+from typing import Optional
+
+from fastmcp import FastMCP
+
+from ..redis_client import RedisClient
+
+
+def register_todo_tools(mcp: FastMCP, redis_client: RedisClient):
+    """Register todo-related MCP tools."""
+    
+    @mcp.tool()
+    async def add_todo(title: str, description: str = "") -> dict:
+        """添加新的 todo 项
+        
+        Args:
+            title: Todo 标题
+            description: Todo 描述 (可选)
+            
+        Returns:
+            操作结果
+        """
+        message = {
+            "id": str(uuid.uuid4()),
+            "type": "todo_action",
+            "timestamp": int(time.time() * 1000),
+            "source": "mcp",
+            "target": "todo_component",
+            "payload": {
+                "action": "add",
+                "data": {
+                    "title": title,
+                    "description": description
+                }
+            }
+        }
+        
+        await redis_client.publish_message("todo:actions", message)
+        return {"success": True, "message": f"Todo '{title}' added successfully"}
+    
+    @mcp.tool()
+    async def delete_todo(todo_id: str) -> dict:
+        """删除指定的 todo 项
+        
+        Args:
+            todo_id: Todo 项的 ID
+            
+        Returns:
+            操作结果
+        """
+        message = {
+            "id": str(uuid.uuid4()),
+            "type": "todo_action",
+            "timestamp": int(time.time() * 1000),
+            "source": "mcp",
+            "target": "todo_component",
+            "payload": {
+                "action": "delete",
+                "todoId": todo_id
+            }
+        }
+        
+        await redis_client.publish_message("todo:actions", message)
+        return {"success": True, "message": f"Todo {todo_id} deleted successfully"}
+    
+    @mcp.tool()
+    async def update_todo(
+        todo_id: str, 
+        title: Optional[str] = None, 
+        description: Optional[str] = None
+    ) -> dict:
+        """更新 todo 项内容
+        
+        Args:
+            todo_id: Todo 项的 ID
+            title: 新的标题 (可选)
+            description: 新的描述 (可选)
+            
+        Returns:
+            操作结果
+        """
+        data = {}
+        if title is not None:
+            data["title"] = title
+        if description is not None:
+            data["description"] = description
+            
+        message = {
+            "id": str(uuid.uuid4()),
+            "type": "todo_action",
+            "timestamp": int(time.time() * 1000),
+            "source": "mcp",
+            "target": "todo_component",
+            "payload": {
+                "action": "update",
+                "todoId": todo_id,
+                "data": data
+            }
+        }
+        
+        await redis_client.publish_message("todo:actions", message)
+        return {"success": True, "message": f"Todo {todo_id} updated successfully"}
+    
+    @mcp.tool()
+    async def toggle_todo(todo_id: str) -> dict:
+        """切换 todo 完成状态
+        
+        Args:
+            todo_id: Todo 项的 ID
+            
+        Returns:
+            操作结果
+        """
+        message = {
+            "id": str(uuid.uuid4()),
+            "type": "todo_action",
+            "timestamp": int(time.time() * 1000),
+            "source": "mcp",
+            "target": "todo_component",
+            "payload": {
+                "action": "toggle",
+                "todoId": todo_id
+            }
+        }
+        
+        await redis_client.publish_message("todo:actions", message)
+        return {"success": True, "message": f"Todo {todo_id} status toggled successfully"}
