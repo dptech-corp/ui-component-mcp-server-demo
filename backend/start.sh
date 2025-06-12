@@ -3,13 +3,14 @@
 
 echo "Starting UI Component Backend Server..."
 
-if ! command -v poetry &> /dev/null; then
-    echo "Error: Poetry is not installed. Please install Poetry first."
+if ! command -v uv &> /dev/null; then
+    echo "Error: uv is not installed. Please install uv first."
+    echo "Install uv with: curl -LsSf https://astral.sh/uv/install.sh | sh"
     exit 1
 fi
 
-echo "Installing dependencies..."
-poetry install
+echo "Installing dependencies with uv..."
+uv pip install -r requirements.txt
 
 if [ -f .env ]; then
     echo "Loading environment variables from .env file..."
@@ -25,4 +26,4 @@ echo "Health check available at http://localhost:8000/health"
 echo ""
 echo "Press Ctrl+C to stop the server"
 
-poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
