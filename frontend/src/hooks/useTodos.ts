@@ -97,6 +97,8 @@ export function useTodos(): UseTodosReturn {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
+      await fetchTodos();
+      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '添加 Todo 失败';
       setError(errorMessage);
@@ -104,7 +106,7 @@ export function useTodos(): UseTodosReturn {
     } finally {
       setLoading(false);
     }
-  }, [apiUrl]);
+  }, [apiUrl, fetchTodos]);
 
   const updateTodo = useCallback(async (id: string, updates: Partial<TodoItem>) => {
     try {
@@ -129,6 +131,8 @@ export function useTodos(): UseTodosReturn {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
+      await fetchTodos();
+      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '更新 Todo 失败';
       setError(errorMessage);
@@ -136,7 +140,7 @@ export function useTodos(): UseTodosReturn {
     } finally {
       setLoading(false);
     }
-  }, [apiUrl]);
+  }, [apiUrl, fetchTodos]);
 
   const deleteTodo = useCallback(async (id: string) => {
     try {
@@ -151,6 +155,8 @@ export function useTodos(): UseTodosReturn {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
+      await fetchTodos();
+      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '删除 Todo 失败';
       setError(errorMessage);
@@ -158,7 +164,7 @@ export function useTodos(): UseTodosReturn {
     } finally {
       setLoading(false);
     }
-  }, [apiUrl]);
+  }, [apiUrl, fetchTodos]);
 
   const toggleTodo = useCallback(async (id: string) => {
     try {
@@ -173,6 +179,8 @@ export function useTodos(): UseTodosReturn {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
+      await fetchTodos();
+      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '切换 Todo 状态失败';
       setError(errorMessage);
@@ -180,7 +188,7 @@ export function useTodos(): UseTodosReturn {
     } finally {
       setLoading(false);
     }
-  }, [apiUrl]);
+  }, [apiUrl, fetchTodos]);
 
   return {
     todos,

@@ -17,6 +17,7 @@ redis = "^4.5.0"
 pydantic = "^2.0.0"
 python-dotenv = "^1.0.0"
 python-multipart = "^0.0.6"
+aiosqlite = "^0.21.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"

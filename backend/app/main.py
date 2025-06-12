@@ -11,6 +11,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .database import database
 from .services.redis_service import RedisService
 from .services.sse_service import SSEService
 from .services.todo_service import TodoService
@@ -25,6 +26,8 @@ todo_service = TodoService()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager."""
+    await database.connect()
+    
     redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
     await redis_service.connect(redis_url)
     
@@ -33,6 +36,7 @@ async def lifespan(app: FastAPI):
     yield
     
     await redis_service.disconnect()
+    await database.disconnect()
 
 
 app = FastAPI(
