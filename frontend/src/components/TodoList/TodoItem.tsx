@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { TodoItem } from '@/types/todo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -85,10 +85,10 @@ export function TodoItemComponent({ todo, onUpdate, onDelete, onToggle, disabled
                 </p>
               )}
               <div className="mt-2 text-xs text-gray-400">
-                创建于: {new Date(todo.createdAt).toLocaleString()}
-                {todo.updatedAt !== todo.createdAt && (
+                创建于: {new Date(todo.created_at).toLocaleString()}
+                {todo.updated_at !== todo.created_at && (
                   <span className="ml-2">
-                    更新于: {new Date(todo.updatedAt).toLocaleString()}
+                    更新于: {new Date(todo.updated_at).toLocaleString()}
                   </span>
                 )}
               </div>

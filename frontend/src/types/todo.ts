@@ -3,8 +3,8 @@ export interface TodoItem {
   title: string;
   description?: string;
   completed: boolean;
-  createdAt: number;
-  updatedAt: number;
+  created_at: number;
+  updated_at: number;
 }
 
 export interface TodoState {
