@@ -26,4 +26,4 @@ echo "Health check available at http://localhost:8000/health"
 echo ""
 echo "Press Ctrl+C to stop the server"
 
-uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
