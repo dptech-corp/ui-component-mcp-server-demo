@@ -1,31 +1,35 @@
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
 
-[tool.poetry]
+[project]
 name = "ui-component-backend"
 version = "0.1.0"
 description = "Backend service for UI Component Demo"
-authors = ["dptech-corp <it@dp.tech>"]
+authors = [
+    {name = "dptech-corp", email = "it@dp.tech"}
+]
 readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "redis>=4.5.0",
+    "pydantic>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "python-multipart>=0.0.6",
+    "aiosqlite>=0.21.0"
+]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-fastapi = "^0.104.0"
-uvicorn = {extras = ["standard"], version = "^0.24.0"}
-redis = "^4.5.0"
-pydantic = "^2.0.0"
-python-dotenv = "^1.0.0"
-python-multipart = "^0.0.6"
-aiosqlite = "^0.21.0"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^7.4.0"
-pytest-asyncio = "^0.21.0"
-httpx = "^0.25.0"
-black = "^23.0.0"
-isort = "^5.12.0"
-mypy = "^1.6.0"
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "httpx>=0.25.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "mypy>=1.6.0"
+]
 
 [tool.black]
 line-length = 88
