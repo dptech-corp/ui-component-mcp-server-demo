@@ -17,4 +17,8 @@ export default defineConfig({
     host: true,
     port: 3000,
   },
+  define: {
+    'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || 'http://localhost:8000'),
+    'import.meta.env.VITE_SSE_URL': JSON.stringify(process.env.VITE_SSE_URL || 'http://localhost:8000/events'),
+  },
 })

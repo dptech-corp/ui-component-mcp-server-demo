@@ -8,7 +8,9 @@ from typing import Optional
 class Database:
     """SQLite database manager."""
     
-    def __init__(self, db_path: str = "todos.db"):
+    def __init__(self, db_path: str = "/app/data/todos.db"):
+        import os
+        os.makedirs(os.path.dirname(db_path), exist_ok=True)
         self.db_path = db_path
         self.connection: Optional[aiosqlite.Connection] = None
     

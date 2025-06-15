@@ -49,6 +49,7 @@ services:
         condition: service_healthy
     volumes:
       - ./backend/app:/app/app
+      - backend_data:/app/data
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -60,12 +61,15 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8000
+        VITE_SSE_URL: http://localhost:8000/events
     container_name: ui-mcp-frontend
     ports:
       - "3000:3000"
     environment:
       - VITE_API_URL=http://localhost:8000
-      - VITE_SSE_URL=http://localhost:8000
+      - VITE_SSE_URL=http://localhost:8000/events
     depends_on:
       backend:
         condition: service_healthy
@@ -76,6 +80,8 @@ services:
 
 volumes:
   redis_data:
+    driver: local
+  backend_data:
     driver: local
 
 networks:
