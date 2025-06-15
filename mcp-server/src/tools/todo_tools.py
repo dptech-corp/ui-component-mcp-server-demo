@@ -136,16 +136,23 @@ def register_todo_tools(mcp: FastMCP, redis_client: RedisClient):
         Returns:
             包含所有 todo 项的列表
         """
-        message = {
-            "id": str(uuid.uuid4()),
-            "type": "todo_action",
-            "timestamp": int(time.time() * 1000),
-            "source": "mcp",
-            "target": "todo_component",
-            "payload": {
-                "action": "list"
-            }
-        }
+        import httpx
         
-        await redis_client.publish_message("todo:actions", message)
-        return {"success": True, "message": "Todo list requested successfully"}
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get("http://backend:8000/api/todos")
+                response.raise_for_status()
+                todos_data = response.json()
+                
+                return {
+                    "success": True,
+                    "todos": todos_data,
+                    "count": len(todos_data)
+                }
+                
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Failed to get todos: {str(e)}",
+                "todos": []
+            }
