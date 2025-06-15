@@ -10,6 +10,7 @@
 - **Backend**: FastAPI 后端，处理 Redis 消息并通过 SSE 向前端推送更新
 - **Frontend**: React 前端，通过 SSE 接收实时更新
 - **Redis**: 作为消息通道，连接 MCP 和后端服务
+- **Agent**: Google ADK 智能代理，通过自然语言控制 MCP 工具
 - **Demo 组件**: 简单的 Todo List，演示完整的消息流程
 
 ## 技术架构
@@ -23,7 +24,7 @@
 
 ### 消息流程
 ```
-MCP 工具调用 → Redis Pub/Sub 消息 → 后端接收处理 → SSE 事件推送 → 前端组件更新
+Agent 自然语言指令 → MCP 工具调用 → Redis Pub/Sub 消息 → 后端接收处理 → SSE 事件推送 → 前端组件更新
 ```
 
 详细的消息流程说明请参考 [消息流程文档](./docs/message-flow.md)。
@@ -41,6 +42,13 @@ ui-component-mcp-server-demo/
 │   ├── pyproject.toml           # Python 项目配置
 │   ├── Dockerfile               # Docker 构建文件
 │   └── README.md                # MCP 服务器说明
+├── agent/                       # Google ADK Agent
+│   ├── src/                     # 源代码
+│   ├── pyproject.toml           # Python 项目配置
+│   ├── Dockerfile               # Docker 构建文件
+│   ├── start_web.sh             # 开发模式启动脚本
+│   ├── start_api.sh             # API 服务器启动脚本
+│   └── README.md                # Agent 说明
 ├── backend/                     # FastAPI 后端
 │   ├── app/                     # 应用代码
 │   ├── pyproject.toml           # Python 项目配置
@@ -85,6 +93,7 @@ docker-compose up -d
 - 前端应用: http://localhost:3000
 - 后端 API: http://localhost:8000
 - API 文档: http://localhost:8000/docs
+- ADK Agent: http://localhost:8002
 
 ### 本地开发模式
 

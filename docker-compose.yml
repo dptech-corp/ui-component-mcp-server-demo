@@ -78,6 +78,27 @@ services:
       - ./frontend/public:/app/public
     restart: unless-stopped
 
+  agent:
+    build:
+      context: ./agent
+      dockerfile: Dockerfile
+    container_name: ui-mcp-agent
+    ports:
+      - "8002:8002"
+    environment:
+      - MCP_SERVER_URL=http://mcp-server:8001
+      - LLM_MODEL=${LLM_MODEL:-gemini-1.5-flash}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - GOOGLE_GENAI_USE_VERTEXAI=${GOOGLE_GENAI_USE_VERTEXAI:-FALSE}
+    depends_on:
+      mcp-server:
+        condition: service_started
+    volumes:
+      - ./agent/src:/app/src
+    restart: unless-stopped
+    command: ["./start_web.sh"]
+
 volumes:
   redis_data:
     driver: local
