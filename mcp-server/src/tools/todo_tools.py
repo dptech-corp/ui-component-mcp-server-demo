@@ -69,8 +69,8 @@ def register_todo_tools(mcp: FastMCP, redis_client: RedisClient):
     @mcp.tool()
     async def update_todo(
         todo_id: str, 
-        title: Optional[str] = None, 
-        description: Optional[str] = None
+        title: str = "", 
+        description: str = ""
     ) -> dict:
         """更新 todo 项内容
         
@@ -83,9 +83,9 @@ def register_todo_tools(mcp: FastMCP, redis_client: RedisClient):
             操作结果
         """
         data = {}
-        if title is not None:
+        if title and title.strip():
             data["title"] = title
-        if description is not None:
+        if description and description.strip():
             data["description"] = description
             
         message = {
