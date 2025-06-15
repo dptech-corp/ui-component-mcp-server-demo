@@ -16,24 +16,19 @@ from .redis_client import RedisClient
 from .tools.todo_tools import register_todo_tools
 
 
-async def main():
+def main():
     """Main entry point for the MCP server."""
     redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
-    redis_client = RedisClient(redis_url)
-    await redis_client.connect()
     
     mcp = FastMCP("ui-component-demo")
     
+    redis_client = RedisClient(redis_url)
     register_todo_tools(mcp, redis_client)
     
-    port = int(os.getenv("MCP_PORT", "8001"))
-    print(f"Starting MCP server on port {port}")
+    print("Starting MCP server")
     
-    try:
-        await mcp.run(port=port)
-    finally:
-        await redis_client.disconnect()
+    mcp.run()
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

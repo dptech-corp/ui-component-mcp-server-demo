@@ -1,4 +1,3 @@
-import React from 'react';
 import { TodoItem } from '@/types/todo';
 
 interface TodoStatsProps {

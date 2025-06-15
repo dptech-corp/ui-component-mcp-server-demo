@@ -16,7 +16,7 @@ export function useSSE(url?: string): UseSSEReturn {
   const [lastEvent, setLastEvent] = useState<SSEEvent | null>(null);
   const [error, setError] = useState<string | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectTimeoutRef = useRef<number | null>(null);
 
   const sseUrl = url || `${import.meta.env.VITE_SSE_URL || 'http://localhost:8000/events'}`;
 
@@ -54,13 +54,13 @@ export function useSSE(url?: string): UseSSEReturn {
           if (eventSourceRef.current?.readyState === EventSource.CLOSED) {
             connect();
           }
-        }, 3000);
+        }, 3000) as unknown as number;
       };
 
-      eventSource.onclose = () => {
+      eventSource.addEventListener('close', () => {
         setIsConnected(false);
         console.log('SSE connection closed');
-      };
+      });
 
     } catch (err) {
       console.error('Failed to create SSE connection:', err);
