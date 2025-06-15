@@ -10,7 +10,7 @@ authors = [
     {name = "dptech-corp", email = "it@dp.tech"}
 ]
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "fastmcp>=0.1.0",
     "redis>=4.5.0",
