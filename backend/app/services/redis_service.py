@@ -88,5 +88,10 @@ class RedisService:
                     if todo:
                         await sse_service.send_event("todo_updated", {"todo": todo.dict()})
                         
+            elif action == "list":
+                todos = await todo_service.get_all_todos()
+                todos_data = [todo.dict() for todo in todos]
+                await sse_service.send_event("todo_list", {"todos": todos_data})
+                        
         except Exception as e:
             print(f"Error handling todo action: {e}")

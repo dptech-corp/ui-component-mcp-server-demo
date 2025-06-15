@@ -128,3 +128,24 @@ def register_todo_tools(mcp: FastMCP, redis_client: RedisClient):
         
         await redis_client.publish_message("todo:actions", message)
         return {"success": True, "message": f"Todo {todo_id} status toggled successfully"}
+    
+    @mcp.tool()
+    async def list_todo() -> dict:
+        """获取所有 todo 项列表
+        
+        Returns:
+            包含所有 todo 项的列表
+        """
+        message = {
+            "id": str(uuid.uuid4()),
+            "type": "todo_action",
+            "timestamp": int(time.time() * 1000),
+            "source": "mcp",
+            "target": "todo_component",
+            "payload": {
+                "action": "list"
+            }
+        }
+        
+        await redis_client.publish_message("todo:actions", message)
+        return {"success": True, "message": "Todo list requested successfully"}
