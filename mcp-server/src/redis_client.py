@@ -15,7 +15,8 @@ class RedisClient:
     
     async def connect(self):
         """Connect to Redis."""
-        self.redis = Redis.from_url(self.redis_url)
+        if not self.redis:
+            self.redis = Redis.from_url(self.redis_url)
         
     async def disconnect(self):
         """Disconnect from Redis."""
@@ -25,7 +26,7 @@ class RedisClient:
     async def publish_message(self, channel: str, message: Dict[str, Any]):
         """Publish a message to a Redis channel."""
         if not self.redis:
-            raise RuntimeError("Redis client not connected")
+            await self.connect()
         
         message_json = json.dumps(message)
         await self.redis.publish(channel, message_json)
