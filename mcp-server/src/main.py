@@ -11,9 +11,23 @@ from typing import Optional
 
 from fastmcp import FastMCP
 from redis.asyncio import Redis
+from mcp.server.session import ServerSession
 
 from .redis_client import RedisClient
 from .tools.todo_tools import register_todo_tools
+
+old_received_request = ServerSession._received_request
+
+async def _received_request_wrapper(self, *args, **kwargs):
+    try:
+        return await old_received_request(self, *args, **kwargs)
+    except RuntimeError as e:
+        if "Received request before initialization was complete" in str(e):
+            print(f"WARNING: Ignoring initialization error: {e}")
+            return
+        raise
+
+ServerSession._received_request = _received_request_wrapper
 
 
 def main():
