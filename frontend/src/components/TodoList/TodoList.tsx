@@ -119,6 +119,8 @@ export function TodoList() {
                 <li><code>add_todo("学习 MCP", "了解 Model Context Protocol")</code></li>
                 <li><code>toggle_todo("todo_id")</code></li>
                 <li><code>delete_todo("todo_id")</code></li>
+                <li><code>update_todo("todo_id", "新的标题", "新的描述")</code></li>
+                <li><code>list_todo()</code></li>
               </ul>
             </div>
           </div>

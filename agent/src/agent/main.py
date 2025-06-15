@@ -9,6 +9,7 @@ import os
 from google.adk.agents import LlmAgent
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, SseServerParams
 from dotenv import load_dotenv
+from google.adk.models.lite_llm import LiteLlm
 
 load_dotenv()
 
@@ -26,7 +27,7 @@ def create_agent():
     )
     
     agent = LlmAgent(
-        model=os.getenv("LLM_MODEL", "gemini-1.5-flash"),
+        model=LiteLlm(os.getenv("LLM_MODEL", "gemini-2.0-flash")),
         name="todo_assistant_agent",
         instruction="""You are a helpful assistant that can manage todo items. 
         You can add, update, delete, and toggle todo items using the available MCP tools.
