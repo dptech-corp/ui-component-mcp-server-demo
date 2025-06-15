@@ -50,6 +50,12 @@ export function useTodos(): UseTodosReturn {
           }
           break;
           
+        case 'todo_list':
+          if (lastEvent.data.todos) {
+            setTodos(lastEvent.data.todos);
+          }
+          break;
+          
         case 'error':
           setError(lastEvent.data.message || '发生未知错误');
           break;
