@@ -18,4 +18,4 @@ RUN pip install -e .
 EXPOSE 8001
 
 # Run the application
-CMD ["python", "src/main.py"]
+CMD ["python", "-m", "src.main"]
