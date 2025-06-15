@@ -7,17 +7,14 @@ RUN apt-get update && apt-get install -y \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Poetry
-RUN pip install poetry
-
-# Configure Poetry
-RUN poetry config virtualenvs.create false
+# Install uv
+RUN pip install uv
 
 # Copy project files
-COPY pyproject.toml poetry.lock* ./
+COPY pyproject.toml uv.lock ./
 
 # Install dependencies
-RUN poetry install --no-dev
+RUN uv sync --frozen --no-dev
 
 # Copy application code
 COPY app/ ./app/
@@ -26,4 +23,4 @@ COPY app/ ./app/
 EXPOSE 8000
 
 # Run the application
-CMD ["poetry", "run", "fastapi", "run", "app/main.py", "--host", "0.0.0.0"]
+CMD ["uv", "run", "python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
