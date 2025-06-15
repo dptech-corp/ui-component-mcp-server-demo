@@ -25,9 +25,15 @@ def create_agent():
         ),
         tool_filter=["add_todo", "delete_todo", "update_todo", "toggle_todo", "list_todo"]
     )
+    print(f"model: {os.getenv('LLM_MODEL')}")
+    # print(f"api_key: {os.getenv('OPENAI_API_KEY')}")
+    # print(f"api_base: {os.getenv('OPENAI_API_BASE_URL')}")
     
     agent = LlmAgent(
-        model=LiteLlm(os.getenv("LLM_MODEL", "gemini-2.0-flash")),
+        model=LiteLlm(
+            model=os.getenv("LLM_MODEL", "openai/gpt-4o"),
+            api_key=os.getenv("OPENAI_API_KEY"),
+            api_base=os.getenv("OPENAI_API_BASE_URL")),
         name="todo_assistant_agent",
         instruction="""You are a helpful assistant that can manage todo items. 
         You can add, update, delete, and toggle todo items using the available MCP tools.

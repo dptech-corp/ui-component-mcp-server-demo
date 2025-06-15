@@ -88,8 +88,8 @@ services:
     environment:
       - MCP_SERVER_URL=http://mcp-server:8001
       - LLM_MODEL=${LLM_MODEL}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - GOOGLE_GENAI_USE_VERTEXAI=${GOOGLE_GENAI_USE_VERTEXAI:-TRUE}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_API_BASE_URL=${OPENAI_API_BASE_URL}
     depends_on:
       mcp-server:
         condition: service_started
