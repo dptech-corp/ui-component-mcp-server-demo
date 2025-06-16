@@ -9,6 +9,8 @@ router = APIRouter()
 @router.get("/events")
 async def stream_events(request: Request):
     """Stream SSE events to clients."""
+
+    #TODO register to fastapi sdk(dp.agent.ui.backend.fastapi)
     sse_service = request.app.state.sse_service
     
     return StreamingResponse(

@@ -8,7 +8,6 @@ from fastmcp import FastMCP
 
 from ..redis_client import RedisClient
 
-
 def register_todo_tools(mcp: FastMCP, redis_client: RedisClient):
     """Register todo-related MCP tools."""
     

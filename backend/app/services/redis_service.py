@@ -9,6 +9,7 @@ from redis.asyncio import Redis
 
 class RedisService:
     """Redis service for handling pub/sub messages."""
+    # TODO 封装成 BaseRedisService 放到 dp.agent.ui.mq.redis.consumer
     
     def __init__(self):
         self.redis: Optional[Redis] = None
@@ -44,6 +45,7 @@ class RedisService:
                     
     async def _process_message(self, message: dict):
         """Process a received message."""
+        # TODO class BaseRedisService 中把这个作为 abstractmethod,然后让子类实现
         message_type = message.get("type")
         
         if message_type == "todo_action":
