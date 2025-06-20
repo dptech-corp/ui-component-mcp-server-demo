@@ -43,6 +43,35 @@ export function TodoList() {
     await toggleTodo(id);
   };
 
+  const handleSummarizeTodo = async (todo: TodoItem) => {
+    try {
+      const message = `分析 ${todo.title} 任务花了多久完成`;
+      
+      const response = await fetch('/api/agent/message', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message,
+          sessionId: 'demo'
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send message to agent');
+      }
+
+      const result = await response.json();
+      console.log('Agent response:', result);
+      
+      alert(`Agent 响应: ${JSON.stringify(result.response)}`);
+    } catch (error) {
+      console.error('Error calling agent:', error);
+      alert('调用 Agent 失败，请稍后重试');
+    }
+  };
+
   if (loading && todos.length === 0) {
     return (
       <div className="flex justify-center items-center py-8">
@@ -100,6 +129,7 @@ export function TodoList() {
               onUpdate={handleUpdateTodo}
               onDelete={handleDeleteTodo}
               onToggle={handleToggleTodo}
+              onSummarize={handleSummarizeTodo}
               disabled={loading}
             />
           ))

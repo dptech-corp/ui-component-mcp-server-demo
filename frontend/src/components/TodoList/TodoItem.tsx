@@ -4,17 +4,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Edit2, Trash2, Save, X } from 'lucide-react';
+import { Edit2, Trash2, Save, X, FileText } from 'lucide-react';
 
 interface TodoItemProps {
   todo: TodoItem;
   onUpdate: (id: string, updates: Partial<TodoItem>) => void;
   onDelete: (id: string) => void;
   onToggle: (id: string) => void;
+  onSummarize?: (todo: TodoItem) => void;
   disabled?: boolean;
 }
 
-export function TodoItemComponent({ todo, onUpdate, onDelete, onToggle, disabled }: TodoItemProps) {
+export function TodoItemComponent({ todo, onUpdate, onDelete, onToggle, onSummarize, disabled }: TodoItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(todo.title);
   const [editDescription, setEditDescription] = useState(todo.description || '');
@@ -42,6 +43,12 @@ export function TodoItemComponent({ todo, onUpdate, onDelete, onToggle, disabled
   const handleDelete = () => {
     if (window.confirm('确定要删除这个 Todo 吗？')) {
       onDelete(todo.id);
+    }
+  };
+
+  const handleSummarize = () => {
+    if (onSummarize) {
+      onSummarize(todo);
     }
   };
 
@@ -119,6 +126,15 @@ export function TodoItemComponent({ todo, onUpdate, onDelete, onToggle, disabled
             </>
           ) : (
             <>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleSummarize}
+                disabled={disabled}
+                title="总结这个任务"
+              >
+                <FileText className="w-4 h-4" />
+              </Button>
               <Button
                 size="sm"
                 variant="outline"
