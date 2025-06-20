@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Edit2, Trash2, Save, X, FileText } from 'lucide-react';
+import { Edit2, Trash2, Save, X, Brain } from 'lucide-react';
 
 interface TodoItemProps {
   todo: TodoItem;
@@ -133,7 +133,7 @@ export function TodoItemComponent({ todo, onUpdate, onDelete, onToggle, onSummar
                 disabled={disabled}
                 title="总结这个任务"
               >
-                <FileText className="w-4 h-4" />
+                <Brain className="w-4 h-4" />
               </Button>
               <Button
                 size="sm"
