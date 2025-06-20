@@ -1,14 +1,31 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { TodoItem } from '@/types/todo';
 import { TodoInput } from './TodoInput';
 import { TodoItemComponent } from './TodoItem';
 import { TodoStats } from './TodoStats';
+import { BacklogInput } from './BacklogInput';
+import { BacklogItemComponent } from './BacklogItem';
 import { useSSE } from '@/hooks/useSSE';
 import { useTodos } from '@/hooks/useTodos';
 
 export function TodoList() {
-  const { todos, loading, error, addTodo, updateTodo, deleteTodo, toggleTodo, fetchTodos } = useTodos();
+  const { 
+    todos, 
+    backlogItems, 
+    loading, 
+    error, 
+    addTodo, 
+    updateTodo, 
+    deleteTodo, 
+    toggleTodo, 
+    fetchTodos,
+    addBacklogItem,
+    updateBacklogItem,
+    deleteBacklogItem,
+    moveToTodo
+  } = useTodos();
   const { isConnected, lastEvent } = useSSE();
+  const [activeTab, setActiveTab] = useState<'todo' | 'backlog'>('todo');
 
   useEffect(() => {
     if (lastEvent) {
@@ -43,6 +60,22 @@ export function TodoList() {
     await toggleTodo(id);
   };
 
+  const handleAddBacklogItem = (title: string, description?: string) => {
+    addBacklogItem(title, description);
+  };
+
+  const handleUpdateBacklogItem = (id: string, updates: Partial<any>) => {
+    updateBacklogItem(id, updates);
+  };
+
+  const handleDeleteBacklogItem = (id: string) => {
+    deleteBacklogItem(id);
+  };
+
+  const handleMoveToTodo = async (id: string) => {
+    await moveToTodo(id);
+  };
+
   if (loading && todos.length === 0) {
     return (
       <div className="flex justify-center items-center py-8">
@@ -65,6 +98,30 @@ export function TodoList() {
         </div>
       </div>
 
+      {/* Tab Navigation */}
+      <div className="flex space-x-1 border-b border-gray-200">
+        <button
+          onClick={() => setActiveTab('todo')}
+          className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
+            activeTab === 'todo'
+              ? 'bg-white border-b-2 border-blue-500 text-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Todo
+        </button>
+        <button
+          onClick={() => setActiveTab('backlog')}
+          className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
+            activeTab === 'backlog'
+              ? 'bg-white border-b-2 border-blue-500 text-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Backlog
+        </button>
+      </div>
+
       {/* 错误提示 */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-md p-4">
@@ -79,53 +136,86 @@ export function TodoList() {
         </div>
       )}
 
-      {/* 添加新 Todo */}
-      <TodoInput onAdd={handleAddTodo} disabled={loading} />
+      {/* Tab Content */}
+      {activeTab === 'todo' ? (
+        <>
+          {/* 添加新 Todo */}
+          <TodoInput onAdd={handleAddTodo} disabled={loading} />
 
-      {/* Todo 统计 */}
-      <TodoStats todos={todos} />
+          {/* Todo 统计 */}
+          <TodoStats todos={todos} />
 
-      {/* Todo 列表 */}
-      <div className="space-y-2">
-        {todos.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <p>暂无 Todo 项目</p>
-            <p className="text-sm mt-1">添加一个新的 Todo 开始吧！</p>
+          {/* Todo 列表 */}
+          <div className="space-y-2">
+            {todos.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <p>暂无 Todo 项目</p>
+                <p className="text-sm mt-1">添加一个新的 Todo 开始吧！</p>
+              </div>
+            ) : (
+              todos.map((todo) => (
+                <TodoItemComponent
+                  key={todo.id}
+                  todo={todo}
+                  onUpdate={handleUpdateTodo}
+                  onDelete={handleDeleteTodo}
+                  onToggle={handleToggleTodo}
+                  disabled={loading}
+                />
+              ))
+            )}
           </div>
-        ) : (
-          todos.map((todo) => (
-            <TodoItemComponent
-              key={todo.id}
-              todo={todo}
-              onUpdate={handleUpdateTodo}
-              onDelete={handleDeleteTodo}
-              onToggle={handleToggleTodo}
-              disabled={loading}
-            />
-          ))
-        )}
-      </div>
+        </>
+      ) : (
+        <>
+          {/* 添加新 Backlog */}
+          <BacklogInput onAdd={handleAddBacklogItem} disabled={loading} />
 
-      {/* MCP 提示 */}
-      <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-        <div className="flex">
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-blue-800">MCP 控制提示</h3>
-            <div className="mt-2 text-sm text-blue-700">
-              <p>
-                这个 Todo 列表可以通过 MCP 工具进行控制。尝试使用以下 MCP 命令：
-              </p>
-              <ul className="mt-2 list-disc list-inside space-y-1">
-                <li><code>add_todo("学习 MCP", "了解 Model Context Protocol")</code></li>
-                <li><code>toggle_todo("todo_id")</code></li>
-                <li><code>delete_todo("todo_id")</code></li>
-                <li><code>update_todo("todo_id", "新的标题", "新的描述")</code></li>
-                <li><code>list_todo()</code></li>
-              </ul>
+          {/* Backlog 列表 */}
+          <div className="space-y-2">
+            {backlogItems.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <p>暂无 Backlog 项目</p>
+                <p className="text-sm mt-1">添加一个新的 Backlog 开始吧！</p>
+              </div>
+            ) : (
+              backlogItems.map((item) => (
+                <BacklogItemComponent
+                  key={item.id}
+                  item={item}
+                  onUpdate={handleUpdateBacklogItem}
+                  onDelete={handleDeleteBacklogItem}
+                  onAddToTodo={handleMoveToTodo}
+                  disabled={loading}
+                />
+              ))
+            )}
+          </div>
+        </>
+      )}
+
+      {/* MCP 提示 - 只在 Todo tab 显示 */}
+      {activeTab === 'todo' && (
+        <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+          <div className="flex">
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-blue-800">MCP 控制提示</h3>
+              <div className="mt-2 text-sm text-blue-700">
+                <p>
+                  这个 Todo 列表可以通过 MCP 工具进行控制。尝试使用以下 MCP 命令：
+                </p>
+                <ul className="mt-2 list-disc list-inside space-y-1">
+                  <li><code>add_todo("学习 MCP", "了解 Model Context Protocol")</code></li>
+                  <li><code>toggle_todo("todo_id")</code></li>
+                  <li><code>delete_todo("todo_id")</code></li>
+                  <li><code>update_todo("todo_id", "新的标题", "新的描述")</code></li>
+                  <li><code>list_todo()</code></li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
