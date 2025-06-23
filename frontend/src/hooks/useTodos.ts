@@ -1,9 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
-import { TodoItem, TodoCreateRequest, TodoUpdateRequest } from '@/types/todo';
+import { TodoItem, TodoCreateRequest, TodoUpdateRequest, BacklogItem } from '@/types/todo';
 import { useSSE } from './useSSE';
 
 interface UseTodosReturn {
   todos: TodoItem[];
+  backlogItems: BacklogItem[];
   loading: boolean;
   error: string | null;
   addTodo: (title: string, description?: string) => Promise<void>;
@@ -11,10 +12,15 @@ interface UseTodosReturn {
   deleteTodo: (id: string) => Promise<void>;
   toggleTodo: (id: string) => Promise<void>;
   fetchTodos: () => Promise<void>;
+  addBacklogItem: (title: string, description?: string) => void;
+  updateBacklogItem: (id: string, updates: Partial<BacklogItem>) => void;
+  deleteBacklogItem: (id: string) => void;
+  moveToTodo: (id: string) => Promise<void>;
 }
 
 export function useTodos(): UseTodosReturn {
   const [todos, setTodos] = useState<TodoItem[]>([]);
+  const [backlogItems, setBacklogItems] = useState<BacklogItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { lastEvent } = useSSE();
@@ -196,8 +202,44 @@ export function useTodos(): UseTodosReturn {
     }
   }, [apiUrl, fetchTodos]);
 
+  const addBacklogItem = useCallback((title: string, description?: string) => {
+    const newItem: BacklogItem = {
+      id: `backlog_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      title,
+      description,
+      created_at: Date.now(),
+      updated_at: Date.now(),
+    };
+    setBacklogItems(prev => [...prev, newItem]);
+  }, []);
+
+  const updateBacklogItem = useCallback((id: string, updates: Partial<BacklogItem>) => {
+    setBacklogItems(prev => prev.map(item => 
+      item.id === id 
+        ? { ...item, ...updates, updated_at: Date.now() }
+        : item
+    ));
+  }, []);
+
+  const deleteBacklogItem = useCallback((id: string) => {
+    setBacklogItems(prev => prev.filter(item => item.id !== id));
+  }, []);
+
+  const moveToTodo = useCallback(async (id: string) => {
+    const backlogItem = backlogItems.find(item => item.id === id);
+    if (!backlogItem) return;
+
+    try {
+      await addTodo(backlogItem.title, backlogItem.description);
+      deleteBacklogItem(id);
+    } catch (err) {
+      console.error('Failed to move backlog item to todo:', err);
+    }
+  }, [backlogItems, addTodo, deleteBacklogItem]);
+
   return {
     todos,
+    backlogItems,
     loading,
     error,
     addTodo,
@@ -205,5 +247,9 @@ export function useTodos(): UseTodosReturn {
     deleteTodo,
     toggleTodo,
     fetchTodos,
+    addBacklogItem,
+    updateBacklogItem,
+    deleteBacklogItem,
+    moveToTodo,
   };
 }
