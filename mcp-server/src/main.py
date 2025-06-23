@@ -16,6 +16,7 @@ from mcp.server.session import ServerSession
 from .redis_client import RedisClient
 from .tools.todo_tools import register_todo_tools
 from .tools.backlog_tools import register_backlog_tools
+from .tools.terminal_tools import register_terminal_tools
 
 old_received_request = ServerSession._received_request
 
@@ -41,6 +42,7 @@ def main():
     redis_client = RedisClient(redis_url)
     register_todo_tools(mcp, redis_client)
     register_backlog_tools(mcp, redis_client)
+    register_terminal_tools(mcp, redis_client)
     
     print(f"Starting MCP server on port {port} with SSE transport")
     
