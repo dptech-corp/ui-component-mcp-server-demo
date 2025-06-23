@@ -1,6 +1,6 @@
 """Message models for Redis communication."""
 
-from typing import Any, Dict, Literal
+from typing import Any, Dict, Literal, Optional
 from pydantic import BaseModel
 
 
@@ -11,6 +11,7 @@ class BaseMessage(BaseModel):
     timestamp: int
     source: Literal["mcp", "backend", "frontend"]
     target: str
+    component: Optional[Literal["todo", "backlog"]] = None
     payload: Dict[str, Any]
 
 

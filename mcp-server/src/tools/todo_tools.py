@@ -28,6 +28,7 @@ def register_todo_tools(mcp: FastMCP, redis_client: RedisClient):
             "timestamp": int(time.time() * 1000),
             "source": "mcp",
             "target": "todo_component",
+            "component": "todo",
             "payload": {
                 "action": "add",
                 "data": {
@@ -56,6 +57,7 @@ def register_todo_tools(mcp: FastMCP, redis_client: RedisClient):
             "timestamp": int(time.time() * 1000),
             "source": "mcp",
             "target": "todo_component",
+            "component": "todo",
             "payload": {
                 "action": "delete",
                 "todoId": todo_id
@@ -93,6 +95,7 @@ def register_todo_tools(mcp: FastMCP, redis_client: RedisClient):
             "timestamp": int(time.time() * 1000),
             "source": "mcp",
             "target": "todo_component",
+            "component": "todo",
             "payload": {
                 "action": "update",
                 "todoId": todo_id,
@@ -119,6 +122,7 @@ def register_todo_tools(mcp: FastMCP, redis_client: RedisClient):
             "timestamp": int(time.time() * 1000),
             "source": "mcp",
             "target": "todo_component",
+            "component": "todo",
             "payload": {
                 "action": "toggle",
                 "todoId": todo_id

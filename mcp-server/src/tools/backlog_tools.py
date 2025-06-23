@@ -28,6 +28,7 @@ def register_backlog_tools(mcp: FastMCP, redis_client: RedisClient):
             "timestamp": int(time.time() * 1000),
             "source": "mcp",
             "target": "backlog_component",
+            "component": "backlog",
             "payload": {
                 "action": "add",
                 "data": {
@@ -56,6 +57,7 @@ def register_backlog_tools(mcp: FastMCP, redis_client: RedisClient):
             "timestamp": int(time.time() * 1000),
             "source": "mcp",
             "target": "backlog_component",
+            "component": "backlog",
             "payload": {
                 "action": "delete",
                 "backlogId": backlog_id
@@ -93,6 +95,7 @@ def register_backlog_tools(mcp: FastMCP, redis_client: RedisClient):
             "timestamp": int(time.time() * 1000),
             "source": "mcp",
             "target": "backlog_component",
+            "component": "backlog",
             "payload": {
                 "action": "update",
                 "backlogId": backlog_id,
@@ -119,6 +122,7 @@ def register_backlog_tools(mcp: FastMCP, redis_client: RedisClient):
             "timestamp": int(time.time() * 1000),
             "source": "mcp",
             "target": "backlog_component",
+            "component": "todo",
             "payload": {
                 "action": "send_to_todo",
                 "backlogId": backlog_id
