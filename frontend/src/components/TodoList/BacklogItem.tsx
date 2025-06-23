@@ -3,7 +3,7 @@ import { BacklogItem } from '@/types/todo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Edit2, Trash2, Save, X, Plus, ArrowRight } from 'lucide-react';
+import { Edit2, Trash2, Save, X, ArrowRight } from 'lucide-react';
 
 interface BacklogItemProps {
   item: BacklogItem;
