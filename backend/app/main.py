@@ -24,18 +24,30 @@ sse_service = SSEService()
 todo_service = TodoService()
 backlog_service = BacklogService()
 
+redis_listener_task = None
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager."""
+    global redis_listener_task
+    
     await database.connect()
     
-    redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
+    redis_url = os.getenv("REDIS_URL", "redis://redis:6379")
     await redis_service.connect(redis_url)
     
-    asyncio.create_task(redis_service.listen_for_messages())
+    redis_listener_task = asyncio.create_task(redis_service.listen_for_messages())
+    print("Redis listener task started and stored globally")
     
     yield
+    
+    if redis_listener_task and not redis_listener_task.done():
+        redis_listener_task.cancel()
+        try:
+            await redis_listener_task
+        except asyncio.CancelledError:
+            print("Redis listener task cancelled during shutdown")
     
     await redis_service.disconnect()
     await database.disconnect()
