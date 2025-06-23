@@ -1,5 +1,6 @@
 """Agent API router."""
 
+import os
 import httpx
 from fastapi import APIRouter, HTTPException, Request
 
@@ -15,7 +16,7 @@ async def send_message_to_agent(message_data: AgentMessageRequest, request: Requ
         agent_request = AgentRequest(
             appName="agent",
             userId="user",
-            sessionId=message_data.sessionId or "demo",
+            sessionId=message_data.sessionId or os.getenv("SESSION_ID", "demo"),
             newMessage=NewMessage(
                 parts=[MessagePart(text=message_data.message)],
                 role="user"
