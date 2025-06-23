@@ -3,7 +3,7 @@ import { BacklogItem } from '@/types/todo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Edit2, Trash2, Save, X, Plus } from 'lucide-react';
+import { Edit2, Trash2, Save, X, Plus, ArrowRight } from 'lucide-react';
 
 interface BacklogItemProps {
   item: BacklogItem;
@@ -52,9 +52,11 @@ export function BacklogItemComponent({ item, onUpdate, onDelete, onAddToTodo, di
           variant="outline"
           onClick={handleAddToTodo}
           disabled={disabled || isEditing}
-          className="mt-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+          className="mt-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 flex items-center gap-1"
+          title="发送到待办列表"
         >
-          <Plus className="w-4 h-4" />
+          <ArrowRight className="w-4 h-4" />
+          <span className="text-xs">发送到待办</span>
         </Button>
 
         <div className="flex-1 min-w-0">
