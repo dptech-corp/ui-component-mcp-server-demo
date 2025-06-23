@@ -11,7 +11,7 @@ class BaseMessage(BaseModel):
     timestamp: int
     source: Literal["mcp", "backend", "frontend"]
     target: str
-    component: Optional[Literal["todo", "backlog"]] = None
+    component: Optional[Literal["todo", "backlog", "terminal"]] = None
     payload: Dict[str, Any]
 
 
