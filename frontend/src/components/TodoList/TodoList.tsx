@@ -5,6 +5,7 @@ import { TodoItemComponent } from './TodoItem';
 import { TodoStats } from './TodoStats';
 import { BacklogInput } from './BacklogInput';
 import { BacklogItemComponent } from './BacklogItem';
+import { TerminalOutput } from './TerminalOutput';
 import { useSSE } from '@/hooks/useSSE';
 import { useTodos } from '@/hooks/useTodos';
 
@@ -25,15 +26,27 @@ export function TodoList() {
     moveToTodo
   } = useTodos();
   const { isConnected, lastEvent } = useSSE();
-  const [activeTab, setActiveTab] = useState<'todo' | 'backlog'>('todo');
+  const [activeTab, setActiveTab] = useState<'todo' | 'backlog' | 'terminal'>('todo');
+  const [terminalCommands, setTerminalCommands] = useState<any[]>([]);
 
   useEffect(() => {
     if (lastEvent) {
       switch (lastEvent.event) {
         case 'component_switch':
           if (lastEvent.data.component) {
-            setActiveTab(lastEvent.data.component as 'todo' | 'backlog');
+            setActiveTab(lastEvent.data.component as 'todo' | 'backlog' | 'terminal');
           }
+          break;
+        case 'terminal_command_executed':
+          const newCommand = {
+            id: `terminal_${Date.now()}`,
+            action: lastEvent.data.action,
+            command: lastEvent.data.command,
+            output: lastEvent.data.output,
+            file: lastEvent.data.file,
+            timestamp: lastEvent.data.timestamp || Date.now()
+          };
+          setTerminalCommands(prev => [newCommand, ...prev]);
           break;
         case 'todo_added':
           break;
@@ -154,6 +167,16 @@ export function TodoList() {
         >
           Backlog
         </button>
+        <button
+          onClick={() => setActiveTab('terminal')}
+          className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
+            activeTab === 'terminal'
+              ? 'bg-white border-b-2 border-blue-500 text-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Terminal
+        </button>
       </div>
 
       {/* 错误提示 */}
@@ -201,7 +224,7 @@ export function TodoList() {
             )}
           </div>
         </>
-      ) : (
+      ) : activeTab === 'backlog' ? (
         <>
           {/* 添加新 Backlog */}
           <BacklogInput onAdd={handleAddBacklogItem} disabled={loading} />
@@ -227,9 +250,12 @@ export function TodoList() {
             )}
           </div>
         </>
+      ) : (
+        <>
+          <TerminalOutput commands={terminalCommands} disabled={loading} />
+        </>
       )}
 
-      {/* MCP 提示 - 只在 Todo tab 显示 */}
       {activeTab === 'todo' && (
         <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
           <div className="flex">
@@ -245,6 +271,26 @@ export function TodoList() {
                   <li><code>delete_todo("todo_id")</code></li>
                   <li><code>update_todo("todo_id", "新的标题", "新的描述")</code></li>
                   <li><code>list_todo()</code></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'terminal' && (
+        <div className="bg-green-50 border border-green-200 rounded-md p-4">
+          <div className="flex">
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-green-800">Terminal MCP 工具提示</h3>
+              <div className="mt-2 text-sm text-green-700">
+                <p>
+                  这个 Terminal 组件可以通过 MCP 工具执行 Linux 命令。尝试使用以下 MCP 命令：
+                </p>
+                <ul className="mt-2 list-disc list-inside space-y-1">
+                  <li><code>ls()</code> - 列出当前目录文件</li>
+                  <li><code>cat_run_sh()</code> - 查看 run.sh 文件内容</li>
+                  <li><code>bash_run_sh()</code> - 执行 run.sh 脚本</li>
                 </ul>
               </div>
             </div>

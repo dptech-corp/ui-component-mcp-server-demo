@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import time
 from typing import Optional
 
 from redis.asyncio import Redis
@@ -22,6 +23,7 @@ class RedisService:
         
         await self.pubsub.subscribe("todo:actions")
         await self.pubsub.subscribe("backlog:actions")
+        await self.pubsub.subscribe("terminal:actions")
         
     async def disconnect(self):
         """Disconnect from Redis."""
@@ -57,6 +59,8 @@ class RedisService:
             await self._handle_todo_action(message)
         elif message_type == "backlog_action":
             await self._handle_backlog_action(message)
+        elif message_type == "terminal_action":
+            await self._handle_terminal_action(message)
         else:
             print(f"Unknown message type: {message_type}")
             
@@ -154,10 +158,29 @@ class RedisService:
             
     async def _send_component_switch(self, component: str):
         """Send component switch event via SSE."""
-        import time
         from ..main import sse_service
         
         await sse_service.send_event("component_switch", {
             "component": component,
             "timestamp": int(time.time() * 1000)
         })
+            
+    async def _handle_terminal_action(self, message: dict):
+        """Handle terminal action messages."""
+        from ..main import sse_service
+        
+        payload = message.get("payload", {})
+        action = payload.get("action")
+        
+        try:
+            if action in ["ls", "cat", "bash"]:
+                await sse_service.send_event("terminal_command_executed", {
+                    "action": action,
+                    "command": payload.get("command", ""),
+                    "output": payload.get("output", ""),
+                    "file": payload.get("file", ""),
+                    "timestamp": int(time.time() * 1000)
+                })
+                        
+        except Exception as e:
+            print(f"Error handling terminal action: {e}")
