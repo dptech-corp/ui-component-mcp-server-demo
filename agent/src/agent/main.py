@@ -23,7 +23,8 @@ def create_agent():
             url=f"{mcp_server_url}/sse",
             headers={}
         ),
-        tool_filter=["add_todo", "delete_todo", "update_todo", "toggle_todo", "list_todo"]
+        tool_filter=["add_todo", "delete_todo", "update_todo", "toggle_todo", "list_todo", 
+                    "add_backlog", "delete_backlog", "update_backlog", "send_backlog_to_todo", "list_backlog"]
     )
     print(f"model: {os.getenv('LLM_MODEL')}")
     # print(f"api_key: {os.getenv('OPENAI_API_KEY')}")
