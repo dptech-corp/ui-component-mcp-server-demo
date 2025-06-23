@@ -15,12 +15,14 @@ from .database import database
 from .services.redis_service import RedisService
 from .services.sse_service import SSEService
 from .services.todo_service import TodoService
-from .routers import todos, events, health, agent
+from .services.backlog_service import BacklogService
+from .routers import todos, backlogs, events, health, agent
 
 
 redis_service = RedisService()
 sse_service = SSEService()
 todo_service = TodoService()
+backlog_service = BacklogService()
 
 
 @asynccontextmanager
@@ -58,11 +60,13 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(events.router)
 app.include_router(todos.router, prefix="/api")
+app.include_router(backlogs.router, prefix="/api")
 app.include_router(agent.router, prefix="/api")
 
 app.state.redis_service = redis_service
 app.state.sse_service = sse_service
 app.state.todo_service = todo_service
+app.state.backlog_service = backlog_service
 
 
 @app.get("/")
