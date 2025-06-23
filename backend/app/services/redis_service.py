@@ -43,14 +43,23 @@ class RedisService:
             return
             
         print("Starting to listen for Redis messages...")
-        async for message in self.pubsub.listen():
-            if message["type"] == "message":
-                try:
-                    print(f"Received Redis message: {message}")
-                    data = json.loads(message["data"])
-                    await self._process_message(data)
-                except Exception as e:
-                    print(f"Error processing message: {e}")
+        try:
+            async for message in self.pubsub.listen():
+                if message["type"] == "message":
+                    try:
+                        print(f"Received Redis message: {message}")
+                        data = json.loads(message["data"])
+                        await self._process_message(data)
+                    except Exception as e:
+                        print(f"Error processing message: {e}")
+                elif message["type"] == "subscribe":
+                    print(f"Successfully subscribed to channel: {message['channel'].decode()}")
+        except asyncio.CancelledError:
+            print("Redis listener cancelled")
+            raise
+        except Exception as e:
+            print(f"Redis listener error: {e}")
+            raise
                     
     async def _process_message(self, message: dict):
         """Process a received message."""
