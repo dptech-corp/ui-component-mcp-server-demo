@@ -15,7 +15,7 @@ from .database import database
 from .services.redis_service import RedisService
 from .services.sse_service import SSEService
 from .services.todo_service import TodoService
-from .routers import todos, events, health
+from .routers import todos, events, health, agent
 
 
 redis_service = RedisService()
@@ -58,6 +58,7 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(events.router)
 app.include_router(todos.router, prefix="/api")
+app.include_router(agent.router, prefix="/api")
 
 app.state.redis_service = redis_service
 app.state.sse_service = sse_service
