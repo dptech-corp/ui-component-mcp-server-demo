@@ -31,7 +31,7 @@ def create_agent():
     
     agent = LlmAgent(
         model=LiteLlm(
-            model=os.getenv("LLM_MODEL", "openai/gpt-4o"),
+            model=os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash"),
             api_key=os.getenv("OPENAI_API_KEY"),
             api_base=os.getenv("OPENAI_API_BASE_URL")),
         name="todo_assistant_agent",
