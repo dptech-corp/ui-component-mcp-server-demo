@@ -31,6 +31,8 @@ export function useTodos(): UseTodosReturn {
   useEffect(() => {
     if (lastEvent) {
       switch (lastEvent.event) {
+        case 'component_switch':
+          break;
         case 'todo_added':
           if (lastEvent.data.todo) {
             setTodos(prev => {
@@ -310,6 +312,8 @@ export function useTodos(): UseTodosReturn {
   useEffect(() => {
     if (lastEvent) {
       switch (lastEvent.event) {
+        case 'component_switch':
+          break;
         case 'todo_added':
           if (lastEvent.data.todo) {
             setTodos(prev => {

@@ -13,5 +13,6 @@ export const SSE_EVENTS = {
   TODO_UPDATED: 'todo_updated',
   TODO_DELETED: 'todo_deleted',
   COMPONENT_STATE_CHANGED: 'component_state_changed',
+  COMPONENT_SWITCH: 'component_switch',
   HEARTBEAT: 'heartbeat',
 } as const;

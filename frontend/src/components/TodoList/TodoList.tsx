@@ -30,6 +30,11 @@ export function TodoList() {
   useEffect(() => {
     if (lastEvent) {
       switch (lastEvent.event) {
+        case 'component_switch':
+          if (lastEvent.data.component) {
+            setActiveTab(lastEvent.data.component as 'todo' | 'backlog');
+          }
+          break;
         case 'todo_added':
           break;
         case 'todo_updated':

@@ -48,6 +48,10 @@ class RedisService:
         """Process a received message."""
         # TODO class BaseRedisService 中把这个作为 abstractmethod,然后让子类实现
         message_type = message.get("type")
+        component = message.get("component")
+        
+        if component:
+            await self._send_component_switch(component)
         
         if message_type == "todo_action":
             await self._handle_todo_action(message)
@@ -147,3 +151,13 @@ class RedisService:
                         
         except Exception as e:
             print(f"Error handling backlog action: {e}")
+            
+    async def _send_component_switch(self, component: str):
+        """Send component switch event via SSE."""
+        import time
+        from ..main import sse_service
+        
+        await sse_service.send_event("component_switch", {
+            "component": component,
+            "timestamp": int(time.time() * 1000)
+        })
