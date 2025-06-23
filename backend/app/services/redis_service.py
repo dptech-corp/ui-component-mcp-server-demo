@@ -21,6 +21,7 @@ class RedisService:
         self.pubsub = self.redis.pubsub()
         
         await self.pubsub.subscribe("todo:actions")
+        await self.pubsub.subscribe("backlog:actions")
         
     async def disconnect(self):
         """Disconnect from Redis."""
@@ -50,6 +51,8 @@ class RedisService:
         
         if message_type == "todo_action":
             await self._handle_todo_action(message)
+        elif message_type == "backlog_action":
+            await self._handle_backlog_action(message)
         else:
             print(f"Unknown message type: {message_type}")
             
@@ -97,3 +100,50 @@ class RedisService:
                         
         except Exception as e:
             print(f"Error handling todo action: {e}")
+            
+    async def _handle_backlog_action(self, message: dict):
+        """Handle backlog action messages."""
+        from ..main import backlog_service, sse_service
+        
+        payload = message.get("payload", {})
+        action = payload.get("action")
+        
+        try:
+            if action == "add":
+                data = payload.get("data", {})
+                backlog = await backlog_service.create_backlog(
+                    title=data.get("title", ""),
+                    description=data.get("description", "")
+                )
+                await sse_service.send_event("backlog_added", {"backlog": backlog.dict()})
+                
+            elif action == "delete":
+                backlog_id = payload.get("backlogId")
+                if backlog_id:
+                    await backlog_service.delete_backlog(backlog_id)
+                    await sse_service.send_event("backlog_deleted", {"backlogId": backlog_id})
+                    
+            elif action == "update":
+                backlog_id = payload.get("backlogId")
+                data = payload.get("data", {})
+                if backlog_id:
+                    backlog = await backlog_service.update_backlog(backlog_id, **data)
+                    if backlog:
+                        await sse_service.send_event("backlog_updated", {"backlog": backlog.dict()})
+                        
+            elif action == "send_to_todo":
+                backlog_id = payload.get("backlogId")
+                if backlog_id:
+                    result = await backlog_service.send_to_todo(backlog_id)
+                    if result:
+                        await sse_service.send_event("backlog_sent_to_todo", result)
+                        await sse_service.send_event("todo_added", {"todo": result["todo"]})
+                        await sse_service.send_event("backlog_deleted", {"backlogId": backlog_id})
+                        
+            elif action == "list":
+                backlogs = await backlog_service.get_all_backlogs()
+                backlogs_data = [backlog.dict() for backlog in backlogs]
+                await sse_service.send_event("backlog_list", {"backlogs": backlogs_data})
+                        
+        except Exception as e:
+            print(f"Error handling backlog action: {e}")

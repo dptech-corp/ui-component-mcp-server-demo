@@ -26,7 +26,7 @@ class Database:
             self.connection = None
     
     async def create_tables(self):
-        """Create the todos table if it doesn't exist."""
+        """Create the todos and backlog tables if they don't exist."""
         if not self.connection:
             raise RuntimeError("Database not connected")
         
@@ -36,6 +36,16 @@ class Database:
                 title TEXT NOT NULL,
                 description TEXT DEFAULT '',
                 completed BOOLEAN DEFAULT FALSE,
+                created_at INTEGER NOT NULL,
+                updated_at INTEGER NOT NULL
+            )
+        """)
+        
+        await self.connection.execute("""
+            CREATE TABLE IF NOT EXISTS backlog (
+                id TEXT PRIMARY KEY,
+                title TEXT NOT NULL,
+                description TEXT DEFAULT '',
                 created_at INTEGER NOT NULL,
                 updated_at INTEGER NOT NULL
             )
