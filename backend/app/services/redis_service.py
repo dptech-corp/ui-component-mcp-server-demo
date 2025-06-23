@@ -18,12 +18,15 @@ class RedisService:
         
     async def connect(self, redis_url: str):
         """Connect to Redis."""
+        print(f"Connecting to Redis at: {redis_url}")
         self.redis = Redis.from_url(redis_url)
         self.pubsub = self.redis.pubsub()
         
+        print("Subscribing to Redis channels...")
         await self.pubsub.subscribe("todo:actions")
         await self.pubsub.subscribe("backlog:actions")
         await self.pubsub.subscribe("terminal:actions")
+        print("Successfully subscribed to todo:actions, backlog:actions, and terminal:actions")
         
     async def disconnect(self):
         """Disconnect from Redis."""
@@ -36,11 +39,14 @@ class RedisService:
     async def listen_for_messages(self):
         """Listen for Redis messages and process them."""
         if not self.pubsub:
+            print("No pubsub connection available")
             return
             
+        print("Starting to listen for Redis messages...")
         async for message in self.pubsub.listen():
             if message["type"] == "message":
                 try:
+                    print(f"Received Redis message: {message}")
                     data = json.loads(message["data"])
                     await self._process_message(data)
                 except Exception as e:
