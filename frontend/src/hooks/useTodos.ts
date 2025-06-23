@@ -221,8 +221,6 @@ export function useTodos(): UseTodosReturn {
         throw new Error('Failed to add backlog item');
       }
 
-      const newBacklog = await response.json();
-      setBacklogItems(prev => [newBacklog, ...prev]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add backlog item');
     } finally {
@@ -245,10 +243,6 @@ export function useTodos(): UseTodosReturn {
         throw new Error('Failed to update backlog item');
       }
 
-      const updatedBacklog = await response.json();
-      setBacklogItems(prev => prev.map(item => 
-        item.id === id ? updatedBacklog : item
-      ));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update backlog item');
     } finally {
@@ -267,7 +261,6 @@ export function useTodos(): UseTodosReturn {
         throw new Error('Failed to delete backlog item');
       }
 
-      setBacklogItems(prev => prev.filter(item => item.id !== id));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete backlog item');
     } finally {
@@ -286,15 +279,12 @@ export function useTodos(): UseTodosReturn {
         throw new Error('Failed to send backlog to todo');
       }
 
-      await response.json();
-      setBacklogItems(prev => prev.filter(item => item.id !== id));
-      await fetchTodos();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send backlog to todo');
     } finally {
       setLoading(false);
     }
-  }, [apiUrl, fetchTodos]);
+  }, [apiUrl]);
 
   const fetchBacklogs = useCallback(async () => {
     try {
