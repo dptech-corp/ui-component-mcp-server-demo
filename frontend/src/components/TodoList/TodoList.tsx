@@ -80,7 +80,7 @@ export function TodoList() {
     try {
       const message = `分析 ${todo.title} 任务花了多久完成`;
       
-      const response = await fetch('/api/agent/message', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/agent/message`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
