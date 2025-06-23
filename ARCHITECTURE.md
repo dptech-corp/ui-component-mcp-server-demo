@@ -210,7 +210,7 @@ const sendMessage = async (message: string, sessionId?: string) => {
   const response = await fetch('/api/agent/message', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, sessionId: sessionId || 'demo' })
+    body: JSON.stringify({ message, sessionId: sessionId || '' })
   });
   return response.json();
 };

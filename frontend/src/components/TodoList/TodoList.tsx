@@ -87,7 +87,7 @@ export function TodoList() {
         },
         body: JSON.stringify({
           message,
-          sessionId: 'demo'
+          sessionId: null
         }),
       });
 

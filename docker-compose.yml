@@ -44,6 +44,7 @@ services:
       - REDIS_URL=redis://redis:6379
       - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
       - LOG_LEVEL=INFO
+      - SESSION_ID=${SESSION_ID}
     depends_on:
       redis:
         condition: service_healthy
@@ -90,6 +91,7 @@ services:
       - LLM_MODEL=${LLM_MODEL}
       - OPENAI_API_KEY=${GEMINI_API_KEY}
       - OPENAI_API_BASE_URL=${OPENAI_API_BASE_URL}
+      - SESSION_DB_URL=${SESSION_DB_URL}
     depends_on:
       mcp-server:
         condition: service_started

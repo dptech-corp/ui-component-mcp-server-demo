@@ -19,7 +19,7 @@ class AgentRequest(BaseModel):
     """Agent request model."""
     appName: str = "agent"
     userId: str = "user"
-    sessionId: str = "demo"
+    sessionId: Optional[str] = None
     newMessage: NewMessage
     streaming: bool = False
 
@@ -27,7 +27,7 @@ class AgentRequest(BaseModel):
 class AgentMessageRequest(BaseModel):
     """Agent message request from frontend."""
     message: str
-    sessionId: Optional[str] = "demo"
+    sessionId: Optional[str] = None
 
 
 class AgentResponse(BaseModel):

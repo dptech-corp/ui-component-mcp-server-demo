@@ -10,6 +10,9 @@ RUN apt-get update && apt-get install -y \
 # Install uv
 RUN pip install uv
 
+# Install database drivers
+RUN pip install pymysql cryptography
+
 # Copy project files
 COPY pyproject.toml uv.lock ./
 
@@ -18,6 +21,7 @@ RUN uv sync --frozen --no-dev
 
 # Copy application code
 COPY src/ ./src/
+RUN rm -rf ./src/ui_component_agent.egg-info
 COPY start_web.sh start_api.sh ./
 
 # Make scripts executable
