@@ -141,6 +141,20 @@ def register_backlog_tools(mcp: FastMCP, redis_client: RedisClient):
         """
         import httpx
         
+        message = {
+            "id": str(uuid.uuid4()),
+            "type": "backlog_action",
+            "timestamp": int(time.time() * 1000),
+            "source": "mcp",
+            "target": "backlog_component",
+            "component": "backlog",
+            "payload": {
+                "action": "list"
+            }
+        }
+        
+        await redis_client.publish_message("backlog:actions", message)
+        
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.get("http://backend:8000/api/backlogs")

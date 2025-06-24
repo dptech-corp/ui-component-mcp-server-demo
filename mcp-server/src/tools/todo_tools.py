@@ -141,6 +141,20 @@ def register_todo_tools(mcp: FastMCP, redis_client: RedisClient):
         """
         import httpx
         
+        message = {
+            "id": str(uuid.uuid4()),
+            "type": "todo_action",
+            "timestamp": int(time.time() * 1000),
+            "source": "mcp",
+            "target": "todo_component",
+            "component": "todo",
+            "payload": {
+                "action": "list"
+            }
+        }
+        
+        await redis_client.publish_message("todo:actions", message)
+        
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.get("http://backend:8000/api/todos")
