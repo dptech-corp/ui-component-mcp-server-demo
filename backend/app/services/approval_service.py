@@ -75,8 +75,12 @@ class ApprovalService:
     
     async def get_all_approvals(self) -> List[Approval]:
         """Get all approval requests."""
+        print(f"DEBUG: get_all_approvals called, database.pool is None: {database.pool is None}")
+        
         if not database.pool:
+            print("DEBUG: Database pool is None, connecting...")
             await database.connect()
+            print(f"DEBUG: After connect, database.pool is None: {database.pool is None}")
         
         async with database.pool.acquire() as conn:
             async with conn.cursor() as cursor:
@@ -84,6 +88,7 @@ class ApprovalService:
                     "SELECT * FROM approvals ORDER BY created_at DESC"
                 )
                 rows = await cursor.fetchall()
+                print(f"DEBUG: Query executed, found {len(rows)} rows")
                 
                 return [
                     Approval(
