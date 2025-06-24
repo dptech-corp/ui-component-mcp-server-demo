@@ -10,34 +10,27 @@ class Database:
     
     def __init__(self):
         self.pool: Optional[aiomysql.Pool] = None
-        self.database_url = os.getenv("DATABASE_URL", "mysql://ui_user:ui_password@localhost:3306/ui_component_db")
     
     async def connect(self):
         """Connect to the database and create connection pool."""
-        if self.database_url.startswith("mysql://"):
-            url_parts = self.database_url[8:].split("@")
-            user_pass = url_parts[0].split(":")
-            host_db = url_parts[1].split("/")
-            host_port = host_db[0].split(":")
-            
-            user = user_pass[0]
-            password = user_pass[1]
-            host = host_port[0]
-            port = int(host_port[1]) if len(host_port) > 1 else 3306
-            database = host_db[1]
-            
-            self.pool = await aiomysql.create_pool(
-                host=host,
-                port=port,
-                user=user,
-                password=password,
-                db=database,
-                minsize=5,
-                maxsize=20,
-                autocommit=False
-            )
-            
-            await self.create_tables()
+        mysql_host = os.getenv("MYSQL_HOST", "mysql")
+        mysql_port = int(os.getenv("MYSQL_PORT", "3306"))
+        mysql_user = os.getenv("MYSQL_USER")
+        mysql_password = os.getenv("MYSQL_PASSWORD")
+        mysql_database = os.getenv("MYSQL_DATABASE")
+        
+        self.pool = await aiomysql.create_pool(
+            host=mysql_host,
+            port=mysql_port,
+            user=mysql_user,
+            password=mysql_password,
+            db=mysql_database,
+            minsize=5,
+            maxsize=20,
+            autocommit=False
+        )
+        
+        await self.create_tables()
     
     async def disconnect(self):
         """Disconnect from the database."""
