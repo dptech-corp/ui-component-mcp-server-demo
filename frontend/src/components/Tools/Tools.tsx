@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { TodoItem } from '@/types/todo';
+import { TerminalCommand } from '@/types/terminal';
 import { TodoInput } from './TodoInput';
 import { TodoItemComponent } from './TodoItem';
 import { TodoStats } from './TodoStats';
@@ -9,7 +10,14 @@ import { TerminalOutput } from './TerminalOutput';
 import { useSSE } from '@/hooks/useSSE';
 import { useTodos } from '@/hooks/useTodos';
 
-export function TodoList() {
+interface ToolsProps {
+  activeTab: 'todo' | 'backlog' | 'terminal';
+  setActiveTab: (tab: 'todo' | 'backlog' | 'terminal') => void;
+  terminalCommands: TerminalCommand[];
+  isConnected: boolean;
+}
+
+export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }: ToolsProps) {
   const { 
     todos, 
     backlogItems, 
@@ -25,29 +33,11 @@ export function TodoList() {
     deleteBacklogItem,
     moveToTodo
   } = useTodos();
-  const { isConnected, lastEvent } = useSSE();
-  const [activeTab, setActiveTab] = useState<'todo' | 'backlog' | 'terminal'>('todo');
-  const [terminalCommands, setTerminalCommands] = useState<any[]>([]);
+  const { lastEvent } = useSSE();
 
   useEffect(() => {
     if (lastEvent) {
       switch (lastEvent.event) {
-        case 'component_switch':
-          if (lastEvent.data.component) {
-            setActiveTab(lastEvent.data.component as 'todo' | 'backlog' | 'terminal');
-          }
-          break;
-        case 'terminal_command_executed':
-          const newCommand = {
-            id: `terminal_${Date.now()}`,
-            action: lastEvent.data.action,
-            command: lastEvent.data.command,
-            output: lastEvent.data.output,
-            file: lastEvent.data.file,
-            timestamp: lastEvent.data.timestamp || Date.now()
-          };
-          setTerminalCommands(prev => [newCommand, ...prev]);
-          break;
         case 'todo_added':
           break;
         case 'todo_updated':

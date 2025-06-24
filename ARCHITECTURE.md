@@ -104,7 +104,7 @@ graph TB
 
 **关键文件**:
 - `frontend/src/App.tsx` - 应用主组件
-- `frontend/src/components/TodoList/` - Todo 组件
+- `frontend/src/components/Tools/` - 工具组件（包含 Todo、Backlog、Terminal）
 - `frontend/src/components/AgentChat/` - Agent 对话组件
 - `frontend/src/hooks/useSSE.ts` - SSE 连接 Hook
 - `frontend/src/hooks/useTodos.ts` - Todo 状态管理 Hook
