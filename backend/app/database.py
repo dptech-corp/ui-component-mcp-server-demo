@@ -1,74 +1,97 @@
 """Database configuration and initialization."""
 
-import aiosqlite
+import aiomysql
 import os
 from typing import Optional
 
 
 class Database:
-    """SQLite database manager."""
+    """MySQL database manager with connection pooling."""
     
-    def __init__(self, db_path: str = "/app/data/todos.db"):
-        import os
-        os.makedirs(os.path.dirname(db_path), exist_ok=True)
-        self.db_path = db_path
-        self.connection: Optional[aiosqlite.Connection] = None
+    def __init__(self):
+        self.pool: Optional[aiomysql.Pool] = None
+        self.database_url = os.getenv("DATABASE_URL", "mysql://ui_user:ui_password@localhost:3306/ui_component_db")
     
     async def connect(self):
-        """Connect to the database and create tables if they don't exist."""
-        self.connection = await aiosqlite.connect(self.db_path)
-        await self.create_tables()
+        """Connect to the database and create connection pool."""
+        if self.database_url.startswith("mysql://"):
+            url_parts = self.database_url[8:].split("@")
+            user_pass = url_parts[0].split(":")
+            host_db = url_parts[1].split("/")
+            host_port = host_db[0].split(":")
+            
+            user = user_pass[0]
+            password = user_pass[1]
+            host = host_port[0]
+            port = int(host_port[1]) if len(host_port) > 1 else 3306
+            database = host_db[1]
+            
+            self.pool = await aiomysql.create_pool(
+                host=host,
+                port=port,
+                user=user,
+                password=password,
+                db=database,
+                minsize=5,
+                maxsize=20,
+                autocommit=False
+            )
+            
+            await self.create_tables()
     
     async def disconnect(self):
         """Disconnect from the database."""
-        if self.connection:
-            await self.connection.close()
-            self.connection = None
+        if self.pool:
+            self.pool.close()
+            await self.pool.wait_closed()
+            self.pool = None
     
     async def create_tables(self):
-        """Create the todos and backlog tables if they don't exist."""
-        if not self.connection:
+        """Create the todos, backlog, and approvals tables if they don't exist."""
+        if not self.pool:
             raise RuntimeError("Database not connected")
         
-        await self.connection.execute("""
-            CREATE TABLE IF NOT EXISTS todos (
-                id TEXT PRIMARY KEY,
-                title TEXT NOT NULL,
-                description TEXT DEFAULT '',
-                completed BOOLEAN DEFAULT FALSE,
-                created_at INTEGER NOT NULL,
-                updated_at INTEGER NOT NULL
-            )
-        """)
-        
-        await self.connection.execute("""
-            CREATE TABLE IF NOT EXISTS backlog (
-                id TEXT PRIMARY KEY,
-                title TEXT NOT NULL,
-                description TEXT DEFAULT '',
-                created_at INTEGER NOT NULL,
-                updated_at INTEGER NOT NULL
-            )
-        """)
-        
-        await self.connection.execute("""
-            CREATE TABLE IF NOT EXISTS approvals (
-                id TEXT PRIMARY KEY,
-                session_id TEXT NOT NULL,
-                function_call_id TEXT NOT NULL,
-                description TEXT NOT NULL,
-                status TEXT DEFAULT 'pending',
-                created_at INTEGER NOT NULL,
-                updated_at INTEGER NOT NULL
-            )
-        """)
-        await self.connection.commit()
+        async with self.pool.acquire() as conn:
+            async with conn.cursor() as cursor:
+                await cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS todos (
+                        id VARCHAR(36) PRIMARY KEY,
+                        title TEXT NOT NULL,
+                        description TEXT,
+                        completed BOOLEAN DEFAULT FALSE,
+                        created_at BIGINT NOT NULL,
+                        updated_at BIGINT NOT NULL
+                    )
+                """)
+                
+                await cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS backlog (
+                        id VARCHAR(36) PRIMARY KEY,
+                        title TEXT NOT NULL,
+                        description TEXT,
+                        created_at BIGINT NOT NULL,
+                        updated_at BIGINT NOT NULL
+                    )
+                """)
+                
+                await cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS approvals (
+                        id VARCHAR(36) PRIMARY KEY,
+                        session_id VARCHAR(255) NOT NULL,
+                        function_call_id VARCHAR(255) NOT NULL,
+                        description TEXT NOT NULL,
+                        status VARCHAR(20) DEFAULT 'pending',
+                        created_at BIGINT NOT NULL,
+                        updated_at BIGINT NOT NULL
+                    )
+                """)
+                await conn.commit()
     
-    async def get_connection(self) -> aiosqlite.Connection:
-        """Get the database connection."""
-        if not self.connection:
+    async def get_connection(self):
+        """Get a database connection from the pool."""
+        if not self.pool:
             await self.connect()
-        return self.connection
+        return self.pool.acquire()
 
 
 database = Database()

@@ -1,15 +1,7 @@
 import { useState } from 'react';
 import { Terminal, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-interface TerminalCommand {
-  id: string;
-  action: string;
-  command: string;
-  output: string;
-  file?: string;
-  timestamp: number;
-}
+import { TerminalCommand } from '@/types/terminal';
 
 interface TerminalOutputProps {
   commands: TerminalCommand[];

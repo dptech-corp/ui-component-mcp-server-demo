@@ -199,7 +199,7 @@ class AgentResponse(BaseModel):
 
 ### 与现有系统的集成
 
-1. **UI 集成**: Agent 对话组件将集成到现有的 TodoList 页面中，作为独立的功能区域
+1. **UI 集成**: Agent 对话组件将集成到现有的 Tools 页面中，作为独立的功能区域
 2. **API 集成**: 新的 Agent API 路由将添加到现有的 FastAPI 后端中
 3. **状态管理**: Agent 消息状态独立管理，不影响现有的 Todo 状态
 4. **样式一致性**: 使用与现有组件相同的 Tailwind CSS 样式系统
