@@ -19,18 +19,27 @@ class Database:
         mysql_password = os.getenv("MYSQL_PASSWORD")
         mysql_database = os.getenv("MYSQL_DATABASE")
         
-        self.pool = await aiomysql.create_pool(
-            host=mysql_host,
-            port=mysql_port,
-            user=mysql_user,
-            password=mysql_password,
-            db=mysql_database,
-            minsize=5,
-            maxsize=20,
-            autocommit=False
-        )
+        print(f"DEBUG: Connecting to database with host={mysql_host}, port={mysql_port}, user={mysql_user}, db={mysql_database}")
+        print(f"DEBUG: Password is {'set' if mysql_password else 'NOT SET'}")
         
-        await self.create_tables()
+        try:
+            self.pool = await aiomysql.create_pool(
+                host=mysql_host,
+                port=mysql_port,
+                user=mysql_user,
+                password=mysql_password,
+                db=mysql_database,
+                minsize=5,
+                maxsize=20,
+                autocommit=False
+            )
+            print(f"DEBUG: Database pool created successfully, pool is None: {self.pool is None}")
+            
+            await self.create_tables()
+            print("DEBUG: Database tables created successfully")
+        except Exception as e:
+            print(f"DEBUG: Database connection failed: {str(e)}")
+            raise
     
     async def disconnect(self):
         """Disconnect from the database."""
