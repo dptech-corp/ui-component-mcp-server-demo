@@ -45,6 +45,7 @@ export function useTodos(): UseTodosReturn {
               return prev;
             });
           }
+          setLoading(false);
           break;
           
         case 'todo_updated':
@@ -53,22 +54,63 @@ export function useTodos(): UseTodosReturn {
               todo.id === lastEvent.data.todo.id ? lastEvent.data.todo : todo
             ));
           }
+          setLoading(false);
           break;
           
         case 'todo_deleted':
           if (lastEvent.data.todoId) {
             setTodos(prev => prev.filter(todo => todo.id !== lastEvent.data.todoId));
           }
+          setLoading(false);
           break;
           
         case 'todo_list':
           if (lastEvent.data.todos) {
             setTodos(lastEvent.data.todos);
           }
+          setLoading(false);
+          break;
+          
+        case 'backlog_added':
+          if (lastEvent.data.backlog) {
+            setBacklogItems(prev => [lastEvent.data.backlog, ...prev]);
+          }
+          setLoading(false);
+          break;
+          
+        case 'backlog_updated':
+          if (lastEvent.data.backlog) {
+            setBacklogItems(prev => prev.map(item => 
+              item.id === lastEvent.data.backlog.id ? lastEvent.data.backlog : item
+            ));
+          }
+          setLoading(false);
+          break;
+          
+        case 'backlog_deleted':
+          if (lastEvent.data.backlogId) {
+            setBacklogItems(prev => prev.filter(item => item.id !== lastEvent.data.backlogId));
+          }
+          setLoading(false);
+          break;
+          
+        case 'backlog_sent_to_todo':
+          if (lastEvent.data.backlog_id) {
+            setBacklogItems(prev => prev.filter(item => item.id !== lastEvent.data.backlog_id));
+          }
+          setLoading(false);
+          break;
+          
+        case 'backlog_list':
+          if (lastEvent.data.backlogs) {
+            setBacklogItems(lastEvent.data.backlogs);
+          }
+          setLoading(false);
           break;
           
         case 'error':
           setError(lastEvent.data.message || '发生未知错误');
+          setLoading(false);
           break;
       }
     }
@@ -311,83 +353,7 @@ export function useTodos(): UseTodosReturn {
     fetchBacklogs();
   }, [fetchTodos, fetchBacklogs]);
 
-  useEffect(() => {
-    if (lastEvent) {
-      switch (lastEvent.event) {
-        case 'component_switch':
-          break;
-        case 'terminal_command_executed':
-          break;
-        case 'todo_added':
-          if (lastEvent.data.todo) {
-            setTodos(prev => {
-              const exists = prev.some(todo => todo.id === lastEvent.data.todo.id);
-              if (!exists) {
-                return [...prev, lastEvent.data.todo];
-              }
-              return prev;
-            });
-          }
-          break;
-          
-        case 'todo_updated':
-          if (lastEvent.data.todo) {
-            setTodos(prev => prev.map(todo => 
-              todo.id === lastEvent.data.todo.id ? lastEvent.data.todo : todo
-            ));
-          }
-          break;
-          
-        case 'todo_deleted':
-          if (lastEvent.data.todoId) {
-            setTodos(prev => prev.filter(todo => todo.id !== lastEvent.data.todoId));
-          }
-          break;
-          
-        case 'todo_list':
-          if (lastEvent.data.todos) {
-            setTodos(lastEvent.data.todos);
-          }
-          break;
-          
-        case 'backlog_added':
-          if (lastEvent.data.backlog) {
-            setBacklogItems(prev => [lastEvent.data.backlog, ...prev]);
-          }
-          break;
-          
-        case 'backlog_updated':
-          if (lastEvent.data.backlog) {
-            setBacklogItems(prev => prev.map(item => 
-              item.id === lastEvent.data.backlog.id ? lastEvent.data.backlog : item
-            ));
-          }
-          break;
-          
-        case 'backlog_deleted':
-          if (lastEvent.data.backlogId) {
-            setBacklogItems(prev => prev.filter(item => item.id !== lastEvent.data.backlogId));
-          }
-          break;
-          
-        case 'backlog_sent_to_todo':
-          if (lastEvent.data.backlog_id) {
-            setBacklogItems(prev => prev.filter(item => item.id !== lastEvent.data.backlog_id));
-          }
-          break;
-          
-        case 'backlog_list':
-          if (lastEvent.data.backlogs) {
-            setBacklogItems(lastEvent.data.backlogs);
-          }
-          break;
-          
-        case 'error':
-          setError(lastEvent.data.message || '发生未知错误');
-          break;
-      }
-    }
-  }, [lastEvent]);
+
 
   return {
     todos,
