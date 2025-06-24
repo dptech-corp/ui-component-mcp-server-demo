@@ -20,7 +20,7 @@ function App() {
           break;
         case 'terminal_command_executed':
           const newCommand = {
-            id: `terminal_${Date.now()}`,
+            id: `terminal_${lastEvent.data.timestamp}_${lastEvent.data.action}`,
             action: lastEvent.data.action,
             command: lastEvent.data.command,
             output: lastEvent.data.output,

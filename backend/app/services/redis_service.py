@@ -185,7 +185,7 @@ class RedisService:
                     "command": payload.get("command", ""),
                     "output": payload.get("output", ""),
                     "file": payload.get("file", ""),
-                    "timestamp": int(time.time() * 1000)
+                    "timestamp": payload.get("timestamp", int(time.time() * 1000))
                 })
                         
         except Exception as e:
