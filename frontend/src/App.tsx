@@ -1,8 +1,37 @@
+import { useState, useEffect } from 'react';
 import { TodoList } from '@/components/TodoList/TodoList';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
+import { useSSE } from '@/hooks/useSSE';
+import { useTerminal } from '@/hooks/useTerminal';
 import './App.css';
 
 function App() {
+  const [activeTab, setActiveTab] = useState<'todo' | 'backlog' | 'terminal'>('todo');
+  const { isConnected, lastEvent } = useSSE();
+  const { terminalCommands, addTerminalCommand } = useTerminal();
+
+  useEffect(() => {
+    if (lastEvent) {
+      switch (lastEvent.event) {
+        case 'component_switch':
+          if (lastEvent.data.component) {
+            setActiveTab(lastEvent.data.component as 'todo' | 'backlog' | 'terminal');
+          }
+          break;
+        case 'terminal_command_executed':
+          const newCommand = {
+            id: `terminal_${Date.now()}`,
+            action: lastEvent.data.action,
+            command: lastEvent.data.command,
+            output: lastEvent.data.output,
+            file: lastEvent.data.file,
+            timestamp: lastEvent.data.timestamp || Date.now()
+          };
+          addTerminalCommand(newCommand);
+          break;
+      }
+    }
+  }, [lastEvent, addTerminalCommand]);
   return (
     <div className="h-screen bg-gray-50">
       <PanelGroup direction="horizontal" className="h-full">
@@ -27,7 +56,12 @@ function App() {
                     这个 Todo List 组件可以通过 MCP 工具进行控制，展示了完整的消息流程：
                     MCP 调用 → Redis 消息 → 后端处理 → SSE 事件 → 前端更新
                   </p>
-                  <TodoList />
+                  <TodoList 
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    terminalCommands={terminalCommands}
+                    isConnected={isConnected}
+                  />
                 </div>
               </main>
 
