@@ -10,14 +10,14 @@ import { TerminalOutput } from './TerminalOutput';
 import { useSSE } from '@/hooks/useSSE';
 import { useTodos } from '@/hooks/useTodos';
 
-interface TodoListProps {
+interface ToolsProps {
   activeTab: 'todo' | 'backlog' | 'terminal';
   setActiveTab: (tab: 'todo' | 'backlog' | 'terminal') => void;
   terminalCommands: TerminalCommand[];
   isConnected: boolean;
 }
 
-export function TodoList({ activeTab, setActiveTab, terminalCommands, isConnected }: TodoListProps) {
+export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }: ToolsProps) {
   const { 
     todos, 
     backlogItems, 

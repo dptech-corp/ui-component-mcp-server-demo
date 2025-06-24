@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { TodoList } from '@/components/TodoList/TodoList';
+import { Tools } from '@/components/Tools/Tools';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { useSSE } from '@/hooks/useSSE';
 import { useTerminal } from '@/hooks/useTerminal';
@@ -50,13 +50,13 @@ function App() {
               <main className="max-w-2xl mx-auto">
                 <div className="bg-white rounded-lg shadow-md p-6">
                   <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-                    Todo List 组件
+                    工具组件
                   </h2>
                   <p className="text-gray-600 mb-6">
-                    这个 Todo List 组件可以通过 MCP 工具进行控制，展示了完整的消息流程：
+                    这个工具组件包含 Todo、Backlog 和 Terminal 功能，可以通过 MCP 工具进行控制，展示了完整的消息流程：
                     MCP 调用 → Redis 消息 → 后端处理 → SSE 事件 → 前端更新
                   </p>
-                  <TodoList 
+                  <Tools 
                     activeTab={activeTab}
                     setActiveTab={setActiveTab}
                     terminalCommands={terminalCommands}
