@@ -16,56 +16,59 @@ class BacklogService:
         
     async def get_all_backlogs(self) -> List[Backlog]:
         """Get all backlog items."""
-        conn = await database.get_connection()
-        cursor = await conn.execute(
-            "SELECT id, title, description, created_at, updated_at FROM backlog ORDER BY created_at DESC"
-        )
-        rows = await cursor.fetchall()
-        
-        backlogs = []
-        for row in rows:
-            backlog = Backlog(
-                id=row[0],
-                title=row[1],
-                description=row[2] or "",
-                created_at=row[3],
-                updated_at=row[4]
-            )
-            backlogs.append(backlog)
-        
-        return backlogs
+        async with await database.get_connection() as conn:
+            async with conn.cursor() as cursor:
+                await cursor.execute(
+                    "SELECT id, title, description, created_at, updated_at FROM backlog ORDER BY created_at DESC"
+                )
+                rows = await cursor.fetchall()
+                
+                backlogs = []
+                for row in rows:
+                    backlog = Backlog(
+                        id=row[0],
+                        title=row[1],
+                        description=row[2] or "",
+                        created_at=row[3],
+                        updated_at=row[4]
+                    )
+                    backlogs.append(backlog)
+                
+                return backlogs
         
     async def get_backlog(self, backlog_id: str) -> Optional[Backlog]:
         """Get a specific backlog item."""
-        conn = await database.get_connection()
-        cursor = await conn.execute(
-            "SELECT id, title, description, created_at, updated_at FROM backlog WHERE id = ?",
-            (backlog_id,)
-        )
-        row = await cursor.fetchone()
-        
-        if not row:
-            return None
-            
-        return Backlog(
-            id=row[0],
-            title=row[1],
-            description=row[2] or "",
-            created_at=row[3],
-            updated_at=row[4]
-        )
+        async with await database.get_connection() as conn:
+            async with conn.cursor() as cursor:
+                await cursor.execute(
+                    "SELECT id, title, description, created_at, updated_at FROM backlog WHERE id = %s",
+                    (backlog_id,)
+                )
+                row = await cursor.fetchone()
+                
+                if not row:
+                    return None
+                    
+                return Backlog(
+                    id=row[0],
+                    title=row[1],
+                    description=row[2] or "",
+                    created_at=row[3],
+                    updated_at=row[4]
+                )
         
     async def create_backlog(self, title: str, description: str = "") -> Backlog:
         """Create a new backlog item."""
         backlog_id = str(uuid.uuid4())
         timestamp = int(time.time() * 1000)
         
-        conn = await database.get_connection()
-        await conn.execute(
-            "INSERT INTO backlog (id, title, description, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
-            (backlog_id, title, description, timestamp, timestamp)
-        )
-        await conn.commit()
+        async with await database.get_connection() as conn:
+            async with conn.cursor() as cursor:
+                await cursor.execute(
+                    "INSERT INTO backlog (id, title, description, created_at, updated_at) VALUES (%s, %s, %s, %s, %s)",
+                    (backlog_id, title, description, timestamp, timestamp)
+                )
+                await conn.commit()
         
         backlog = Backlog(
             id=backlog_id,

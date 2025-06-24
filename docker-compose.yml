@@ -1,6 +1,24 @@
 version: '3.8'
 
 services:
+  mysql:
+    image: mysql:8.0
+    container_name: ui-mcp-mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   redis:
     image: redis:7-alpine
     container_name: ui-mcp-redis
@@ -42,11 +60,14 @@ services:
       - "8000:8000"
     environment:
       - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE}
       - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
       - LOG_LEVEL=INFO
       - SESSION_ID=${SESSION_ID}
     depends_on:
       redis:
+        condition: service_healthy
+      mysql:
         condition: service_healthy
     volumes:
       - ./backend/app:/app/app
@@ -104,6 +125,8 @@ volumes:
   redis_data:
     driver: local
   backend_data:
+    driver: local
+  mysql_data:
     driver: local
 
 networks:

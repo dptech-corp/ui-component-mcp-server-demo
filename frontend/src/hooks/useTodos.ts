@@ -147,8 +147,6 @@ export function useTodos(): UseTodosReturn {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      await fetchTodos();
-      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '添加 Todo 失败';
       setError(errorMessage);
@@ -156,7 +154,7 @@ export function useTodos(): UseTodosReturn {
     } finally {
       setLoading(false);
     }
-  }, [apiUrl, fetchTodos]);
+  }, [apiUrl]);
 
   const updateTodo = useCallback(async (id: string, updates: Partial<TodoItem>) => {
     try {
@@ -181,8 +179,6 @@ export function useTodos(): UseTodosReturn {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      await fetchTodos();
-      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '更新 Todo 失败';
       setError(errorMessage);
@@ -190,7 +186,7 @@ export function useTodos(): UseTodosReturn {
     } finally {
       setLoading(false);
     }
-  }, [apiUrl, fetchTodos]);
+  }, [apiUrl]);
 
   const deleteTodo = useCallback(async (id: string) => {
     try {
@@ -205,8 +201,6 @@ export function useTodos(): UseTodosReturn {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      await fetchTodos();
-      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '删除 Todo 失败';
       setError(errorMessage);
@@ -214,7 +208,7 @@ export function useTodos(): UseTodosReturn {
     } finally {
       setLoading(false);
     }
-  }, [apiUrl, fetchTodos]);
+  }, [apiUrl]);
 
   const toggleTodo = useCallback(async (id: string) => {
     try {
@@ -229,8 +223,6 @@ export function useTodos(): UseTodosReturn {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      await fetchTodos();
-      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '切换 Todo 状态失败';
       setError(errorMessage);
@@ -238,11 +230,13 @@ export function useTodos(): UseTodosReturn {
     } finally {
       setLoading(false);
     }
-  }, [apiUrl, fetchTodos]);
+  }, [apiUrl]);
 
   const addBacklogItem = useCallback(async (title: string, description?: string) => {
     try {
       setLoading(true);
+      setError(null);
+      
       const response = await fetch(`${apiUrl}/api/backlogs`, {
         method: 'POST',
         headers: {
@@ -268,6 +262,8 @@ export function useTodos(): UseTodosReturn {
   const updateBacklogItem = useCallback(async (id: string, updates: Partial<BacklogItem>) => {
     try {
       setLoading(true);
+      setError(null);
+      
       const response = await fetch(`${apiUrl}/api/backlogs/${id}`, {
         method: 'PUT',
         headers: {
@@ -290,6 +286,8 @@ export function useTodos(): UseTodosReturn {
   const deleteBacklogItem = useCallback(async (id: string) => {
     try {
       setLoading(true);
+      setError(null);
+      
       const response = await fetch(`${apiUrl}/api/backlogs/${id}`, {
         method: 'DELETE',
       });
@@ -308,6 +306,8 @@ export function useTodos(): UseTodosReturn {
   const moveToTodo = useCallback(async (id: string) => {
     try {
       setLoading(true);
+      setError(null);
+      
       const response = await fetch(`${apiUrl}/api/backlogs/${id}/send-to-todo`, {
         method: 'POST',
       });
