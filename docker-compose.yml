@@ -60,7 +60,11 @@ services:
       - "8000:8000"
     environment:
       - REDIS_URL=redis://redis:6379
-      - DATABASE_URL=mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE}
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
       - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
       - LOG_LEVEL=INFO
       - SESSION_ID=${SESSION_ID}
