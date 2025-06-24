@@ -6,8 +6,10 @@ import { TodoStats } from './TodoStats';
 import { BacklogInput } from './BacklogInput';
 import { BacklogItemComponent } from './BacklogItem';
 import { TerminalOutput } from './TerminalOutput';
+import { ApprovalList } from '../Approval/ApprovalList';
 import { useSSE } from '@/hooks/useSSE';
 import { useTodos } from '@/hooks/useTodos';
+import { useApprovals } from '@/hooks/useApprovals';
 
 export function TodoList() {
   const { 
@@ -26,7 +28,8 @@ export function TodoList() {
     moveToTodo
   } = useTodos();
   const { isConnected, lastEvent } = useSSE();
-  const [activeTab, setActiveTab] = useState<'todo' | 'backlog' | 'terminal'>('todo');
+  const { addApproval, updateApproval } = useApprovals();
+  const [activeTab, setActiveTab] = useState<'todo' | 'backlog' | 'terminal' | 'approval'>('todo');
   const [terminalCommands, setTerminalCommands] = useState<any[]>([]);
 
   useEffect(() => {
@@ -54,9 +57,20 @@ export function TodoList() {
           break;
         case 'todo_deleted':
           break;
+        case 'approval_request':
+          if (lastEvent.data.approval) {
+            addApproval(lastEvent.data.approval);
+            setActiveTab('approval');
+          }
+          break;
+        case 'approval_updated':
+          if (lastEvent.data.approval) {
+            updateApproval(lastEvent.data.approval);
+          }
+          break;
       }
     }
-  }, [lastEvent]);
+  }, [lastEvent, addApproval, updateApproval]);
 
   useEffect(() => {
     fetchTodos();
@@ -177,6 +191,16 @@ export function TodoList() {
         >
           Terminal
         </button>
+        <button
+          onClick={() => setActiveTab('approval')}
+          className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
+            activeTab === 'approval'
+              ? 'bg-white border-b-2 border-blue-500 text-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Approval
+        </button>
       </div>
 
       {/* 错误提示 */}
@@ -250,9 +274,13 @@ export function TodoList() {
             )}
           </div>
         </>
-      ) : (
+      ) : activeTab === 'terminal' ? (
         <>
           <TerminalOutput commands={terminalCommands} disabled={loading} />
+        </>
+      ) : (
+        <>
+          <ApprovalList />
         </>
       )}
 
@@ -291,6 +319,26 @@ export function TodoList() {
                   <li><code>ls()</code> - 列出当前目录文件</li>
                   <li><code>cat_run_sh()</code> - 查看 run.sh 文件内容</li>
                   <li><code>bash_run_sh()</code> - 执行 run.sh 脚本</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'approval' && (
+        <div className="bg-purple-50 border border-purple-200 rounded-md p-4">
+          <div className="flex">
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-purple-800">Human-in-the-Loop MCP 工具提示</h3>
+              <div className="mt-2 text-sm text-purple-700">
+                <p>
+                  这个 Approval 组件支持人工审批流程。尝试使用以下 MCP 命令：
+                </p>
+                <ul className="mt-2 list-disc list-inside space-y-1">
+                  <li><code>wait_for_approval("请求描述")</code> - 请求用户审批</li>
+                  <li>审批请求会实时显示在此页面</li>
+                  <li>用户可以点击"批准"或"拒绝"按钮响应请求</li>
                 </ul>
               </div>
             </div>

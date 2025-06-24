@@ -8,7 +8,7 @@ export interface BaseMessage {
   timestamp: number;
   source: 'mcp' | 'backend' | 'frontend';
   target: string;
-  component?: 'todo' | 'backlog' | 'terminal';
+  component?: 'todo' | 'backlog' | 'terminal' | 'approval';
   payload: any;
 }
 
@@ -33,6 +33,18 @@ export interface ComponentStateMessage extends BaseMessage {
     state: any;
   };
 }
+
+export interface ApprovalRequestMessage extends BaseMessage {
+  type: 'approval_request';
+  target: 'approval_component';
+  payload: {
+    session_id: string;
+    function_call_id: string;
+    description: string;
+  };
+}
+
+export type MessageType = 'todo_action' | 'backlog_action' | 'terminal_action' | 'approval_request';
 
 export interface SSEEvent {
   event: string;

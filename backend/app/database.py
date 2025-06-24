@@ -50,6 +50,18 @@ class Database:
                 updated_at INTEGER NOT NULL
             )
         """)
+        
+        await self.connection.execute("""
+            CREATE TABLE IF NOT EXISTS approvals (
+                id TEXT PRIMARY KEY,
+                session_id TEXT NOT NULL,
+                function_call_id TEXT NOT NULL,
+                description TEXT NOT NULL,
+                status TEXT DEFAULT 'pending',
+                created_at INTEGER NOT NULL,
+                updated_at INTEGER NOT NULL
+            )
+        """)
         await self.connection.commit()
     
     async def get_connection(self) -> aiosqlite.Connection:
