@@ -45,7 +45,6 @@ export function useTodos(): UseTodosReturn {
               return prev;
             });
           }
-          setLoading(false);
           break;
           
         case 'todo_updated':
@@ -54,28 +53,24 @@ export function useTodos(): UseTodosReturn {
               todo.id === lastEvent.data.todo.id ? lastEvent.data.todo : todo
             ));
           }
-          setLoading(false);
           break;
           
         case 'todo_deleted':
           if (lastEvent.data.todoId) {
             setTodos(prev => prev.filter(todo => todo.id !== lastEvent.data.todoId));
           }
-          setLoading(false);
           break;
           
         case 'todo_list':
           if (lastEvent.data.todos) {
             setTodos(lastEvent.data.todos);
           }
-          setLoading(false);
           break;
           
         case 'backlog_added':
           if (lastEvent.data.backlog) {
             setBacklogItems(prev => [lastEvent.data.backlog, ...prev]);
           }
-          setLoading(false);
           break;
           
         case 'backlog_updated':
@@ -84,28 +79,24 @@ export function useTodos(): UseTodosReturn {
               item.id === lastEvent.data.backlog.id ? lastEvent.data.backlog : item
             ));
           }
-          setLoading(false);
           break;
           
         case 'backlog_deleted':
           if (lastEvent.data.backlogId) {
             setBacklogItems(prev => prev.filter(item => item.id !== lastEvent.data.backlogId));
           }
-          setLoading(false);
           break;
           
         case 'backlog_sent_to_todo':
           if (lastEvent.data.backlog_id) {
             setBacklogItems(prev => prev.filter(item => item.id !== lastEvent.data.backlog_id));
           }
-          setLoading(false);
           break;
           
         case 'backlog_list':
           if (lastEvent.data.backlogs) {
             setBacklogItems(lastEvent.data.backlogs);
           }
-          setLoading(false);
           break;
           
         case 'error':
