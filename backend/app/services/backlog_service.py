@@ -93,21 +93,22 @@ class BacklogService:
         
         for field, value in kwargs.items():
             if hasattr(backlog, field) and value is not None:
-                update_fields.append(f"{field} = ?")
+                update_fields.append(f"{field} = %s")
                 update_values.append(value)
                 setattr(backlog, field, value)
         
         if update_fields:
-            update_fields.append("updated_at = ?")
+            update_fields.append("updated_at = %s")
             update_values.append(timestamp)
             update_values.append(backlog_id)
             
-            conn = await database.get_connection()
-            await conn.execute(
-                f"UPDATE backlog SET {', '.join(update_fields)} WHERE id = ?",
-                update_values
-            )
-            await conn.commit()
+            async with await database.get_connection() as conn:
+                async with conn.cursor() as cursor:
+                    await cursor.execute(
+                        f"UPDATE backlog SET {', '.join(update_fields)} WHERE id = %s",
+                        tuple(update_values)
+                    )
+                    await conn.commit()
             
             backlog.updated_at = timestamp
         
@@ -115,18 +116,22 @@ class BacklogService:
         
     async def delete_backlog(self, backlog_id: str) -> bool:
         """Delete a backlog item."""
-        conn = await database.get_connection()
-        cursor = await conn.execute("DELETE FROM backlog WHERE id = ?", (backlog_id,))
-        await conn.commit()
+        async with await database.get_connection() as conn:
+            async with conn.cursor() as cursor:
+                await cursor.execute("DELETE FROM backlog WHERE id = %s", (backlog_id,))
+                rowcount = cursor.rowcount
+                await conn.commit()
         
-        return cursor.rowcount > 0
+        return rowcount > 0
         
     async def send_to_todo(self, backlog_id: str) -> Optional[dict]:
         """Move backlog item to todo and delete from backlog."""
         from .todo_service import TodoService
         
         backlog = await self.get_backlog(backlog_id)
+        print(f"send_to_todo 0000000000: get_backlog {backlog}")
         if not backlog:
+            print(f"send_to_todo 2222222222: backlog not found")
             return None
             
         todo_service = TodoService()
@@ -134,6 +139,7 @@ class BacklogService:
             title=backlog.title,
             description=backlog.description
         )
+        print(f"send_to_todo 1111111111: create_todo {todo}")
         
         await self.delete_backlog(backlog_id)
         

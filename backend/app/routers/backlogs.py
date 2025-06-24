@@ -70,6 +70,7 @@ async def send_backlog_to_todo(backlog_id: str, request: Request):
     sse_service = request.app.state.sse_service
     
     result = await backlog_service.send_to_todo(backlog_id)
+    print(f"send_backlog_to_todo 0000000000: {result}")
     if not result:
         raise HTTPException(status_code=404, detail="Backlog not found")
     

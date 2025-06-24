@@ -12,7 +12,8 @@ router = APIRouter()
 async def get_todos(request: Request):
     """Get all todo items."""
     todo_service = request.app.state.todo_service
-    return await todo_service.get_all_todos()
+    todos = await todo_service.get_all_todos()
+    return todos
 
 
 @router.post("/todos", response_model=Todo)

@@ -112,7 +112,8 @@ services:
       - LLM_MODEL=${LLM_MODEL}
       - OPENAI_API_KEY=${GEMINI_API_KEY}
       - OPENAI_API_BASE_URL=${OPENAI_API_BASE_URL}
-      - SESSION_DB_URL=${SESSION_DB_URL}
+      # - SESSION_DB_URL=${SESSION_DB_URL}
+      - SESSION_DB_URL=mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE}
     depends_on:
       mcp-server:
         condition: service_started
