@@ -44,6 +44,15 @@ async def approve_request(approval_id: str):
         if not approval:
             raise HTTPException(status_code=404, detail="Approval not found")
         
+        try:
+            import sys
+            import os
+            sys.path.append(os.path.join(os.path.dirname(__file__), '../../../mcp-server/src'))
+            from tools.approval_tools import update_approval_result
+            await update_approval_result(approval.function_call_id, "approved", "Request approved by human")
+        except Exception as mcp_error:
+            print(f"Failed to update MCP tool status: {str(mcp_error)}")
+        
         from ..main import sse_service
         await sse_service.send_event("approval_updated", {
             "approval": approval.dict(),
@@ -70,6 +79,15 @@ async def reject_request(approval_id: str):
         
         if not approval:
             raise HTTPException(status_code=404, detail="Approval not found")
+        
+        try:
+            import sys
+            import os
+            sys.path.append(os.path.join(os.path.dirname(__file__), '../../../mcp-server/src'))
+            from tools.approval_tools import update_approval_result
+            await update_approval_result(approval.function_call_id, "rejected", "Request rejected by human")
+        except Exception as mcp_error:
+            print(f"Failed to update MCP tool status: {str(mcp_error)}")
         
         from ..main import sse_service
         await sse_service.send_event("approval_updated", {
