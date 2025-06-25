@@ -11,7 +11,15 @@ export function useTerminal(): UseTerminalReturn {
   const [terminalCommands, setTerminalCommands] = useState<TerminalCommand[]>([]);
 
   const addTerminalCommand = (command: TerminalCommand) => {
-    setTerminalCommands(prev => [command, ...prev]);
+    setTerminalCommands(prev => {
+      const exists = prev.some(cmd => 
+        cmd.timestamp === command.timestamp && cmd.action === command.action
+      );
+      if (exists) {
+        return prev;
+      }
+      return [command, ...prev];
+    });
   };
 
   const clearTerminalCommands = () => {
