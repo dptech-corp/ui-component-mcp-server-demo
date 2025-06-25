@@ -6,7 +6,7 @@ import { useTerminal } from '@/hooks/useTerminal';
 import './App.css';
 
 function AppContent() {
-  const [activeTab, setActiveTab] = useState<'todo' | 'backlog' | 'terminal'>('todo');
+  const [activeTab, setActiveTab] = useState<'todo' | 'backlog' | 'terminal' | 'approval'>('todo');
   const { isConnected, lastEvent } = useSSE();
   const { terminalCommands, addTerminalCommand } = useTerminal();
 
@@ -15,7 +15,7 @@ function AppContent() {
       switch (lastEvent.event) {
         case 'component_switch':
           if (lastEvent.data.component) {
-            setActiveTab(lastEvent.data.component as 'todo' | 'backlog' | 'terminal');
+            setActiveTab(lastEvent.data.component as 'todo' | 'backlog' | 'terminal' | 'approval');
           }
           break;
         case 'terminal_command_executed':

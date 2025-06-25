@@ -338,7 +338,7 @@ async def update_chart_data(chart_id: str, data: list) -> str:
 ```typescript
 // 通用 SSE Hook
 function useComponentSSE(component: string) {
-  const { lastEvent } = useSSE(`/api/events/${component}`);
+  const { lastEvent } = useSSE(`/events/${component}`);
   // 组件特定的事件处理逻辑
 }
 

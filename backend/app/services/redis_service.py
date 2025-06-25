@@ -26,7 +26,8 @@ class RedisService:
         await self.pubsub.subscribe("todo:actions")
         await self.pubsub.subscribe("backlog:actions")
         await self.pubsub.subscribe("terminal:actions")
-        print("Successfully subscribed to todo:actions, backlog:actions, and terminal:actions")
+        await self.pubsub.subscribe("approval:requests")
+        print("Successfully subscribed to todo:actions, backlog:actions, terminal:actions, and approval:requests")
         
     async def disconnect(self):
         """Disconnect from Redis."""
@@ -47,8 +48,14 @@ class RedisService:
             if message["type"] == "message":
                 try:
                     print(f"Received Redis message: {message}")
-                    data = json.loads(message["data"])
-                    await self._process_message(data)
+                    channel = message["channel"].decode() if isinstance(message["channel"], bytes) else message["channel"]
+                    
+                    if channel == "approval:requests":
+                        data = json.loads(message["data"])
+                        await self._handle_approval_request(data)
+                    else:
+                        data = json.loads(message["data"])
+                        await self._process_message(data)
                 except Exception as e:
                     print(f"Error processing message: {e}")
                     
@@ -69,6 +76,41 @@ class RedisService:
             await self._handle_terminal_action(message)
         else:
             print(f"Unknown message type: {message_type}")
+    
+    async def _handle_approval_request(self, data: dict):
+        """Handle approval requests from MCP server."""
+        try:
+            import time
+            from ..models.approval import Approval
+            from ..services.approval_service import approval_service
+            from ..main import sse_service
+            
+            # 检查消息格式，提取 payload 数据
+            payload = data.get("payload", data)  # 如果有 payload 字段则使用，否则使用整个数据
+            
+            approval = Approval(
+                id=payload.get("id", f"approval-{int(time.time())}"),
+                session_id=payload.get("session_id", "default_session"),
+                function_call_id=payload.get("function_call_id", payload.get("id", f"func-{int(time.time())}")),
+                description=payload.get("description", "Approval request"),
+                status="pending",
+                created_at=int(time.time() * 1000),
+                updated_at=int(time.time() * 1000)
+            )
+            
+            await approval_service.create_approval(approval)
+            
+            await sse_service.send_event("approval_request", {
+                "approval": approval.dict(),
+                "message": "New approval request received"
+            })
+            
+            print(f"Created approval request: {approval.id}")
+            
+        except Exception as e:
+            print(f"Error handling approval request: {str(e)}")
+            import traceback
+            traceback.print_exc()
             
     async def _handle_todo_action(self, message: dict):
         """Handle todo action messages."""

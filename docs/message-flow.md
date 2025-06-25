@@ -105,7 +105,7 @@ SSE 连接 → 事件接收 → 数据解析 → 状态同步 → UI 重新渲�
 
 1. **SSE 连接建立**: 前端与后端建立持久连接
    ```typescript
-   const eventSource = new EventSource('/api/events');
+   const eventSource = new EventSource('/events');
    eventSource.onmessage = (event) => {
        const data = JSON.parse(event.data);
        handleSSEEvent(data);

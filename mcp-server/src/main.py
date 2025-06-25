@@ -4,19 +4,15 @@ MCP Server for UI Component Demo
 This server provides MCP tools for controlling UI components through Redis messaging.
 """
 
-import asyncio
-import json
 import os
-from typing import Optional
-
 from fastmcp import FastMCP
-from redis.asyncio import Redis
 from mcp.server.session import ServerSession
 
 from .redis_client import RedisClient
 from .tools.todo_tools import register_todo_tools
 from .tools.backlog_tools import register_backlog_tools
 from .tools.terminal_tools import register_terminal_tools
+from .tools.approval_tools import register_approval_tools
 
 old_received_request = ServerSession._received_request
 
@@ -43,6 +39,7 @@ def main():
     register_todo_tools(mcp, redis_client)
     register_backlog_tools(mcp, redis_client)
     register_terminal_tools(mcp, redis_client)
+    register_approval_tools(mcp, redis_client)
     
     print(f"Starting MCP server on port {port} with SSE transport")
     
