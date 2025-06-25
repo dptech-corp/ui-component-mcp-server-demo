@@ -1,4 +1,3 @@
-import React from 'react';
 import { useApprovals } from '@/hooks/useApprovals';
 import { ApprovalItem } from './ApprovalItem';
 

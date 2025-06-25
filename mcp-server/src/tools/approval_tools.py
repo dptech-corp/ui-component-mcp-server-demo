@@ -1,13 +1,14 @@
 import asyncio
+import os
 import json
 import uuid
 import redis.asyncio as redis
-from typing import Dict, Any, Optional
-import os
+from typing import Dict, Any
+from ..redis_client import RedisClient
 
 _pending_approvals: Dict[str, Dict[str, Any]] = {}
 
-async def wait_for_approval(description: str) -> Dict[str, Any]:
+async def wait_for_approval(description: str, redis_client: RedisClient) -> Dict[str, Any]:
     """
     Request human approval for an action.
     
@@ -32,9 +33,6 @@ async def wait_for_approval(description: str) -> Dict[str, Any]:
     }
     
     try:
-        redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
-        redis_client = redis.from_url(redis_url)
-        
         approval_data = {
             "id": ticket_id,
             "session_id": "default_session",
@@ -43,8 +41,15 @@ async def wait_for_approval(description: str) -> Dict[str, Any]:
             "status": "pending"
         }
         
-        await redis_client.publish("approval:requests", json.dumps(approval_data))
-        await redis_client.close()
+        # 使用 RedisClient 的 publish_message 方法发布消息
+        # 格式化消息以符合后端期望的格式
+        message = {
+            "type": "approval_request",
+            "component": "approval",
+            "payload": approval_data
+        }
+        
+        await redis_client.publish_message("approval:requests", message)
         
         print(f"Published approval request: {ticket_id}")
         
@@ -105,33 +110,14 @@ async def update_approval_result(ticket_id: str, status: str, result: str) -> bo
     print(f"Updated approval {ticket_id}: {status} - {result}")
     return True
 
-APPROVAL_TOOLS = [
-    {
-        "name": "wait_for_approval",
-        "description": "Request human approval before proceeding with an action",
-        "inputSchema": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string",
-                    "description": "Description of the action requiring approval"
-                }
-            },
-            "required": ["description"]
-        }
-    },
-    {
-        "name": "check_approval_status", 
-        "description": "Check the status of a pending approval request",
-        "inputSchema": {
-            "type": "object",
-            "properties": {
-                "ticket_id": {
-                    "type": "string",
-                    "description": "The ticket ID returned by wait_for_approval"
-                }
-            },
-            "required": ["ticket_id"]
-        }
-    }
-]
+
+def register_approval_tools(mcp, redis_client: RedisClient):
+    """Register approval tools with the MCP server."""
+    
+    @mcp.tool()
+    async def ask_for_approval(description: str) -> dict:
+        """Request human approval before proceeding with an action"""
+        return await wait_for_approval(description, redis_client)
+   
+    print("Registered approval tools: ask_for_approval")
+

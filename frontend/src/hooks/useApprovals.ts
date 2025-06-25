@@ -1,15 +1,18 @@
+// @ts-ignore - 忽略 React 模块类型声明错误
 import { useState, useEffect } from 'react';
-import { Approval } from '@/types/approval';
+import type { Approval } from '@/types/approval';
 
 export function useApprovals() {
   const [approvals, setApprovals] = useState<Approval[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
   const fetchApprovals = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/approvals');
+      const response = await fetch(`${apiUrl}/api/approvals`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -26,7 +29,7 @@ export function useApprovals() {
 
   const approveRequest = async (approvalId: string) => {
     try {
-      const response = await fetch(`/api/approvals/${approvalId}/approve`, {
+      const response = await fetch(`${apiUrl}/api/approvals/${approvalId}/approve`, {
         method: 'POST',
       });
       if (!response.ok) {
@@ -41,7 +44,7 @@ export function useApprovals() {
 
   const rejectRequest = async (approvalId: string) => {
     try {
-      const response = await fetch(`/api/approvals/${approvalId}/reject`, {
+      const response = await fetch(`${apiUrl}/api/approvals/${approvalId}/reject`, {
         method: 'POST',
       });
       if (!response.ok) {
@@ -59,7 +62,7 @@ export function useApprovals() {
   }, []);
 
   useEffect(() => {
-    const eventSource = new EventSource('/api/events');
+    const eventSource = new EventSource(`${apiUrl}/events`);
     
     eventSource.onmessage = (event) => {
       try {
@@ -82,12 +85,12 @@ export function useApprovals() {
   }, []);
 
   const addApproval = (approval: Approval) => {
-    setApprovals(prev => [...prev, approval]);
+    setApprovals((prev: Approval[]) => [...prev, approval]);
   };
 
   const updateApproval = (updatedApproval: Approval) => {
-    setApprovals(prev => 
-      prev.map(approval => 
+    setApprovals((prev: Approval[]) => 
+      prev.map((approval: Approval) => 
         approval.id === updatedApproval.id ? updatedApproval : approval
       )
     );

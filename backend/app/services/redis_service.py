@@ -85,11 +85,14 @@ class RedisService:
             from ..services.approval_service import approval_service
             from ..main import sse_service
             
+            # 检查消息格式，提取 payload 数据
+            payload = data.get("payload", data)  # 如果有 payload 字段则使用，否则使用整个数据
+            
             approval = Approval(
-                id=data.get("id", f"approval-{int(time.time())}"),
-                session_id=data.get("session_id", "default_session"),
-                function_call_id=data.get("function_call_id", data.get("id", f"func-{int(time.time())}")),
-                description=data.get("description", "Approval request"),
+                id=payload.get("id", f"approval-{int(time.time())}"),
+                session_id=payload.get("session_id", "default_session"),
+                function_call_id=payload.get("function_call_id", payload.get("id", f"func-{int(time.time())}")),
+                description=payload.get("description", "Approval request"),
                 status="pending",
                 created_at=int(time.time() * 1000),
                 updated_at=int(time.time() * 1000)

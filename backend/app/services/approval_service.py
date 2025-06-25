@@ -39,12 +39,12 @@ class ApprovalService:
         async with database.pool.acquire() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
-                    "SELECT id, session_id, function_call_id, description, status, created_at, updated_at FROM approvals WHERE id = %s",
+                    "SELECT id, session_id, function_call_id, description, status, created_at, updated_at, result FROM approvals WHERE id = %s",
                     (approval_id,)
                 )
                 row = await cursor.fetchone()
                 
-                if row and len(row) >= 7:
+                if row and len(row) >= 8:
                     return Approval(
                         id=row[0],
                         session_id=row[1],
@@ -53,7 +53,7 @@ class ApprovalService:
                         status=row[4],
                         created_at=row[5],
                         updated_at=row[6],
-                        result=None
+                        result=row[7]
                     )
                 return None
     
@@ -88,7 +88,7 @@ class ApprovalService:
         async with database.pool.acquire() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
-                    "SELECT id, session_id, function_call_id, description, status, created_at, updated_at FROM approvals ORDER BY created_at DESC"
+                    "SELECT id, session_id, function_call_id, description, status, created_at, updated_at, result FROM approvals ORDER BY created_at DESC"
                 )
                 rows = await cursor.fetchall()
                 print(f"DEBUG: Query executed, found {len(rows)} rows")
@@ -105,7 +105,7 @@ class ApprovalService:
                             status=row[4] if len(row) > 4 else "pending",
                             created_at=row[5] if len(row) > 5 else 0,
                             updated_at=row[6] if len(row) > 6 else 0,
-                            result=None
+                            result=row[7] if len(row) > 7 else None
                         )
                         approvals.append(approval)
                     except Exception as e:
