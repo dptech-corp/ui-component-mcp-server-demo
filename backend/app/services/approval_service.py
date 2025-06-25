@@ -12,12 +12,7 @@ class ApprovalService:
         """Create a new approval request."""
         print(f"DEBUG: create_approval called with approval: {approval}")
         
-        if not database.pool:
-            print("DEBUG: Database pool is None, connecting...")
-            await database.connect()
-            print(f"DEBUG: After connect, database.pool is None: {database.pool is None}")
-        
-        async with database.pool.acquire() as conn:
+        async with await database.get_connection() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
                     """INSERT INTO approvals 
@@ -33,10 +28,7 @@ class ApprovalService:
     
     async def get_approval(self, approval_id: str) -> Optional[Approval]:
         """Get an approval request by ID."""
-        if not database.pool:
-            await database.connect()
-        
-        async with database.pool.acquire() as conn:
+        async with await database.get_connection() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
                     "SELECT id, session_id, function_call_id, description, status, created_at, updated_at, result FROM approvals WHERE id = %s",
@@ -59,12 +51,9 @@ class ApprovalService:
     
     async def update_approval_status(self, approval_id: str, status: str, result: Optional[str] = None) -> Optional[Approval]:
         """Update the status of an approval request."""
-        if not database.pool:
-            await database.connect()
-        
         updated_at = int(time.time() * 1000)
         
-        async with database.pool.acquire() as conn:
+        async with await database.get_connection() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
                     "UPDATE approvals SET status = %s, result = %s, updated_at = %s WHERE id = %s",
@@ -78,14 +67,9 @@ class ApprovalService:
     
     async def get_all_approvals(self) -> List[Approval]:
         """Get all approval requests."""
-        print(f"DEBUG: get_all_approvals called, database.pool is None: {database.pool is None}")
+        print(f"DEBUG: get_all_approvals called")
         
-        if not database.pool:
-            print("DEBUG: Database pool is None, connecting...")
-            await database.connect()
-            print(f"DEBUG: After connect, database.pool is None: {database.pool is None}")
-        
-        async with database.pool.acquire() as conn:
+        async with await database.get_connection() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
                     "SELECT id, session_id, function_call_id, description, status, created_at, updated_at, result FROM approvals ORDER BY created_at DESC"
