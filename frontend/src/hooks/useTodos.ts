@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { TodoItem, TodoCreateRequest, TodoUpdateRequest, BacklogItem } from '@/types/todo';
-import { useSSE } from './useSSE';
+import { useSSE } from '@/contexts/SSEContext';
 
 interface UseTodosReturn {
   todos: TodoItem[];

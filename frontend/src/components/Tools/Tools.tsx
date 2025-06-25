@@ -7,7 +7,6 @@ import { TodoStats } from './TodoStats';
 import { BacklogInput } from './BacklogInput';
 import { BacklogItemComponent } from './BacklogItem';
 import { TerminalOutput } from './TerminalOutput';
-import { useSSE } from '@/hooks/useSSE';
 import { useTodos } from '@/hooks/useTodos';
 
 interface ToolsProps {
@@ -33,20 +32,6 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
     deleteBacklogItem,
     moveToTodo
   } = useTodos();
-  const { lastEvent } = useSSE();
-
-  useEffect(() => {
-    if (lastEvent) {
-      switch (lastEvent.event) {
-        case 'todo_added':
-          break;
-        case 'todo_updated':
-          break;
-        case 'todo_deleted':
-          break;
-      }
-    }
-  }, [lastEvent]);
 
   useEffect(() => {
     fetchTodos();
