@@ -7,12 +7,14 @@ import { TodoStats } from './TodoStats';
 import { BacklogInput } from './BacklogInput';
 import { BacklogItemComponent } from './BacklogItem';
 import { TerminalOutput } from './TerminalOutput';
+import { ApprovalList } from '../Approval/ApprovalList';
 import { useSSE } from '@/hooks/useSSE';
 import { useTodos } from '@/hooks/useTodos';
+import { useApprovals } from '@/hooks/useApprovals';
 
 interface ToolsProps {
-  activeTab: 'todo' | 'backlog' | 'terminal';
-  setActiveTab: (tab: 'todo' | 'backlog' | 'terminal') => void;
+  activeTab: 'todo' | 'backlog' | 'terminal' | 'approval';
+  setActiveTab: (tab: 'todo' | 'backlog' | 'terminal' | 'approval') => void;
   terminalCommands: TerminalCommand[];
   isConnected: boolean;
 }
@@ -34,6 +36,7 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
     moveToTodo
   } = useTodos();
   const { lastEvent } = useSSE();
+  const { addApproval, updateApproval } = useApprovals();
 
   useEffect(() => {
     if (lastEvent) {
@@ -44,9 +47,20 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
           break;
         case 'todo_deleted':
           break;
+        case 'approval_request':
+          if (lastEvent.data.approval) {
+            addApproval(lastEvent.data.approval);
+            setActiveTab('approval');
+          }
+          break;
+        case 'approval_updated':
+          if (lastEvent.data.approval) {
+            updateApproval(lastEvent.data.approval);
+          }
+          break;
       }
     }
-  }, [lastEvent]);
+  }, [lastEvent, addApproval, updateApproval]);
 
   useEffect(() => {
     fetchTodos();
@@ -167,6 +181,16 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
         >
           Terminal
         </button>
+        <button
+          onClick={() => setActiveTab('approval')}
+          className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
+            activeTab === 'approval'
+              ? 'bg-white border-b-2 border-blue-500 text-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Approval
+        </button>
       </div>
 
       {/* 错误提示 */}
@@ -240,9 +264,13 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
             )}
           </div>
         </>
-      ) : (
+      ) : activeTab === 'terminal' ? (
         <>
           <TerminalOutput commands={terminalCommands} disabled={loading} />
+        </>
+      ) : (
+        <>
+          <ApprovalList />
         </>
       )}
 

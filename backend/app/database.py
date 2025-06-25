@@ -47,7 +47,7 @@ class Database:
             self.pool = None
     
     async def create_tables(self):
-        """Create the todos and backlog tables if they don't exist."""
+        """Create the todos, backlog, and approvals tables if they don't exist."""
         if not self.pool:
             raise RuntimeError("Database not connected")
         
@@ -71,6 +71,22 @@ class Database:
                         description TEXT,
                         created_at BIGINT NOT NULL,
                         updated_at BIGINT NOT NULL
+                    )
+                """)
+                
+                await cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS approvals (
+                        id VARCHAR(255) PRIMARY KEY,
+                        session_id VARCHAR(255) NOT NULL,
+                        function_call_id VARCHAR(255) NOT NULL,
+                        description TEXT NOT NULL,
+                        status VARCHAR(50) DEFAULT 'pending',
+                        created_at BIGINT NOT NULL,
+                        updated_at BIGINT NOT NULL,
+                        result TEXT,
+                        INDEX idx_session_id (session_id),
+                        INDEX idx_function_call_id (function_call_id),
+                        INDEX idx_status (status)
                     )
                 """)
                 await conn.commit()
