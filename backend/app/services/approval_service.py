@@ -39,12 +39,12 @@ class ApprovalService:
         async with database.pool.acquire() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
-                    "SELECT * FROM approvals WHERE id = %s",
+                    "SELECT id, session_id, function_call_id, description, status, created_at, updated_at FROM approvals WHERE id = %s",
                     (approval_id,)
                 )
                 row = await cursor.fetchone()
                 
-                if row:
+                if row and len(row) >= 7:
                     return Approval(
                         id=row[0],
                         session_id=row[1],
@@ -53,7 +53,7 @@ class ApprovalService:
                         status=row[4],
                         created_at=row[5],
                         updated_at=row[6],
-                        result=row[7]
+                        result=None
                     )
                 return None
     
@@ -88,23 +88,30 @@ class ApprovalService:
         async with database.pool.acquire() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
-                    "SELECT * FROM approvals ORDER BY created_at DESC"
+                    "SELECT id, session_id, function_call_id, description, status, created_at, updated_at FROM approvals ORDER BY created_at DESC"
                 )
                 rows = await cursor.fetchall()
                 print(f"DEBUG: Query executed, found {len(rows)} rows")
                 
-                return [
-                    Approval(
-                        id=row[0],
-                        session_id=row[1],
-                        function_call_id=row[2],
-                        description=row[3],
-                        status=row[4],
-                        created_at=row[5],
-                        updated_at=row[6],
-                        result=row[7]
-                    )
-                    for row in rows
-                ]
+                approvals = []
+                for row in rows:
+                    try:
+                        print(f"DEBUG: Processing row with {len(row)} columns: {row}")
+                        approval = Approval(
+                            id=row[0] if len(row) > 0 else "",
+                            session_id=row[1] if len(row) > 1 else "",
+                            function_call_id=row[2] if len(row) > 2 else "",
+                            description=row[3] if len(row) > 3 else "",
+                            status=row[4] if len(row) > 4 else "pending",
+                            created_at=row[5] if len(row) > 5 else 0,
+                            updated_at=row[6] if len(row) > 6 else 0,
+                            result=None
+                        )
+                        approvals.append(approval)
+                    except Exception as e:
+                        print(f"DEBUG: Error processing row {row}: {str(e)}")
+                        continue
+                
+                return approvals
 
 approval_service = ApprovalService()
