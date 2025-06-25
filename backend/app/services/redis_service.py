@@ -26,7 +26,8 @@ class RedisService:
         await self.pubsub.subscribe("todo:actions")
         await self.pubsub.subscribe("backlog:actions")
         await self.pubsub.subscribe("terminal:actions")
-        print("Successfully subscribed to todo:actions, backlog:actions, and terminal:actions")
+        await self.pubsub.subscribe("approval:requests")
+        print("Successfully subscribed to todo:actions, backlog:actions, terminal:actions, and approval:requests")
         
     async def disconnect(self):
         """Disconnect from Redis."""
@@ -67,6 +68,8 @@ class RedisService:
             await self._handle_backlog_action(message)
         elif message_type == "terminal_action":
             await self._handle_terminal_action(message)
+        elif message_type == "approval_request":
+            await self._handle_approval_request(message)
         else:
             print(f"Unknown message type: {message_type}")
             
@@ -190,3 +193,29 @@ class RedisService:
                         
         except Exception as e:
             print(f"Error handling terminal action: {e}")
+            
+    async def _handle_approval_request(self, message: dict):
+        """Handle approval request messages."""
+        from ..main import sse_service
+        from ..services.approval_service import ApprovalService
+        from ..models.approval import ApprovalCreate
+        
+        payload = message.get("payload", {})
+        
+        try:
+            approval_service = ApprovalService()
+            approval_data = ApprovalCreate(
+                session_id=payload.get("session_id", ""),
+                function_call_id=payload.get("function_call_id", ""),
+                description=payload.get("description", ""),
+                status="pending"
+            )
+            
+            approval = await approval_service.create_approval(approval_data)
+            
+            await sse_service.send_event("approval_request", {
+                "approval": approval.dict()
+            })
+                        
+        except Exception as e:
+            print(f"Error handling approval request: {e}")
