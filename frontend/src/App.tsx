@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Tools } from '@/components/Tools/Tools';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
-import { useSSE } from '@/hooks/useSSE';
+import { useSSE, SSEProvider } from '@/contexts/SSEContext';
 import { useTerminal } from '@/hooks/useTerminal';
 import './App.css';
 
-function App() {
+function AppContent() {
   const [activeTab, setActiveTab] = useState<'todo' | 'backlog' | 'terminal' | 'approval'>('todo');
   const { isConnected, lastEvent } = useSSE();
   const { terminalCommands, addTerminalCommand } = useTerminal();
@@ -92,6 +92,14 @@ function App() {
         </Panel>
       </PanelGroup>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <SSEProvider>
+      <AppContent />
+    </SSEProvider>
   );
 }
 

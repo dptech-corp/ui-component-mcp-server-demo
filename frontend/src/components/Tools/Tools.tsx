@@ -8,9 +8,9 @@ import { BacklogInput } from './BacklogInput';
 import { BacklogItemComponent } from './BacklogItem';
 import { TerminalOutput } from './TerminalOutput';
 import { ApprovalList } from '../Approval/ApprovalList';
-import { useSSE } from '@/hooks/useSSE';
 import { useTodos } from '@/hooks/useTodos';
 import { useApprovals } from '@/hooks/useApprovals';
+import { useSSE } from '@/contexts/SSEContext';
 
 interface ToolsProps {
   activeTab: 'todo' | 'backlog' | 'terminal' | 'approval';

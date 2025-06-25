@@ -1,24 +1,26 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 
 interface SSEEvent {
   event: string;
   data: any;
 }
 
-interface UseSSEReturn {
+interface SSEContextType {
   isConnected: boolean;
   lastEvent: SSEEvent | null;
   error: string | null;
 }
 
-export function useSSE(url?: string): UseSSEReturn {
+const SSEContext = createContext<SSEContextType | undefined>(undefined);
+
+export function SSEProvider({ children }: { children: React.ReactNode }) {
   const [isConnected, setIsConnected] = useState(false);
   const [lastEvent, setLastEvent] = useState<SSEEvent | null>(null);
   const [error, setError] = useState<string | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
   const reconnectTimeoutRef = useRef<number | null>(null);
 
-  const sseUrl = url || `${import.meta.env.VITE_SSE_URL || 'http://localhost:8000/events'}`;
+  const sseUrl = `${import.meta.env.VITE_SSE_URL || 'http://localhost:8000/events'}`;
 
   const connect = () => {
     try {
@@ -84,15 +86,22 @@ export function useSSE(url?: string): UseSSEReturn {
 
   useEffect(() => {
     connect();
-
     return () => {
       disconnect();
     };
   }, [sseUrl]);
 
-  return {
-    isConnected,
-    lastEvent,
-    error
-  };
+  return (
+    <SSEContext.Provider value={{ isConnected, lastEvent, error }}>
+      {children}
+    </SSEContext.Provider>
+  );
+}
+
+export function useSSE() {
+  const context = useContext(SSEContext);
+  if (context === undefined) {
+    throw new Error('useSSE must be used within an SSEProvider');
+  }
+  return context;
 }
