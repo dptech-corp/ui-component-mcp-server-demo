@@ -30,6 +30,9 @@ ServerSession._received_request = _received_request_wrapper
 
 def main():
     """Main entry point for the MCP server."""
+
+    # TODO P1 改造成 google adk mcp toolset 来使用 context, long running 等
+    
     redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
     port = int(os.getenv("MCP_PORT", "8001"))
     
