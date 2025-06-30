@@ -44,6 +44,7 @@ services:
       - REDIS_URL=redis://redis:6379
       - MCP_PORT=8001
       - LOG_LEVEL=INFO
+      - CODE_INTERPRETER_TOKEN=1234
     depends_on:
       redis:
         condition: service_healthy
