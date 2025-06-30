@@ -16,7 +16,7 @@ class BacklogService:
         
     async def get_all_backlogs(self) -> List[Backlog]:
         """Get all backlog items."""
-        async with await database.get_connection() as conn:
+        async with database.get_connection() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
                     "SELECT id, title, description, created_at, updated_at FROM backlog ORDER BY created_at DESC"
@@ -38,7 +38,7 @@ class BacklogService:
         
     async def get_backlog(self, backlog_id: str) -> Optional[Backlog]:
         """Get a specific backlog item."""
-        async with await database.get_connection() as conn:
+        async with database.get_connection() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
                     "SELECT id, title, description, created_at, updated_at FROM backlog WHERE id = %s",
@@ -62,7 +62,7 @@ class BacklogService:
         backlog_id = str(uuid.uuid4())
         timestamp = int(time.time() * 1000)
         
-        async with await database.get_connection() as conn:
+        async with database.get_connection() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
                     "INSERT INTO backlog (id, title, description, created_at, updated_at) VALUES (%s, %s, %s, %s, %s)",
@@ -102,7 +102,7 @@ class BacklogService:
             update_values.append(timestamp)
             update_values.append(backlog_id)
             
-            async with await database.get_connection() as conn:
+            async with database.get_connection() as conn:
                 async with conn.cursor() as cursor:
                     await cursor.execute(
                         f"UPDATE backlog SET {', '.join(update_fields)} WHERE id = %s",
@@ -116,7 +116,7 @@ class BacklogService:
         
     async def delete_backlog(self, backlog_id: str) -> bool:
         """Delete a backlog item."""
-        async with await database.get_connection() as conn:
+        async with database.get_connection() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute("DELETE FROM backlog WHERE id = %s", (backlog_id,))
                 rowcount = cursor.rowcount

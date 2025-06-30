@@ -12,7 +12,7 @@ class ApprovalService:
         """Create a new approval request."""
         print(f"DEBUG: create_approval called with approval: {approval}")
         
-        async with await database.get_connection() as conn:
+        async with database.get_connection() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
                     """INSERT INTO approvals 
@@ -28,7 +28,7 @@ class ApprovalService:
     
     async def get_approval(self, approval_id: str) -> Optional[Approval]:
         """Get an approval request by ID."""
-        async with await database.get_connection() as conn:
+        async with database.get_connection() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
                     "SELECT id, session_id, function_call_id, description, status, created_at, updated_at, result FROM approvals WHERE id = %s",
@@ -53,7 +53,7 @@ class ApprovalService:
         """Update the status of an approval request."""
         updated_at = int(time.time() * 1000)
         
-        async with await database.get_connection() as conn:
+        async with database.get_connection() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
                     "UPDATE approvals SET status = %s, result = %s, updated_at = %s WHERE id = %s",
@@ -69,7 +69,7 @@ class ApprovalService:
         """Get all approval requests."""
         print(f"DEBUG: get_all_approvals called")
         
-        async with await database.get_connection() as conn:
+        async with database.get_connection() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
                     "SELECT id, session_id, function_call_id, description, status, created_at, updated_at, result FROM approvals ORDER BY created_at DESC"

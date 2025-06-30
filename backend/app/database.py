@@ -3,6 +3,7 @@
 import aiomysql
 import os
 from typing import Optional
+from contextlib import asynccontextmanager
 
 
 class Database:
@@ -91,11 +92,26 @@ class Database:
                 """)
                 await conn.commit()
     
+    @asynccontextmanager
     async def get_connection(self):
-        """Get a database connection from the pool."""
+        """Get a database connection from the pool.
+        
+        Returns an async context manager that yields a connection and automatically closes it.
+        
+        Usage:
+            async with database.get_connection() as conn:
+                async with conn.cursor() as cursor:
+                    await cursor.execute(...)
+                await conn.commit()
+        """
         if not self.pool:
             await self.connect()
-        return self.pool.acquire()
+        
+        conn = await self.pool.acquire()
+        try:
+            yield conn
+        finally:
+            conn.close()
 
 
 database = Database()

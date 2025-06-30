@@ -16,7 +16,7 @@ class TodoService:
         
     async def get_all_todos(self) -> List[Todo]:
         """Get all todo items."""
-        async with await database.get_connection() as conn:
+        async with database.get_connection() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
                     "SELECT id, title, description, completed, created_at, updated_at FROM todos ORDER BY created_at DESC"
@@ -39,7 +39,7 @@ class TodoService:
         
     async def get_todo(self, todo_id: str) -> Optional[Todo]:
         """Get a specific todo item."""
-        async with await database.get_connection() as conn:
+        async with database.get_connection() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
                     "SELECT id, title, description, completed, created_at, updated_at FROM todos WHERE id = %s",
@@ -64,7 +64,7 @@ class TodoService:
         todo_id = str(uuid.uuid4())
         timestamp = int(time.time() * 1000)
         
-        async with await database.get_connection() as conn:
+        async with database.get_connection() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
                     "INSERT INTO todos (id, title, description, completed, created_at, updated_at) VALUES (%s, %s, %s, %s, %s, %s)",
@@ -105,7 +105,7 @@ class TodoService:
             update_values.append(timestamp)
             update_values.append(todo_id)
             
-            async with await database.get_connection() as conn:
+            async with database.get_connection() as conn:
                 async with conn.cursor() as cursor:
                     await cursor.execute(
                         f"UPDATE todos SET {', '.join(update_fields)} WHERE id = %s",
@@ -119,7 +119,7 @@ class TodoService:
         
     async def delete_todo(self, todo_id: str) -> bool:
         """Delete a todo item."""
-        async with await database.get_connection() as conn:
+        async with database.get_connection() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute("DELETE FROM todos WHERE id = %s", (todo_id,))
                 await conn.commit()
@@ -135,7 +135,7 @@ class TodoService:
         new_completed = not todo.completed
         timestamp = int(time.time() * 1000)
         
-        async with await database.get_connection() as conn:
+        async with database.get_connection() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
                     "UPDATE todos SET completed = %s, updated_at = %s WHERE id = %s",
