@@ -61,41 +61,6 @@ export function useApprovals() {
     fetchApprovals();
   }, []);
 
-  useEffect(() => {
-    const eventSource = new EventSource(`${apiUrl}/events`);
-    
-    eventSource.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'approval_request' || data.type === 'approval_updated') {
-          fetchApprovals(); // Refresh approvals when new ones arrive or are updated
-        }
-      } catch (err) {
-        console.error('Error parsing SSE event:', err);
-      }
-    };
-
-    eventSource.onerror = (error) => {
-      console.error('SSE connection error:', error);
-    };
-
-    return () => {
-      eventSource.close();
-    };
-  }, []);
-
-  const addApproval = (approval: Approval) => {
-    setApprovals((prev: Approval[]) => [...prev, approval]);
-  };
-
-  const updateApproval = (updatedApproval: Approval) => {
-    setApprovals((prev: Approval[]) => 
-      prev.map((approval: Approval) => 
-        approval.id === updatedApproval.id ? updatedApproval : approval
-      )
-    );
-  };
-
   return {
     approvals,
     loading,
@@ -103,7 +68,5 @@ export function useApprovals() {
     approveRequest,
     rejectRequest,
     refetch: fetchApprovals,
-    addApproval,
-    updateApproval,
   };
 }

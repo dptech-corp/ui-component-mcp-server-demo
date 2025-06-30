@@ -92,7 +92,11 @@ export function SSEProvider({ children }: { children: React.ReactNode }) {
   }, [sseUrl]);
 
   return (
-    <SSEContext.Provider value={{ isConnected, lastEvent, error }}>
+    <SSEContext.Provider value={{ 
+      isConnected, 
+      lastEvent, 
+      error
+    }}>
       {children}
     </SSEContext.Provider>
   );
