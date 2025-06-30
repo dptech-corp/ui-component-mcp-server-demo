@@ -37,6 +37,29 @@ class RedisService:
         if self.redis:
             await self.redis.close()
             
+    async def publish_message(self, channel: str, message: dict) -> bool:
+        """
+        Publish a message to a Redis channel.
+        
+        Args:
+            channel: The Redis channel to publish to
+            message: The message to publish (will be converted to JSON)
+            
+        Returns:
+            True if the message was published successfully, False otherwise
+        """
+        if not self.redis:
+            print("No Redis connection available")
+            return False
+            
+        try:
+            message_str = json.dumps(message)
+            await self.redis.publish(channel, message_str)
+            return True
+        except Exception as e:
+            print(f"Error publishing message to {channel}: {str(e)}")
+            return False
+            
     async def listen_for_messages(self):
         """Listen for Redis messages and process them."""
         if not self.pubsub:

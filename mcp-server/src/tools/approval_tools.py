@@ -111,6 +111,42 @@ async def update_approval_result(ticket_id: str, status: str, result: str) -> bo
     return True
 
 
+async def listen_for_approval_results(redis_client: RedisClient):
+    """Listen for approval results from the backend."""
+    try:
+        import asyncio
+        import json
+        
+        # Create a new Redis connection for subscribing
+        pubsub = redis_client.redis.pubsub()
+        await pubsub.subscribe("approval:results")
+        
+        print("Subscribed to approval:results channel")
+        
+        # Listen for messages in a background task
+        async def listener():
+            async for message in pubsub.listen():
+                if message["type"] == "message":
+                    try:
+                        data = json.loads(message["data"])
+                        payload = data.get("payload", {})
+                        
+                        ticket_id = payload.get("ticket_id")
+                        status = payload.get("status")
+                        result = payload.get("result")
+                        
+                        if ticket_id and status:
+                            await update_approval_result(ticket_id, status, result)
+                            print(f"Updated approval {ticket_id} from Redis: {status} - {result}")
+                    except Exception as e:
+                        print(f"Error processing approval result: {str(e)}")
+        
+        # Start the listener task
+        asyncio.create_task(listener())
+        
+    except Exception as e:
+        print(f"Error setting up approval results listener: {str(e)}")
+
 def register_approval_tools(mcp, redis_client: RedisClient):
     """Register approval tools with the MCP server."""
     
@@ -118,6 +154,11 @@ def register_approval_tools(mcp, redis_client: RedisClient):
     async def ask_for_approval(description: str) -> dict:
         """Request human approval before proceeding with an action"""
         return await wait_for_approval(description, redis_client)
+    
+    print("Registered approval tools: ask_for_approval") 
+    # TODO wait
+    # Start listening for approval results
+    # asyncio.create_task(listen_for_approval_results(redis_client))
    
-    print("Registered approval tools: ask_for_approval")
+    print("Registered approval tools: ask_for_approval and started approval results listener")
 
