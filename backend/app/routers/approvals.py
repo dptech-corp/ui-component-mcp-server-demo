@@ -27,23 +27,14 @@ async def get_approval(approval_id: str):
 async def approve_request(approval_id: str):
     """Approve an approval request."""
     try:
+        from ..main import sse_service
+        
+        # Update approval status in the database
         approval = await approval_service.update_approval_status(approval_id, "approved", "Request approved by human")
         if not approval:
             raise HTTPException(status_code=404, detail="Approval not found")
         
-        try:
-            import sys
-            import os
-            mcp_server_path = os.path.join(os.path.dirname(__file__), '../../../mcp-server/src')
-            sys.path.insert(0, mcp_server_path)
-            from tools.approval_tools import update_approval_result
-            await update_approval_result(approval.function_call_id, "approved", "Request approved by human")
-        except Exception as mcp_error:
-            print(f"Failed to update MCP tool status: {str(mcp_error)}")
-            import traceback
-            traceback.print_exc()
-        
-        from ..main import sse_service
+        # Send SSE event for real-time updates
         await sse_service.send_event("approval_updated", {
             "approval": approval.dict(),
             "action": "approved"
@@ -64,23 +55,14 @@ async def approve_request(approval_id: str):
 async def reject_request(approval_id: str):
     """Reject an approval request."""
     try:
+        from ..main import sse_service
+        
+        # Update approval status in the database
         approval = await approval_service.update_approval_status(approval_id, "rejected", "Request rejected by human")
         if not approval:
             raise HTTPException(status_code=404, detail="Approval not found")
         
-        try:
-            import sys
-            import os
-            mcp_server_path = os.path.join(os.path.dirname(__file__), '../../../mcp-server/src')
-            sys.path.insert(0, mcp_server_path)
-            from tools.approval_tools import update_approval_result
-            await update_approval_result(approval.function_call_id, "rejected", "Request rejected by human")
-        except Exception as mcp_error:
-            print(f"Failed to update MCP tool status: {str(mcp_error)}")
-            import traceback
-            traceback.print_exc()
-        
-        from ..main import sse_service
+        # Send SSE event for real-time updates
         await sse_service.send_event("approval_updated", {
             "approval": approval.dict(),
             "action": "rejected"
