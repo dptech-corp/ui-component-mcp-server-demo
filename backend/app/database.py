@@ -11,16 +11,7 @@ class Database:
     
     def __init__(self):
         self.pool: Optional[aiomysql.Pool] = None
-        mysql_user = os.getenv("MYSQL_USER")
-        mysql_password = os.getenv("MYSQL_PASSWORD")
-        mysql_host = os.getenv("MYSQL_HOST", "localhost")
-        mysql_port = os.getenv("MYSQL_PORT", "3306")
-        mysql_database = os.getenv("MYSQL_DATABASE")
-        
-        if not mysql_user or not mysql_password or not mysql_database:
-            raise ValueError("MYSQL_USER, MYSQL_PASSWORD, and MYSQL_DATABASE environment variables are required")
-        
-        self.database_url = f"mysql://{mysql_user}:{mysql_password}@{mysql_host}:{mysql_port}/{mysql_database}"
+        self.database_url = os.getenv("DATABASE_URL", "mysql://ui_user:ui_password@localhost:3306/ui_component_db")
     
     async def connect(self):
         """Connect to the database and create connection pool."""
