@@ -35,8 +35,8 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
     deleteBacklogItem,
     moveToTodo
   } = useTodos();
-  const { lastEvent } = useSSE();
-  const { addApproval, updateApproval } = useApprovals();
+  const { lastEvent, addApproval, updateApproval } = useSSE();
+  const { approveRequest, rejectRequest, refetch: refetchApprovals } = useApprovals();
 
   useEffect(() => {
     if (lastEvent) {

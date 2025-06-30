@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import type { Approval } from '@/types/approval';
 
 interface SSEEvent {
   event: string;
@@ -9,6 +10,10 @@ interface SSEContextType {
   isConnected: boolean;
   lastEvent: SSEEvent | null;
   error: string | null;
+  approvals: Approval[];
+  addApproval: (approval: Approval) => void;
+  updateApproval: (approval: Approval) => void;
+  setApprovals: (approvals: Approval[]) => void;
 }
 
 const SSEContext = createContext<SSEContextType | undefined>(undefined);
@@ -17,6 +22,7 @@ export function SSEProvider({ children }: { children: React.ReactNode }) {
   const [isConnected, setIsConnected] = useState(false);
   const [lastEvent, setLastEvent] = useState<SSEEvent | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [approvals, setApprovals] = useState<Approval[]>([]);
   const eventSourceRef = useRef<EventSource | null>(null);
   const reconnectTimeoutRef = useRef<number | null>(null);
 
@@ -38,6 +44,16 @@ export function SSEProvider({ children }: { children: React.ReactNode }) {
           const data = JSON.parse(event.data);
           setLastEvent(data);
           console.log('SSE event received:', data);
+          
+          if (data.type === 'approval_request' && data.data?.approval) {
+            setApprovals(prev => [...prev, data.data.approval]);
+          } else if (data.type === 'approval_updated' && data.data?.approval) {
+            setApprovals(prev => 
+              prev.map(approval => 
+                approval.id === data.data.approval.id ? data.data.approval : approval
+              )
+            );
+          }
         } catch (err) {
           console.error('Failed to parse SSE event data:', err);
         }
@@ -91,8 +107,28 @@ export function SSEProvider({ children }: { children: React.ReactNode }) {
     };
   }, [sseUrl]);
 
+  const addApproval = (approval: Approval) => {
+    setApprovals(prev => [...prev, approval]);
+  };
+
+  const updateApproval = (updatedApproval: Approval) => {
+    setApprovals(prev => 
+      prev.map(approval => 
+        approval.id === updatedApproval.id ? updatedApproval : approval
+      )
+    );
+  };
+
   return (
-    <SSEContext.Provider value={{ isConnected, lastEvent, error }}>
+    <SSEContext.Provider value={{ 
+      isConnected, 
+      lastEvent, 
+      error, 
+      approvals, 
+      addApproval, 
+      updateApproval, 
+      setApprovals 
+    }}>
       {children}
     </SSEContext.Provider>
   );

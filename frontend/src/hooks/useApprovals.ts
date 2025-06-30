@@ -1,9 +1,9 @@
 // @ts-ignore - 忽略 React 模块类型声明错误
 import { useState, useEffect } from 'react';
-import type { Approval } from '@/types/approval';
+import { useSSE } from '@/contexts/SSEContext';
 
 export function useApprovals() {
-  const [approvals, setApprovals] = useState<Approval[]>([]);
+  const { approvals, setApprovals, addApproval, updateApproval } = useSSE();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,41 +60,6 @@ export function useApprovals() {
   useEffect(() => {
     fetchApprovals();
   }, []);
-
-  useEffect(() => {
-    const eventSource = new EventSource(`${apiUrl}/events`);
-    
-    eventSource.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'approval_request' || data.type === 'approval_updated') {
-          fetchApprovals(); // Refresh approvals when new ones arrive or are updated
-        }
-      } catch (err) {
-        console.error('Error parsing SSE event:', err);
-      }
-    };
-
-    eventSource.onerror = (error) => {
-      console.error('SSE connection error:', error);
-    };
-
-    return () => {
-      eventSource.close();
-    };
-  }, []);
-
-  const addApproval = (approval: Approval) => {
-    setApprovals((prev: Approval[]) => [...prev, approval]);
-  };
-
-  const updateApproval = (updatedApproval: Approval) => {
-    setApprovals((prev: Approval[]) => 
-      prev.map((approval: Approval) => 
-        approval.id === updatedApproval.id ? updatedApproval : approval
-      )
-    );
-  };
 
   return {
     approvals,
