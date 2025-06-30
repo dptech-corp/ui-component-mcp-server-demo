@@ -6,19 +6,26 @@ control of the todo list component.
 """
 import asyncio
 import os
+import sys
 from google.adk.agents import LlmAgent
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, SseServerParams
 from dotenv import load_dotenv
 from google.adk.models.lite_llm import LiteLlm
 from google.adk.tools.long_running_tool import LongRunningFunctionTool
 from google.adk.tools.tool_context import ToolContext
-from typing import Any, override, AsyncGenerator
+from typing import Any, AsyncGenerator
 from google.adk.agents.invocation_context import InvocationContext
 from google.adk.agents import LlmAgent, BaseAgent
 from google.adk.events import Event
 from google.genai import types
 
-
+# 条件导入 override 装饰器，兼容 Python 3.11
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    # 在 Python 3.11 中创建一个空的装饰器
+    def override(func):
+        return func
 
 load_dotenv()
 
