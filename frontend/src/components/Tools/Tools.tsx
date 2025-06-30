@@ -35,8 +35,8 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
     deleteBacklogItem,
     moveToTodo
   } = useTodos();
-  const { lastEvent, addApproval, updateApproval } = useSSE();
-  const { } = useApprovals();
+  const { lastEvent } = useSSE();
+  const { approvals, loading: approvalsLoading, error: approvalsError, approveRequest, rejectRequest, refetch: refetchApprovals } = useApprovals();
 
   useEffect(() => {
     if (lastEvent) {
@@ -48,19 +48,19 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
         case 'todo_deleted':
           break;
         case 'approval_request':
-          if (lastEvent.data.approval) {
-            addApproval(lastEvent.data.approval);
+          if (lastEvent.data?.approval) {
+            refetchApprovals();
             setActiveTab('approval');
           }
           break;
         case 'approval_updated':
-          if (lastEvent.data.approval) {
-            updateApproval(lastEvent.data.approval);
+          if (lastEvent.data?.approval) {
+            refetchApprovals();
           }
           break;
       }
     }
-  }, [lastEvent, addApproval, updateApproval]);
+  }, [lastEvent, setActiveTab]);
 
   useEffect(() => {
     fetchTodos();
@@ -270,7 +270,13 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
         </>
       ) : (
         <>
-          <ApprovalList />
+          <ApprovalList 
+            approvals={approvals}
+            loading={approvalsLoading}
+            error={approvalsError}
+            onApprove={approveRequest}
+            onReject={rejectRequest}
+          />
         </>
       )}
 

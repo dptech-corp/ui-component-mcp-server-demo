@@ -1,9 +1,9 @@
 // @ts-ignore - 忽略 React 模块类型声明错误
 import { useState, useEffect } from 'react';
-import { useSSE } from '@/contexts/SSEContext';
+import type { Approval } from '@/types/approval';
 
 export function useApprovals() {
-  const { approvals, setApprovals, addApproval, updateApproval } = useSSE();
+  const [approvals, setApprovals] = useState<Approval[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -68,7 +68,5 @@ export function useApprovals() {
     approveRequest,
     rejectRequest,
     refetch: fetchApprovals,
-    addApproval,
-    updateApproval,
   };
 }
