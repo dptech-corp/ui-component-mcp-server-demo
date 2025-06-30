@@ -129,9 +129,9 @@ class BacklogService:
         from .todo_service import TodoService
         
         backlog = await self.get_backlog(backlog_id)
-        print(f"send_to_todo 0000000000: get_backlog {backlog}")
+        print(f"send_to_todo : get_backlog {backlog}")
         if not backlog:
-            print(f"send_to_todo 2222222222: backlog not found")
+            print(f"send_to_todo : backlog not found")
             return None
             
         todo_service = TodoService()
@@ -139,7 +139,7 @@ class BacklogService:
             title=backlog.title,
             description=backlog.description
         )
-        print(f"send_to_todo 1111111111: create_todo {todo}")
+        print(f"send_to_todo : create_todo {todo}")
         
         await self.delete_backlog(backlog_id)
         

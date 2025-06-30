@@ -14,9 +14,7 @@ cd /app/src
 
 # Check if SESSION_DB_URL is set and not empty
 if [ -n "${SESSION_DB_URL}" ]; then
-  echo "1111111111111111111111111111 ${SESSION_DB_URL}"
   uv run adk web --host 0.0.0.0 --port 8002 --session_service_uri $SESSION_DB_URL
 else
-  echo "222222222222222222222222222222"
   uv run adk web --host 0.0.0.0 --port 8002
 fi
