@@ -27,7 +27,8 @@ class RedisService:
         await self.pubsub.subscribe("backlog:actions")
         await self.pubsub.subscribe("terminal:actions")
         await self.pubsub.subscribe("approval:requests")
-        print("Successfully subscribed to todo:actions, backlog:actions, terminal:actions, and approval:requests")
+        await self.pubsub.subscribe("code_interpreter:actions")
+        print("Successfully subscribed to todo:actions, backlog:actions, terminal:actions, approval:requests, and code_interpreter:actions")
         
     async def disconnect(self):
         """Disconnect from Redis."""
@@ -97,6 +98,8 @@ class RedisService:
             await self._handle_backlog_action(message)
         elif message_type == "terminal_action":
             await self._handle_terminal_action(message)
+        elif message_type == "code_interpreter_action":
+            await self._handle_code_interpreter_action(message)
         else:
             print(f"Unknown message type: {message_type}")
     
@@ -255,3 +258,29 @@ class RedisService:
                         
         except Exception as e:
             print(f"Error handling terminal action: {e}")
+            
+    async def _handle_code_interpreter_action(self, message: dict):
+        """Handle code interpreter action messages."""
+        from ..main import code_interpreter_service, sse_service
+        
+        payload = message.get("payload", {})
+        action = payload.get("action")
+        
+        try:
+            if action == "create_python_notebook":
+                data = payload.get("data", {})
+                state = await code_interpreter_service.create_python_notebook(
+                    code=data.get("code", ""),
+                    description=data.get("description", "")
+                )
+                await sse_service.send_event("code_interpreter_state_created", {"state": state.dict()})
+                
+            elif action == "get_notebook_state":
+                state_id = payload.get("state_id")
+                if state_id:
+                    state = await code_interpreter_service.get_notebook_state(state_id)
+                    if state:
+                        await sse_service.send_event("code_interpreter_state_retrieved", {"state": state.dict()})
+                        
+        except Exception as e:
+            print(f"Error handling code interpreter action: {e}")

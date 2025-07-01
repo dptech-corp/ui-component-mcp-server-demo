@@ -8,13 +8,16 @@ import { BacklogInput } from './BacklogInput';
 import { BacklogItemComponent } from './BacklogItem';
 import { TerminalOutput } from './TerminalOutput';
 import { ApprovalList } from '../Approval/ApprovalList';
+import { CodeInterpreterList } from '../CodeInterpreter/CodeInterpreterList';
+import { CodeInterpreterWidget } from '../CodeInterpreter/CodeInterpreterWidget';
 import { useTodos } from '@/hooks/useTodos';
 import { useApprovals } from '@/hooks/useApprovals';
+import { useCodeInterpreter } from '@/hooks/useCodeInterpreter';
 import { useSSE } from '@/contexts/SSEContext';
 
 interface ToolsProps {
-  activeTab: 'todo' | 'backlog' | 'terminal' | 'approval';
-  setActiveTab: (tab: 'todo' | 'backlog' | 'terminal' | 'approval') => void;
+  activeTab: 'todo' | 'backlog' | 'terminal' | 'approval' | 'code-interpreter';
+  setActiveTab: (tab: 'todo' | 'backlog' | 'terminal' | 'approval' | 'code-interpreter') => void;
   terminalCommands: TerminalCommand[];
   isConnected: boolean;
 }
@@ -37,6 +40,7 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
   } = useTodos();
   const { lastEvent } = useSSE();
   const { approvals, loading: approvalsLoading, error: approvalsError, approveRequest, rejectRequest, refetch: refetchApprovals } = useApprovals();
+  const { states: codeInterpreterStates, selectedState, loading: codeInterpreterLoading, error: codeInterpreterError, selectState } = useCodeInterpreter();
 
   useEffect(() => {
     if (lastEvent) {
@@ -191,6 +195,16 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
         >
           Approval
         </button>
+        <button
+          onClick={() => setActiveTab('code-interpreter')}
+          className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
+            activeTab === 'code-interpreter'
+              ? 'bg-white border-b-2 border-blue-500 text-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Code Interpreter
+        </button>
       </div>
 
       {/* 错误提示 */}
@@ -268,6 +282,23 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
         <>
           <TerminalOutput commands={terminalCommands} disabled={loading} />
         </>
+      ) : activeTab === 'code-interpreter' ? (
+        <>
+          {selectedState ? (
+            <CodeInterpreterWidget 
+              state={selectedState}
+              onBack={() => selectState(null)}
+            />
+          ) : (
+            <CodeInterpreterList
+              states={codeInterpreterStates}
+              loading={codeInterpreterLoading}
+              error={codeInterpreterError}
+              onSelectState={selectState}
+              selectedState={selectedState}
+            />
+          )}
+        </>
       ) : (
         <>
           <ApprovalList 
@@ -316,6 +347,28 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
                   <li><code>cat_run_sh()</code> - 查看 run.sh 文件内容</li>
                   <li><code>bash_run_sh()</code> - 执行 run.sh 脚本</li>
                 </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'code-interpreter' && (
+        <div className="bg-purple-50 border border-purple-200 rounded-md p-4">
+          <div className="flex">
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-purple-800">Code Interpreter MCP 工具提示</h3>
+              <div className="mt-2 text-sm text-purple-700">
+                <p>
+                  这个 Code Interpreter 组件可以通过 MCP 工具执行代码。尝试使用以下 MCP 命令：
+                </p>
+                <ul className="mt-2 list-disc list-inside space-y-1">
+                  <li><code>create_python_notebook("print('Hello World')", "测试代码")</code></li>
+                  <li><code>get_notebook_state("state_id")</code></li>
+                </ul>
+                <p className="mt-2">
+                  创建状态后，点击列表中的条目查看 widget iframe 来实际执行代码。
+                </p>
               </div>
             </div>
           </div>
