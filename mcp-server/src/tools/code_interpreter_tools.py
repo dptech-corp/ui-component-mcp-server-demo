@@ -14,11 +14,10 @@ def register_code_interpreter_tools(mcp: FastMCP, redis_client: RedisClient):
     """Register code interpreter-related MCP tools."""
     
     @mcp.tool()
-    async def initialize_code_execution(session_id: str, code: str = "", description: str = "") -> dict:
+    async def create_state(code: str = "", description: str = "") -> dict:
         """创建新的代码执行状态
         
         Args:
-            session_id: 会话ID
             code: 要执行的代码 (可选)
             description: 代码描述 (可选)
             
@@ -33,7 +32,7 @@ def register_code_interpreter_tools(mcp: FastMCP, redis_client: RedisClient):
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    f"https://uni-interpreter.mlops.dp.tech/state/{session_id}",
+                    f"https://uni-interpreter.mlops.dp.tech/state/{state_id}",
                     headers={
                         "Authorization": f"Bearer {token}",
                         "Content-Type": "application/json"
@@ -53,9 +52,8 @@ def register_code_interpreter_tools(mcp: FastMCP, redis_client: RedisClient):
                     "target": "code_interpreter_component",
                     "component": "code_interpreter",
                     "payload": {
-                        "action": "initialize_code_execution",
+                        "action": "create_state",
                         "data": {
-                            "session_id": session_id,
                             "state_id": state_id,
                             "ticket_id": ticket_id,
                             "status": "pending",
@@ -67,7 +65,7 @@ def register_code_interpreter_tools(mcp: FastMCP, redis_client: RedisClient):
                 
                 await redis_client.publish_message("code_interpreter:actions", message)
                 
-                widget_url = f"https://uni-interpreter.mlops.dp.tech/widget?instance_id={session_id}"
+                widget_url = f"https://uni-interpreter.mlops.dp.tech/widget?instance_id={state_id}"
                 
                 return {
                     "success": True,
@@ -88,7 +86,7 @@ def register_code_interpreter_tools(mcp: FastMCP, redis_client: RedisClient):
             }
     
     @mcp.tool()
-    async def retrieve_code_execution_status(state_id: str) -> dict:
+    async def get_state(state_id: str) -> dict:
         """获取代码执行状态
         
         Args:

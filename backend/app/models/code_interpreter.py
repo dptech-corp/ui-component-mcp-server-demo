@@ -3,7 +3,6 @@ from typing import Optional
 
 class CodeInterpreterState(BaseModel):
     id: str
-    session_id: str
     ticket_id: str
     code: str
     description: Optional[str] = ""
@@ -14,7 +13,6 @@ class CodeInterpreterState(BaseModel):
     updated_at: int
 
 class CodeInterpreterCreateRequest(BaseModel):
-    session_id: str
     code: str
     description: Optional[str] = ""
 
@@ -24,7 +22,6 @@ class CodeInterpreterUpdateRequest(BaseModel):
 
 class CodeInterpreterResponse(BaseModel):
     id: str
-    session_id: str
     ticket_id: str
     status: str
     widget_url: Optional[str] = None

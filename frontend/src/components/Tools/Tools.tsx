@@ -8,8 +8,8 @@ import { BacklogInput } from './BacklogInput';
 import { BacklogItemComponent } from './BacklogItem';
 import { TerminalOutput } from './TerminalOutput';
 import { ApprovalList } from '../Approval/ApprovalList';
-import { CodeInterpreterInput } from '../CodeInterpreter/CodeInterpreterInput';
-import { CodeInterpreterItem } from '../CodeInterpreter/CodeInterpreterItem';
+import { CodeInterpreterList } from '../CodeInterpreter/CodeInterpreterList';
+import { CodeInterpreterWidget } from '../CodeInterpreter/CodeInterpreterWidget';
 import { useTodos } from '@/hooks/useTodos';
 import { useApprovals } from '@/hooks/useApprovals';
 import { useCodeInterpreter } from '@/hooks/useCodeInterpreter';
@@ -40,7 +40,7 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
   } = useTodos();
   const { lastEvent } = useSSE();
   const { approvals, loading: approvalsLoading, error: approvalsError, approveRequest, rejectRequest, refetch: refetchApprovals } = useApprovals();
-  const { states: codeInterpreterStates, loading: codeInterpreterLoading, error: codeInterpreterError, createState, updateState } = useCodeInterpreter();
+  const { states: codeInterpreterStates, selectedState, loading: codeInterpreterLoading, error: codeInterpreterError, selectState } = useCodeInterpreter();
 
   useEffect(() => {
     if (lastEvent) {
@@ -284,34 +284,20 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
         </>
       ) : activeTab === 'code-interpreter' ? (
         <>
-          <CodeInterpreterInput 
-            onSubmit={createState} 
-            disabled={codeInterpreterLoading} 
-          />
-          
-          {codeInterpreterError && (
-            <div className="bg-red-50 border border-red-200 rounded-md p-4">
-              <p className="text-red-700">{codeInterpreterError}</p>
-            </div>
+          {selectedState ? (
+            <CodeInterpreterWidget 
+              state={selectedState}
+              onBack={() => selectState(null)}
+            />
+          ) : (
+            <CodeInterpreterList
+              states={codeInterpreterStates}
+              loading={codeInterpreterLoading}
+              error={codeInterpreterError}
+              onSelectState={selectState}
+              selectedState={selectedState}
+            />
           )}
-          
-          <div className="space-y-4">
-            {codeInterpreterStates.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <p>暂无代码解释器状态</p>
-                <p className="text-sm mt-1">提交一段代码开始吧！</p>
-              </div>
-            ) : (
-              codeInterpreterStates.map((state) => (
-                <CodeInterpreterItem
-                  key={state.id}
-                  state={state}
-                  onUpdate={updateState}
-                  disabled={codeInterpreterLoading}
-                />
-              ))
-            )}
-          </div>
         </>
       ) : (
         <>
@@ -377,11 +363,11 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
                   这个 Code Interpreter 组件可以通过 MCP 工具执行代码。尝试使用以下 MCP 命令：
                 </p>
                 <ul className="mt-2 list-disc list-inside space-y-1">
-                  <li><code>create_state("session_id", "print('Hello World')", "测试代码")</code></li>
-                  <li><code>get_state("session_id", "state_id")</code></li>
+                  <li><code>create_state("print('Hello World')", "测试代码")</code></li>
+                  <li><code>get_state("state_id")</code></li>
                 </ul>
                 <p className="mt-2">
-                  提交代码后，点击"打开执行界面"按钮访问 widget URL 来实际执行代码。
+                  创建状态后，点击列表中的条目查看 widget iframe 来实际执行代码。
                 </p>
               </div>
             </div>

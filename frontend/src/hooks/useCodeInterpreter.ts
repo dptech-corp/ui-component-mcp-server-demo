@@ -4,6 +4,7 @@ import { useSSE } from '@/contexts/SSEContext';
 
 export function useCodeInterpreter(): CodeInterpreterHookReturn {
   const [states, setStates] = useState<CodeInterpreterState[]>([]);
+  const [selectedState, setSelectedState] = useState<CodeInterpreterState | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { lastEvent } = useSSE();
@@ -76,12 +77,12 @@ export function useCodeInterpreter(): CodeInterpreterHookReturn {
     }
   }, [apiUrl]);
 
-  const createState = useCallback(async (sessionId: string, code: string, description?: string) => {
+  const createState = useCallback(async (code: string, description?: string) => {
     try {
       setLoading(true);
       setError(null);
       
-      const stateData: CodeInterpreterCreateRequest = { session_id: sessionId, code, description };
+      const stateData: CodeInterpreterCreateRequest = { code, description };
       
       const response = await fetch(`${apiUrl}/api/code-interpreter/states`, {
         method: 'POST',
@@ -163,17 +164,23 @@ export function useCodeInterpreter(): CodeInterpreterHookReturn {
     }
   }, [apiUrl]);
 
+  const selectState = useCallback((state: CodeInterpreterState | null) => {
+    setSelectedState(state);
+  }, []);
+
   useEffect(() => {
     fetchStates();
   }, [fetchStates]);
 
   return {
     states,
+    selectedState,
     loading,
     error,
     createState,
     updateState,
     getState,
     fetchStates,
+    selectState,
   };
 }

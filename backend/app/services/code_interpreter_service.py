@@ -8,16 +8,15 @@ class CodeInterpreterService:
     def __init__(self):
         pass
     
-    async def create_state(self, session_id: str, code: str, description: str = "") -> CodeInterpreterState:
+    async def create_state(self, code: str, description: str = "") -> CodeInterpreterState:
         """Create a new code interpreter state."""
         state_id = str(uuid.uuid4())
         ticket_id = f"code-interpreter-{uuid.uuid4().hex[:8]}"
         timestamp = int(time.time() * 1000)
-        widget_url = f"https://uni-interpretor.mlops.dp.tech/widget?instance_id={session_id}"
+        widget_url = f"https://uni-interpretor.mlops.dp.tech/widget?instance_id={state_id}"
         
         state = CodeInterpreterState(
             id=state_id,
-            session_id=session_id,
             ticket_id=ticket_id,
             code=code,
             description=description,
@@ -31,9 +30,9 @@ class CodeInterpreterService:
             async with conn.cursor() as cursor:
                 await cursor.execute(
                     """INSERT INTO code_interpreter_states 
-                       (id, session_id, ticket_id, code, description, status, result, widget_url, created_at, updated_at)
-                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-                    (state.id, state.session_id, state.ticket_id, state.code, 
+                       (id, ticket_id, code, description, status, result, widget_url, created_at, updated_at)
+                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                    (state.id, state.ticket_id, state.code, 
                      state.description, state.status, state.result, state.widget_url, 
                      state.created_at, state.updated_at)
                 )
@@ -45,55 +44,52 @@ class CodeInterpreterService:
         async with database.get_connection() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
-                    """SELECT id, session_id, ticket_id, code, description, status, 
+                    """SELECT id, ticket_id, code, description, status, 
                               result, widget_url, created_at, updated_at 
                        FROM code_interpreter_states WHERE id = %s""",
                     (state_id,)
                 )
                 row = await cursor.fetchone()
                 
-                if row and len(row) >= 10:
+                if row and len(row) >= 9:
                     return CodeInterpreterState(
                         id=row[0],
-                        session_id=row[1],
-                        ticket_id=row[2],
-                        code=row[3],
-                        description=row[4],
-                        status=row[5],
-                        result=row[6],
-                        widget_url=row[7],
-                        created_at=row[8],
-                        updated_at=row[9]
+                        ticket_id=row[1],
+                        code=row[2],
+                        description=row[3],
+                        status=row[4],
+                        result=row[5],
+                        widget_url=row[6],
+                        created_at=row[7],
+                        updated_at=row[8]
                     )
                 return None
     
-    async def get_states_by_session(self, session_id: str) -> List[CodeInterpreterState]:
-        """Get all states for a session."""
+    async def get_all_states(self) -> List[CodeInterpreterState]:
+        """Get all code interpreter states."""
         async with database.get_connection() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
-                    """SELECT id, session_id, ticket_id, code, description, status, 
+                    """SELECT id, ticket_id, code, description, status, 
                               result, widget_url, created_at, updated_at 
-                       FROM code_interpreter_states WHERE session_id = %s 
-                       ORDER BY created_at DESC""",
-                    (session_id,)
+                       FROM code_interpreter_states 
+                       ORDER BY created_at DESC"""
                 )
                 rows = await cursor.fetchall()
                 
                 states = []
                 for row in rows:
-                    if len(row) >= 10:
+                    if len(row) >= 9:
                         state = CodeInterpreterState(
                             id=row[0],
-                            session_id=row[1],
-                            ticket_id=row[2],
-                            code=row[3],
-                            description=row[4],
-                            status=row[5],
-                            result=row[6],
-                            widget_url=row[7],
-                            created_at=row[8],
-                            updated_at=row[9]
+                            ticket_id=row[1],
+                            code=row[2],
+                            description=row[3],
+                            status=row[4],
+                            result=row[5],
+                            widget_url=row[6],
+                            created_at=row[7],
+                            updated_at=row[8]
                         )
                         states.append(state)
                 

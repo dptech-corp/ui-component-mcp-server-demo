@@ -270,7 +270,6 @@ class RedisService:
             if action == "create_state":
                 data = payload.get("data", {})
                 state = await code_interpreter_service.create_state(
-                    session_id=data.get("session_id", "default_session"),
                     code=data.get("code", ""),
                     description=data.get("description", "")
                 )

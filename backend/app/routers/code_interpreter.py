@@ -11,7 +11,7 @@ router = APIRouter()
 async def get_all_states(request: Request):
     """Get all code interpreter states."""
     code_interpreter_service = request.app.state.code_interpreter_service
-    states = await code_interpreter_service.get_states_by_session("default_session")
+    states = await code_interpreter_service.get_all_states()
     return states
 
 @router.get("/code-interpreter/states/{state_id}", response_model=CodeInterpreterState)
@@ -30,7 +30,6 @@ async def create_state(state_data: CodeInterpreterCreateRequest, request: Reques
     sse_service = request.app.state.sse_service
     
     state = await code_interpreter_service.create_state(
-        session_id=state_data.session_id,
         code=state_data.code,
         description=state_data.description
     )
@@ -54,10 +53,3 @@ async def update_state(state_id: str, state_data: CodeInterpreterUpdateRequest, 
     await sse_service.send_event("code_interpreter_state_updated", {"state": state.dict()})
     
     return state
-
-@router.get("/code-interpreter/sessions/{session_id}/states", response_model=List[CodeInterpreterState])
-async def get_session_states(session_id: str, request: Request):
-    """Get all states for a specific session."""
-    code_interpreter_service = request.app.state.code_interpreter_service
-    states = await code_interpreter_service.get_states_by_session(session_id)
-    return states
