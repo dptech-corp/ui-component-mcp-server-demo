@@ -15,5 +15,8 @@ export const SSE_EVENTS = {
   COMPONENT_STATE_CHANGED: 'component_state_changed',
   COMPONENT_SWITCH: 'component_switch',
   TERMINAL_COMMAND_EXECUTED: 'terminal_command_executed',
+  CODE_INTERPRETER_STATE_CREATED: 'code_interpreter_state_created',
+  CODE_INTERPRETER_STATE_UPDATED: 'code_interpreter_state_updated',
+  CODE_INTERPRETER_STATE_RETRIEVED: 'code_interpreter_state_retrieved',
   HEARTBEAT: 'heartbeat',
 } as const;

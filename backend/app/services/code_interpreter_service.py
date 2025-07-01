@@ -8,12 +8,11 @@ class CodeInterpreterService:
     def __init__(self):
         pass
     
-    async def create_python_notebook(self, code: str, description: str = "") -> CodeInterpreterState:
+    async def create_python_notebook(self, state_id: str, code: str, description: str = "") -> CodeInterpreterState:
         """Create a new code interpreter state."""
-        state_id = str(uuid.uuid4())
         ticket_id = f"code-interpreter-{uuid.uuid4().hex[:8]}"
         timestamp = int(time.time() * 1000)
-        widget_url = f"https://uni-interpretor.mlops.dp.tech/widget?instance_id={state_id}"
+        widget_url = f"https://uni-interpreter.mlops.dp.tech/widget?instance_id={state_id}"
         
         state = CodeInterpreterState(
             id=state_id,

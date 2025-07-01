@@ -270,6 +270,7 @@ class RedisService:
             if action == "create_python_notebook":
                 data = payload.get("data", {})
                 state = await code_interpreter_service.create_python_notebook(
+                    state_id=data.get("state_id"),
                     code=data.get("code", ""),
                     description=data.get("description", "")
                 )
