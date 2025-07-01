@@ -33,7 +33,7 @@ def register_code_interpreter_tools(mcp: FastMCP, redis_client: RedisClient):
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    f"https://uni-interpretor.mlops.dp.tech/state/{session_id}",
+                    f"https://uni-interpreter.mlops.dp.tech/state/{session_id}",
                     headers={
                         "Authorization": f"Bearer {token}",
                         "Content-Type": "application/json"
@@ -67,7 +67,7 @@ def register_code_interpreter_tools(mcp: FastMCP, redis_client: RedisClient):
                 
                 await redis_client.publish_message("code_interpreter:actions", message)
                 
-                widget_url = f"https://uni-interpretor.mlops.dp.tech/widget?instance_id={session_id}"
+                widget_url = f"https://uni-interpreter.mlops.dp.tech/widget?instance_id={session_id}"
                 
                 return {
                     "success": True,
@@ -102,9 +102,9 @@ def register_code_interpreter_tools(mcp: FastMCP, redis_client: RedisClient):
         
         try:
             if state_id:
-                url = f"https://uni-interpretor.mlops.dp.tech/state/{session_id}/{state_id}"
+                url = f"https://uni-interpreter.mlops.dp.tech/state/{session_id}/{state_id}"
             else:
-                url = f"https://uni-interpretor.mlops.dp.tech/state/{session_id}"
+                url = f"https://uni-interpreter.mlops.dp.tech/state/{session_id}"
                 
             async with httpx.AsyncClient() as client:
                 response = await client.get(
