@@ -15,8 +15,8 @@ export function useCodeInterpreter(): CodeInterpreterHookReturn {
       switch (lastEvent.event) {
         case 'code_interpreter_state_created':
           if (lastEvent.data.state) {
-            setStates(prev => {
-              const exists = prev.some(state => state.id === lastEvent.data.state.id);
+            setStates((prev: CodeInterpreterState[]) => {
+              const exists = prev.some((state: CodeInterpreterState) => state.id === lastEvent.data.state.id);
               if (!exists) {
                 return [lastEvent.data.state, ...prev];
               }
@@ -27,7 +27,7 @@ export function useCodeInterpreter(): CodeInterpreterHookReturn {
           
         case 'code_interpreter_state_updated':
           if (lastEvent.data.state) {
-            setStates(prev => prev.map(state => 
+            setStates((prev: CodeInterpreterState[]) => prev.map((state: CodeInterpreterState) => 
               state.id === lastEvent.data.state.id ? lastEvent.data.state : state
             ));
           }
@@ -35,12 +35,12 @@ export function useCodeInterpreter(): CodeInterpreterHookReturn {
           
         case 'code_interpreter_state_retrieved':
           if (lastEvent.data.state) {
-            setStates(prev => {
-              const exists = prev.some(state => state.id === lastEvent.data.state.id);
+            setStates((prev: CodeInterpreterState[]) => {
+              const exists = prev.some((state: CodeInterpreterState) => state.id === lastEvent.data.state.id);
               if (!exists) {
                 return [lastEvent.data.state, ...prev];
               }
-              return prev.map(state => 
+              return prev.map((state: CodeInterpreterState) => 
                 state.id === lastEvent.data.state.id ? lastEvent.data.state : state
               );
             });
@@ -146,12 +146,12 @@ export function useCodeInterpreter(): CodeInterpreterHookReturn {
       }
       
       const state = await response.json();
-      setStates(prev => {
-        const exists = prev.some(s => s.id === state.id);
+      setStates((prev: CodeInterpreterState[]) => {
+        const exists = prev.some((s: CodeInterpreterState) => s.id === state.id);
         if (!exists) {
           return [state, ...prev];
         }
-        return prev.map(s => s.id === state.id ? state : s);
+        return prev.map((s: CodeInterpreterState) => s.id === state.id ? state : s);
       });
       
     } catch (err) {
