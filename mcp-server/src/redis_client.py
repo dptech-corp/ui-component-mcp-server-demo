@@ -6,6 +6,7 @@ from typing import Any, Dict, Optional
 from redis.asyncio import Redis
 
 
+# TODO 放到 dp.agent.ui.mq.redis.producer
 class RedisClient:
     """Async Redis client for message publishing."""
     

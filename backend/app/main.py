@@ -15,12 +15,16 @@ from .database import database
 from .services.redis_service import RedisService
 from .services.sse_service import SSEService
 from .services.todo_service import TodoService
-from .routers import todos, events, health
+from .services.backlog_service import BacklogService
+from .services.code_interpreter_service import CodeInterpreterService
+from .routers import todos, approvals, backlogs, events, health, agent, code_interpreter
 
 
 redis_service = RedisService()
 sse_service = SSEService()
 todo_service = TodoService()
+backlog_service = BacklogService()
+code_interpreter_service = CodeInterpreterService()
 
 
 @asynccontextmanager
@@ -46,7 +50,7 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173").split(",")
+cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001,http://localhost:5173").split(",")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
@@ -58,10 +62,16 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(events.router)
 app.include_router(todos.router, prefix="/api")
+app.include_router(approvals.router, prefix="/api")
+app.include_router(backlogs.router, prefix="/api")
+app.include_router(code_interpreter.router, prefix="/api")
+app.include_router(agent.router, prefix="/api")
 
 app.state.redis_service = redis_service
 app.state.sse_service = sse_service
 app.state.todo_service = todo_service
+app.state.backlog_service = backlog_service
+app.state.code_interpreter_service = code_interpreter_service
 
 
 @app.get("/")

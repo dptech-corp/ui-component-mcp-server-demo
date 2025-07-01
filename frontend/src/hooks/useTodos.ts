@@ -1,9 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
-import { TodoItem, TodoCreateRequest, TodoUpdateRequest } from '@/types/todo';
-import { useSSE } from './useSSE';
+import { TodoItem, TodoCreateRequest, TodoUpdateRequest, BacklogItem } from '@/types/todo';
+import { useSSE } from '@/contexts/SSEContext';
 
 interface UseTodosReturn {
   todos: TodoItem[];
+  backlogItems: BacklogItem[];
   loading: boolean;
   error: string | null;
   addTodo: (title: string, description?: string) => Promise<void>;
@@ -11,10 +12,16 @@ interface UseTodosReturn {
   deleteTodo: (id: string) => Promise<void>;
   toggleTodo: (id: string) => Promise<void>;
   fetchTodos: () => Promise<void>;
+  addBacklogItem: (title: string, description?: string) => Promise<void>;
+  updateBacklogItem: (id: string, updates: Partial<BacklogItem>) => Promise<void>;
+  deleteBacklogItem: (id: string) => Promise<void>;
+  moveToTodo: (id: string) => Promise<void>;
+  fetchBacklogs: () => Promise<void>;
 }
 
 export function useTodos(): UseTodosReturn {
   const [todos, setTodos] = useState<TodoItem[]>([]);
+  const [backlogItems, setBacklogItems] = useState<BacklogItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { lastEvent } = useSSE();
@@ -56,8 +63,41 @@ export function useTodos(): UseTodosReturn {
           }
           break;
           
+        case 'backlog_added':
+          if (lastEvent.data.backlog) {
+            setBacklogItems(prev => [lastEvent.data.backlog, ...prev]);
+          }
+          break;
+          
+        case 'backlog_updated':
+          if (lastEvent.data.backlog) {
+            setBacklogItems(prev => prev.map(item => 
+              item.id === lastEvent.data.backlog.id ? lastEvent.data.backlog : item
+            ));
+          }
+          break;
+          
+        case 'backlog_deleted':
+          if (lastEvent.data.backlogId) {
+            setBacklogItems(prev => prev.filter(item => item.id !== lastEvent.data.backlogId));
+          }
+          break;
+          
+        case 'backlog_sent_to_todo':
+          if (lastEvent.data.backlog_id) {
+            setBacklogItems(prev => prev.filter(item => item.id !== lastEvent.data.backlog_id));
+          }
+          break;
+          
+        case 'backlog_list':
+          if (lastEvent.data.backlogs) {
+            setBacklogItems(lastEvent.data.backlogs);
+          }
+          break;
+          
         case 'error':
           setError(lastEvent.data.message || '发生未知错误');
+          setLoading(false);
           break;
       }
     }
@@ -103,8 +143,6 @@ export function useTodos(): UseTodosReturn {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      await fetchTodos();
-      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '添加 Todo 失败';
       setError(errorMessage);
@@ -112,7 +150,7 @@ export function useTodos(): UseTodosReturn {
     } finally {
       setLoading(false);
     }
-  }, [apiUrl, fetchTodos]);
+  }, [apiUrl]);
 
   const updateTodo = useCallback(async (id: string, updates: Partial<TodoItem>) => {
     try {
@@ -137,8 +175,6 @@ export function useTodos(): UseTodosReturn {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      await fetchTodos();
-      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '更新 Todo 失败';
       setError(errorMessage);
@@ -146,7 +182,7 @@ export function useTodos(): UseTodosReturn {
     } finally {
       setLoading(false);
     }
-  }, [apiUrl, fetchTodos]);
+  }, [apiUrl]);
 
   const deleteTodo = useCallback(async (id: string) => {
     try {
@@ -161,8 +197,6 @@ export function useTodos(): UseTodosReturn {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      await fetchTodos();
-      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '删除 Todo 失败';
       setError(errorMessage);
@@ -170,7 +204,7 @@ export function useTodos(): UseTodosReturn {
     } finally {
       setLoading(false);
     }
-  }, [apiUrl, fetchTodos]);
+  }, [apiUrl]);
 
   const toggleTodo = useCallback(async (id: string) => {
     try {
@@ -185,8 +219,6 @@ export function useTodos(): UseTodosReturn {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      await fetchTodos();
-      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '切换 Todo 状态失败';
       setError(errorMessage);
@@ -194,10 +226,125 @@ export function useTodos(): UseTodosReturn {
     } finally {
       setLoading(false);
     }
-  }, [apiUrl, fetchTodos]);
+  }, [apiUrl]);
+
+  const addBacklogItem = useCallback(async (title: string, description?: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch(`${apiUrl}/api/backlogs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title,
+          description: description || ""
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add backlog item');
+      }
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add backlog item');
+    } finally {
+      setLoading(false);
+    }
+  }, [apiUrl]);
+
+  const updateBacklogItem = useCallback(async (id: string, updates: Partial<BacklogItem>) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch(`${apiUrl}/api/backlogs/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updates),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update backlog item');
+      }
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update backlog item');
+    } finally {
+      setLoading(false);
+    }
+  }, [apiUrl]);
+
+  const deleteBacklogItem = useCallback(async (id: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch(`${apiUrl}/api/backlogs/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete backlog item');
+      }
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete backlog item');
+    } finally {
+      setLoading(false);
+    }
+  }, [apiUrl]);
+
+  const moveToTodo = useCallback(async (id: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch(`${apiUrl}/api/backlogs/${id}/send-to-todo`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send backlog to todo');
+      }
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send backlog to todo');
+    } finally {
+      setLoading(false);
+    }
+  }, [apiUrl]);
+
+  const fetchBacklogs = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${apiUrl}/api/backlogs`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch backlogs');
+      }
+      const data = await response.json();
+      setBacklogItems(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch backlogs');
+    } finally {
+      setLoading(false);
+    }
+  }, [apiUrl]);
+
+  useEffect(() => {
+    fetchTodos();
+    fetchBacklogs();
+  }, [fetchTodos, fetchBacklogs]);
+
+
 
   return {
     todos,
+    backlogItems,
     loading,
     error,
     addTodo,
@@ -205,5 +352,10 @@ export function useTodos(): UseTodosReturn {
     deleteTodo,
     toggleTodo,
     fetchTodos,
+    addBacklogItem,
+    updateBacklogItem,
+    deleteBacklogItem,
+    moveToTodo,
+    fetchBacklogs,
   };
 }

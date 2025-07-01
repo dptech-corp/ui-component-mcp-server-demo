@@ -16,6 +16,10 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "uvicorn[standard]>=0.24.0",
     "fastapi>=0.104.0",
+    "litellm>=1.72.6",
+    "pymysql>=1.1.0",
+    "cryptography>=41.0.0",
+    "sqlalchemy>=2.0.0",
 ]
 
 [project.optional-dependencies]

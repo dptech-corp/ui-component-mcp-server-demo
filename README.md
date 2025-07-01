@@ -20,11 +20,19 @@
 - **后端**: FastAPI + Python + Pydantic
 - **消息通道**: Redis Pub/Sub
 - **MCP Server**: fastmcp + Python
+- **Agent**: Google ADK (AI Development Kit)
 - **容器化**: Docker + Docker Compose
 
 ### 消息流程
+
+#### 正向流程（Agent → Frontend）
 ```
 Agent 自然语言指令 → MCP 工具调用 → Redis Pub/Sub 消息 → 后端接收处理 → SSE 事件推送 → 前端组件更新
+```
+
+#### 反向流程（Frontend → Agent）
+```
+前端用户输入 → 后端 API 接收 → Google ADK Agent /run 端点 → Agent 处理响应 → 前端显示结果
 ```
 
 详细的消息流程说明请参考 [消息流程文档](./docs/message-flow.md)。
@@ -117,6 +125,15 @@ MCP Server 提供以下工具：
 - `delete_todo`: 删除 todo 项
 - `toggle_todo`: 切换 todo 完成状态
 
+### 反向消息链路
+支持从前端向 Agent 发送消息的双向通信功能：
+
+- **消息输入**: 前端提供消息输入组件
+- **消息转发**: 后端 API 转发消息到 Google ADK Agent
+- **Agent 处理**: Agent 通过 `/run` 端点处理用户消息
+- **响应显示**: 前端显示 Agent 的处理结果
+- **会话管理**: 支持基于 sessionId 的会话管理
+
 ## 扩展性设计
 
 ### 可复用组件
@@ -131,6 +148,7 @@ MCP Server 提供以下工具：
 
 - [架构设计](./ARCHITECTURE.md) - 详细的系统架构说明
 - [消息流程](./docs/message-flow.md) - 完整的消息处理流程
+- [反向消息链路](./docs/ui-to-agent.md) - 前端到 Agent 的消息设计
 - [组件开发指南](./docs/component-guide.md) - 如何开发新的可控制组件
 - [部署指南](./docs/deployment.md) - 本地开发和生产部署指南
 

@@ -8,6 +8,7 @@ export interface BaseMessage {
   timestamp: number;
   source: 'mcp' | 'backend' | 'frontend';
   target: string;
+  component?: 'todo' | 'backlog' | 'terminal';
   payload: any;
 }
 

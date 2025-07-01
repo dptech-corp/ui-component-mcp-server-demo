@@ -1,6 +1,24 @@
 version: '3.8'
 
 services:
+  mysql:
+    image: mysql:8.0
+    container_name: ui-mcp-mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   redis:
     image: redis:7-alpine
     container_name: ui-mcp-redis
@@ -26,6 +44,7 @@ services:
       - REDIS_URL=redis://redis:6379
       - MCP_PORT=8001
       - LOG_LEVEL=INFO
+      - CODE_INTERPRETER_TOKEN=1234
     depends_on:
       redis:
         condition: service_healthy
@@ -42,10 +61,14 @@ services:
       - "8000:8000"
     environment:
       - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE}
       - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
       - LOG_LEVEL=INFO
+      - SESSION_ID=${SESSION_ID}
     depends_on:
       redis:
+        condition: service_healthy
+      mysql:
         condition: service_healthy
     volumes:
       - ./backend/app:/app/app
@@ -87,10 +110,11 @@ services:
       - "8002:8002"
     environment:
       - MCP_SERVER_URL=http://mcp-server:8001
-      - LLM_MODEL=${LLM_MODEL:-gemini-1.5-flash}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
-      - GOOGLE_GENAI_USE_VERTEXAI=${GOOGLE_GENAI_USE_VERTEXAI:-FALSE}
+      - LLM_MODEL=${LLM_MODEL}
+      - OPENAI_API_KEY=${GEMINI_API_KEY}
+      - OPENAI_API_BASE_URL=${OPENAI_API_BASE_URL}
+      # - SESSION_DB_URL=${SESSION_DB_URL}
+      - SESSION_DB_URL=mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE}
     depends_on:
       mcp-server:
         condition: service_started
@@ -103,6 +127,8 @@ volumes:
   redis_data:
     driver: local
   backend_data:
+    driver: local
+  mysql_data:
     driver: local
 
 networks:

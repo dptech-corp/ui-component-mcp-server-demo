@@ -23,7 +23,7 @@ React 前端应用，提供用户界面并通过 SSE 接收实时更新。
 src/
 ├── components/          # React 组件
 │   ├── ui/             # shadcn/ui 基础组件
-│   └── TodoList/       # Todo 列表组件
+│   └── Tools/          # 工具组件（Todo、Backlog、Terminal）
 ├── hooks/              # 自定义 Hooks
 │   ├── useSSE.ts       # SSE 连接 Hook
 │   └── useTodos.ts     # Todo 状态管理 Hook
@@ -63,9 +63,9 @@ npm run preview
 
 ## 组件说明
 
-### TodoList 组件
+### Tools 组件
 
-主要的 Todo 列表组件，包含：
+主要的工具组件，包含三个功能模块：
 
 - **TodoInput**: 添加新 todo 的输入框
 - **TodoItem**: 单个 todo 项的显示和编辑

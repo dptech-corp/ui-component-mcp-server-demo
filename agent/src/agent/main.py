@@ -9,6 +9,7 @@ import os
 from google.adk.agents import LlmAgent
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, SseServerParams
 from dotenv import load_dotenv
+from google.adk.models.lite_llm import LiteLlm
 
 load_dotenv()
 
@@ -22,11 +23,20 @@ def create_agent():
             url=f"{mcp_server_url}/sse",
             headers={}
         ),
-        tool_filter=["add_todo", "delete_todo", "update_todo", "toggle_todo", "list_todo"]
+        tool_filter=["add_todo", "delete_todo", "update_todo", "toggle_todo", "list_todo", 
+                    "add_backlog", "delete_backlog", "update_backlog", "send_backlog_to_todo", "list_backlog",
+                    "ls", "cat_run_sh", "bash_run_sh", "ask_for_approval",
+                    "create_python_notebook", "get_notebook_state"]
     )
+    print(f"model: {os.getenv('LLM_MODEL')}")
+    # print(f"api_key: {os.getenv('OPENAI_API_KEY')}")
+    # print(f"api_base: {os.getenv('OPENAI_API_BASE_URL')}")
     
     agent = LlmAgent(
-        model=os.getenv("LLM_MODEL", "gemini-1.5-flash"),
+        model=LiteLlm(
+            model=os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash"),
+            api_key=os.getenv("OPENAI_API_KEY"),
+            api_base=os.getenv("OPENAI_API_BASE_URL")),
         name="todo_assistant_agent",
         instruction="""You are a helpful assistant that can manage todo items. 
         You can add, update, delete, and toggle todo items using the available MCP tools.

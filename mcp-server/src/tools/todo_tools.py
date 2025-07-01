@@ -8,7 +8,6 @@ from fastmcp import FastMCP
 
 from ..redis_client import RedisClient
 
-
 def register_todo_tools(mcp: FastMCP, redis_client: RedisClient):
     """Register todo-related MCP tools."""
     
@@ -29,6 +28,7 @@ def register_todo_tools(mcp: FastMCP, redis_client: RedisClient):
             "timestamp": int(time.time() * 1000),
             "source": "mcp",
             "target": "todo_component",
+            "component": "todo",
             "payload": {
                 "action": "add",
                 "data": {
@@ -57,6 +57,7 @@ def register_todo_tools(mcp: FastMCP, redis_client: RedisClient):
             "timestamp": int(time.time() * 1000),
             "source": "mcp",
             "target": "todo_component",
+            "component": "todo",
             "payload": {
                 "action": "delete",
                 "todoId": todo_id
@@ -94,6 +95,7 @@ def register_todo_tools(mcp: FastMCP, redis_client: RedisClient):
             "timestamp": int(time.time() * 1000),
             "source": "mcp",
             "target": "todo_component",
+            "component": "todo",
             "payload": {
                 "action": "update",
                 "todoId": todo_id,
@@ -120,6 +122,7 @@ def register_todo_tools(mcp: FastMCP, redis_client: RedisClient):
             "timestamp": int(time.time() * 1000),
             "source": "mcp",
             "target": "todo_component",
+            "component": "todo",
             "payload": {
                 "action": "toggle",
                 "todoId": todo_id
@@ -137,6 +140,20 @@ def register_todo_tools(mcp: FastMCP, redis_client: RedisClient):
             包含所有 todo 项的列表
         """
         import httpx
+        
+        message = {
+            "id": str(uuid.uuid4()),
+            "type": "todo_action",
+            "timestamp": int(time.time() * 1000),
+            "source": "mcp",
+            "target": "todo_component",
+            "component": "todo",
+            "payload": {
+                "action": "list"
+            }
+        }
+        
+        await redis_client.publish_message("todo:actions", message)
         
         try:
             async with httpx.AsyncClient() as client:

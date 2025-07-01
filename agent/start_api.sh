@@ -5,7 +5,11 @@ set -e
 echo "Starting Google ADK Agent API server..."
 
 export MCP_SERVER_URL=${MCP_SERVER_URL:-"http://localhost:8001"}
-export LLM_MODEL=${LLM_MODEL:-"gemini-2.0-flash"}
+export LLM_MODEL=${LLM_MODEL:-"gemini-1.5-flash"}
+export OPENAI_API_KEY=${OPENAI_API_KEY}
+export OPENAI_API_BASE_URL=${OPENAI_API_BASE_URL}
+export SESSION_DB_URL=${SESSION_DB_URL}
+
 
 cat > /app/api_server.py << 'EOF'
 import os
@@ -64,4 +68,4 @@ async def health():
 EOF
 
 cd /app
-uvicorn api_server:app --host 0.0.0.0 --port 8002
+uv run uvicorn api_server:app --host 0.0.0.0 --port 8002 --session_db_url $SESSION_DB_URL
