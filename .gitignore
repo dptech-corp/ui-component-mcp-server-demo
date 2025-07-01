@@ -152,6 +152,7 @@ venv/
 ENV/
 env/
 .env
+.envrc
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -186,3 +187,4 @@ celerybeat.pid
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
