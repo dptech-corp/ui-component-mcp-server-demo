@@ -13,6 +13,7 @@ from .tools.todo_tools import register_todo_tools
 from .tools.backlog_tools import register_backlog_tools
 from .tools.terminal_tools import register_terminal_tools
 from .tools.approval_tools import register_approval_tools
+from .tools.code_interpreter_tools import register_code_interpreter_tools
 
 old_received_request = ServerSession._received_request
 
@@ -40,6 +41,7 @@ def main():
     register_backlog_tools(mcp, redis_client)
     register_terminal_tools(mcp, redis_client)
     register_approval_tools(mcp, redis_client)
+    register_code_interpreter_tools(mcp, redis_client)
     
     print(f"Starting MCP server on port {port} with SSE transport")
     
