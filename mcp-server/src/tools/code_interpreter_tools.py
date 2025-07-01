@@ -14,7 +14,7 @@ def register_code_interpreter_tools(mcp: FastMCP, redis_client: RedisClient):
     """Register code interpreter-related MCP tools."""
     
     @mcp.tool()
-    async def create_state(code: str = "", description: str = "") -> dict:
+    async def create_python_notebook(code: str = "", description: str = "") -> dict:
         """创建新的代码执行状态
         
         Args:
@@ -52,7 +52,7 @@ def register_code_interpreter_tools(mcp: FastMCP, redis_client: RedisClient):
                     "target": "code_interpreter_component",
                     "component": "code_interpreter",
                     "payload": {
-                        "action": "create_state",
+                        "action": "create_python_notebook",
                         "data": {
                             "state_id": state_id,
                             "ticket_id": ticket_id,
@@ -86,7 +86,7 @@ def register_code_interpreter_tools(mcp: FastMCP, redis_client: RedisClient):
             }
     
     @mcp.tool()
-    async def get_state(state_id: str) -> dict:
+    async def get_notebook_state(state_id: str) -> dict:
         """获取代码执行状态
         
         Args:

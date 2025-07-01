@@ -267,18 +267,18 @@ class RedisService:
         action = payload.get("action")
         
         try:
-            if action == "create_state":
+            if action == "create_python_notebook":
                 data = payload.get("data", {})
-                state = await code_interpreter_service.create_state(
+                state = await code_interpreter_service.create_python_notebook(
                     code=data.get("code", ""),
                     description=data.get("description", "")
                 )
                 await sse_service.send_event("code_interpreter_state_created", {"state": state.dict()})
                 
-            elif action == "get_state":
+            elif action == "get_notebook_state":
                 state_id = payload.get("state_id")
                 if state_id:
-                    state = await code_interpreter_service.get_state(state_id)
+                    state = await code_interpreter_service.get_notebook_state(state_id)
                     if state:
                         await sse_service.send_event("code_interpreter_state_retrieved", {"state": state.dict()})
                         

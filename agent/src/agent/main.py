@@ -26,7 +26,7 @@ def create_agent():
         tool_filter=["add_todo", "delete_todo", "update_todo", "toggle_todo", "list_todo", 
                     "add_backlog", "delete_backlog", "update_backlog", "send_backlog_to_todo", "list_backlog",
                     "ls", "cat_run_sh", "bash_run_sh", "ask_for_approval",
-                    "create_state", "get_state"]
+                    "create_python_notebook", "get_notebook_state"]
     )
     print(f"model: {os.getenv('LLM_MODEL')}")
     # print(f"api_key: {os.getenv('OPENAI_API_KEY')}")

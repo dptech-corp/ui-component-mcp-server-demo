@@ -363,8 +363,8 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
                   这个 Code Interpreter 组件可以通过 MCP 工具执行代码。尝试使用以下 MCP 命令：
                 </p>
                 <ul className="mt-2 list-disc list-inside space-y-1">
-                  <li><code>create_state("print('Hello World')", "测试代码")</code></li>
-                  <li><code>get_state("state_id")</code></li>
+                  <li><code>create_python_notebook("print('Hello World')", "测试代码")</code></li>
+                  <li><code>get_notebook_state("state_id")</code></li>
                 </ul>
                 <p className="mt-2">
                   创建状态后，点击列表中的条目查看 widget iframe 来实际执行代码。

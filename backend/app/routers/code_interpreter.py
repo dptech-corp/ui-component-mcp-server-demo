@@ -15,21 +15,21 @@ async def get_all_states(request: Request):
     return states
 
 @router.get("/code-interpreter/states/{state_id}", response_model=CodeInterpreterState)
-async def get_state(state_id: str, request: Request):
+async def get_notebook_state(state_id: str, request: Request):
     """Get a specific code interpreter state."""
     code_interpreter_service = request.app.state.code_interpreter_service
-    state = await code_interpreter_service.get_state(state_id)
+    state = await code_interpreter_service.get_notebook_state(state_id)
     if not state:
         raise HTTPException(status_code=404, detail="State not found")
     return state
 
 @router.post("/code-interpreter/states", response_model=CodeInterpreterState)
-async def create_state(state_data: CodeInterpreterCreateRequest, request: Request):
+async def create_python_notebook(state_data: CodeInterpreterCreateRequest, request: Request):
     """Create a new code interpreter state."""
     code_interpreter_service = request.app.state.code_interpreter_service
     sse_service = request.app.state.sse_service
     
-    state = await code_interpreter_service.create_state(
+    state = await code_interpreter_service.create_python_notebook(
         code=state_data.code,
         description=state_data.description
     )

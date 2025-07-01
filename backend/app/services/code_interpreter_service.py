@@ -8,7 +8,7 @@ class CodeInterpreterService:
     def __init__(self):
         pass
     
-    async def create_state(self, code: str, description: str = "") -> CodeInterpreterState:
+    async def create_python_notebook(self, code: str, description: str = "") -> CodeInterpreterState:
         """Create a new code interpreter state."""
         state_id = str(uuid.uuid4())
         ticket_id = f"code-interpreter-{uuid.uuid4().hex[:8]}"
@@ -39,7 +39,7 @@ class CodeInterpreterService:
                 await conn.commit()
                 return state
     
-    async def get_state(self, state_id: str) -> Optional[CodeInterpreterState]:
+    async def get_notebook_state(self, state_id: str) -> Optional[CodeInterpreterState]:
         """Get a code interpreter state by ID."""
         async with database.get_connection() as conn:
             async with conn.cursor() as cursor:
@@ -97,7 +97,7 @@ class CodeInterpreterService:
     
     async def update_state(self, state_id: str, **kwargs) -> Optional[CodeInterpreterState]:
         """Update a code interpreter state."""
-        state = await self.get_state(state_id)
+        state = await self.get_notebook_state(state_id)
         if not state:
             return None
             
