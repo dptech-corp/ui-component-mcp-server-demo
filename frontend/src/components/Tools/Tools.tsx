@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { TodoItem } from '@/types/todo';
 import { TerminalCommand } from '@/types/terminal';
+import { CodeInterpreterState } from '@/types/code_interpreter';
 import { TodoInput } from './TodoInput';
 import { TodoItemComponent } from './TodoItem';
 import { TodoStats } from './TodoStats';
@@ -8,13 +9,16 @@ import { BacklogInput } from './BacklogInput';
 import { BacklogItemComponent } from './BacklogItem';
 import { TerminalOutput } from './TerminalOutput';
 import { ApprovalList } from '../Approval/ApprovalList';
+import { CodeInterpreterInput } from '../CodeInterpreter/CodeInterpreterInput';
+import { CodeInterpreterItem } from '../CodeInterpreter/CodeInterpreterItem';
 import { useTodos } from '@/hooks/useTodos';
 import { useApprovals } from '@/hooks/useApprovals';
+import { useCodeInterpreter } from '@/hooks/useCodeInterpreter';
 import { useSSE } from '@/contexts/SSEContext';
 
 interface ToolsProps {
-  activeTab: 'todo' | 'backlog' | 'terminal' | 'approval';
-  setActiveTab: (tab: 'todo' | 'backlog' | 'terminal' | 'approval') => void;
+  activeTab: 'todo' | 'backlog' | 'terminal' | 'approval' | 'code-interpreter';
+  setActiveTab: (tab: 'todo' | 'backlog' | 'terminal' | 'approval' | 'code-interpreter') => void;
   terminalCommands: TerminalCommand[];
   isConnected: boolean;
 }
@@ -37,6 +41,7 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
   } = useTodos();
   const { lastEvent } = useSSE();
   const { approvals, loading: approvalsLoading, error: approvalsError, approveRequest, rejectRequest, refetch: refetchApprovals } = useApprovals();
+  const { states: codeInterpreterStates, loading: codeInterpreterLoading, error: codeInterpreterError, createState, updateState } = useCodeInterpreter();
 
   useEffect(() => {
     if (lastEvent) {
@@ -191,6 +196,16 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
         >
           Approval
         </button>
+        <button
+          onClick={() => setActiveTab('code-interpreter')}
+          className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
+            activeTab === 'code-interpreter'
+              ? 'bg-white border-b-2 border-blue-500 text-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Code Interpreter
+        </button>
       </div>
 
       {/* 错误提示 */}
@@ -268,6 +283,37 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
         <>
           <TerminalOutput commands={terminalCommands} disabled={loading} />
         </>
+      ) : activeTab === 'code-interpreter' ? (
+        <>
+          <CodeInterpreterInput 
+            onSubmit={createState} 
+            disabled={codeInterpreterLoading} 
+          />
+          
+          {codeInterpreterError && (
+            <div className="bg-red-50 border border-red-200 rounded-md p-4">
+              <p className="text-red-700">{codeInterpreterError}</p>
+            </div>
+          )}
+          
+          <div className="space-y-4">
+            {codeInterpreterStates.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <p>暂无代码解释器状态</p>
+                <p className="text-sm mt-1">提交一段代码开始吧！</p>
+              </div>
+            ) : (
+              codeInterpreterStates.map((state) => (
+                <CodeInterpreterItem
+                  key={state.id}
+                  state={state}
+                  onUpdate={updateState}
+                  disabled={codeInterpreterLoading}
+                />
+              ))
+            )}
+          </div>
+        </>
       ) : (
         <>
           <ApprovalList 
@@ -316,6 +362,28 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
                   <li><code>cat_run_sh()</code> - 查看 run.sh 文件内容</li>
                   <li><code>bash_run_sh()</code> - 执行 run.sh 脚本</li>
                 </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'code-interpreter' && (
+        <div className="bg-purple-50 border border-purple-200 rounded-md p-4">
+          <div className="flex">
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-purple-800">Code Interpreter MCP 工具提示</h3>
+              <div className="mt-2 text-sm text-purple-700">
+                <p>
+                  这个 Code Interpreter 组件可以通过 MCP 工具执行代码。尝试使用以下 MCP 命令：
+                </p>
+                <ul className="mt-2 list-disc list-inside space-y-1">
+                  <li><code>create_state("session_id", "print('Hello World')", "测试代码")</code></li>
+                  <li><code>get_state("session_id", "state_id")</code></li>
+                </ul>
+                <p className="mt-2">
+                  提交代码后，点击"打开执行界面"按钮访问 widget URL 来实际执行代码。
+                </p>
               </div>
             </div>
           </div>

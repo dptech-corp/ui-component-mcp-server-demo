@@ -90,6 +90,21 @@ class Database:
                         INDEX idx_status (status)
                     )
                 """)
+                
+                await cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS code_interpreter_states (
+                        id VARCHAR(255) PRIMARY KEY,
+                        session_id VARCHAR(255) NOT NULL,
+                        ticket_id VARCHAR(255) NOT NULL,
+                        code TEXT NOT NULL,
+                        description TEXT,
+                        status VARCHAR(50) DEFAULT 'pending',
+                        result TEXT,
+                        widget_url TEXT,
+                        created_at BIGINT NOT NULL,
+                        updated_at BIGINT NOT NULL
+                    )
+                """)
                 await conn.commit()
     
     @asynccontextmanager
