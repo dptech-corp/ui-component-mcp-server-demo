@@ -62,6 +62,11 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
             refetchApprovals();
           }
           break;
+        case 'code_interpreter_state_created':
+          if (lastEvent.data?.state) {
+            setActiveTab('code-interpreter');
+          }
+          break;
       }
     }
   }, [lastEvent, setActiveTab]);
