@@ -3,12 +3,17 @@
 import os
 import time
 import uuid
+import json
 from typing import Optional
-
+import logging
 import httpx
 from fastmcp import FastMCP
 
 from ..redis_client import RedisClient
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+logger.addHandler(logging.StreamHandler())
+
 
 def register_code_interpreter_tools(mcp: FastMCP, redis_client: RedisClient):
     """Register code interpreter-related MCP tools."""
@@ -32,17 +37,17 @@ def register_code_interpreter_tools(mcp: FastMCP, redis_client: RedisClient):
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    f"https://uni-interpreter.mlops.dp.tech/state/{state_id}",
+                    f"https://uni-interpreter.mlops.dp.tech/state/{state_id}?token={token}",
                     headers={
-                        "Authorization": f"Bearer {token}",
                         "Content-Type": "application/json"
                     },
-                    json={
-                        "source": code,
-                        "description": description
-                    }
+                    data=json.dumps({
+                        "source": code
+                    })
                 )
                 response.raise_for_status()
+                
+                logger.info(f"Created code interpreter state: {state_id}, code: {code}, response: {response.json()}")
                 
                 message = {
                     "id": str(uuid.uuid4()),
