@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { TodoItem } from '@/types/todo';
 import { TerminalCommand } from '@/types/terminal';
-import { CodeInterpreterState } from '@/types/code_interpreter';
 import { TodoInput } from './TodoInput';
 import { TodoItemComponent } from './TodoItem';
 import { TodoStats } from './TodoStats';
