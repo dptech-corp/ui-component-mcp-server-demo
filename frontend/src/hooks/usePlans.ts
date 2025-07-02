@@ -32,11 +32,11 @@ export function usePlans(): UsePlansReturn {
     if (lastEvent) {
       switch (lastEvent.event) {
         case 'plan_added':
-          if (lastEvent.data.todo) {
+          if (lastEvent.data.plan) {
             setPlans(prev => {
-              const exists = prev.some(plan => plan.id === lastEvent.data.todo.id);
+              const exists = prev.some(plan => plan.id === lastEvent.data.plan.id);
               if (!exists) {
-                return [...prev, lastEvent.data.todo];
+                return [...prev, lastEvent.data.plan];
               }
               return prev;
             });
@@ -44,22 +44,22 @@ export function usePlans(): UsePlansReturn {
           break;
           
         case 'plan_updated':
-          if (lastEvent.data.todo) {
+          if (lastEvent.data.plan) {
             setPlans(prev => prev.map(plan => 
-              plan.id === lastEvent.data.todo.id ? lastEvent.data.todo : plan
+              plan.id === lastEvent.data.plan.id ? lastEvent.data.plan : plan
             ));
           }
           break;
           
         case 'plan_deleted':
-          if (lastEvent.data.todoId) {
-            setPlans(prev => prev.filter(plan => plan.id !== lastEvent.data.todoId));
+          if (lastEvent.data.planId) {
+            setPlans(prev => prev.filter(plan => plan.id !== lastEvent.data.planId));
           }
           break;
           
         case 'plan_list':
-          if (lastEvent.data.todos) {
-            setPlans(lastEvent.data.todos);
+          if (lastEvent.data.plans) {
+            setPlans(lastEvent.data.plans);
           }
           break;
           
