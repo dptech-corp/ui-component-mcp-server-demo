@@ -152,13 +152,13 @@ class RedisService:
                     title=data.get("title", ""),
                     description=data.get("description", "")
                 )
-                await sse_service.send_event("plan_added", {"todo": todo.dict()})
+                await sse_service.send_event("plan_added", {"plan": todo.dict()})
                 
             elif action == "delete":
                 plan_id = payload.get("planId")
                 if plan_id:
                     await todo_service.delete_todo(plan_id)
-                    await sse_service.send_event("plan_deleted", {"todoId": plan_id})
+                    await sse_service.send_event("plan_deleted", {"planId": plan_id})
                     
             elif action == "update":
                 plan_id = payload.get("planId")
@@ -166,19 +166,19 @@ class RedisService:
                 if plan_id:
                     todo = await todo_service.update_todo(plan_id, **data)
                     if todo:
-                        await sse_service.send_event("plan_updated", {"todo": todo.dict()})
+                        await sse_service.send_event("plan_updated", {"plan": todo.dict()})
                         
             elif action == "toggle":
                 plan_id = payload.get("planId")
                 if plan_id:
                     todo = await todo_service.toggle_todo(plan_id)
                     if todo:
-                        await sse_service.send_event("plan_updated", {"todo": todo.dict()})
+                        await sse_service.send_event("plan_updated", {"plan": todo.dict()})
                         
             elif action == "list":
                 todos = await todo_service.get_all_todos()
                 todos_data = [todo.dict() for todo in todos]
-                await sse_service.send_event("plan_list", {"todos": todos_data})
+                await sse_service.send_event("plan_list", {"plans": todos_data})
                         
         except Exception as e:
             print(f"Error handling plan action: {e}")
@@ -219,7 +219,7 @@ class RedisService:
                     result = await backlog_service.send_to_todo(backlog_id)
                     if result:
                         await sse_service.send_event("backlog_sent_to_todo", result)
-                        await sse_service.send_event("todo_added", {"todo": result["todo"]})
+                        await sse_service.send_event("plan_added", {"plan": result["todo"]})
                         await sse_service.send_event("backlog_deleted", {"backlogId": backlog_id})
                         
             elif action == "list":
