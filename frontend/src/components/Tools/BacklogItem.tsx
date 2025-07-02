@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BacklogItem } from '@/types/todo';
+import { BacklogItem } from '@/types/plan';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
