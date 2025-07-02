@@ -140,7 +140,8 @@ def create_agent():
             headers={}
         ),
         tool_filter=["ls", "cat_run_sh", "bash_run_sh", 
-                    "create_python_notebook", "get_notebook_state"]
+                    "create_python_notebook", "get_notebook_state",
+                    "create_file_tool", "list_files_tool"]
     )
 
     
@@ -205,6 +206,13 @@ def create_agent():
 2. 构建数据分析流水线和可视化界面
 3. 集成各种表征设备的数据采集和处理系统
 4. 提供代码优化和软件架构设计建议
+5. 文件管理和创建，包括创建文件和列出文件系统内容
+
+你可以使用以下工具：
+- create_file_tool: 创建新文件，指定文件名、路径和内容
+- list_files_tool: 列出系统中的所有文件
+- ls, cat_run_sh, bash_run_sh: 执行系统命令和文件操作
+- create_python_notebook, get_notebook_state: 管理Python笔记本
 
 请根据用户的软件开发需求，提供专业的代码实现、架构设计或优化建议。""",
         tools=[software_expert_mcp_toolset]
