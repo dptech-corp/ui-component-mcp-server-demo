@@ -3,6 +3,7 @@
 import asyncio
 import json
 import time
+import uuid
 from typing import Optional
 
 from redis.asyncio import Redis
@@ -28,7 +29,8 @@ class RedisService:
         await self.pubsub.subscribe("terminal:actions")
         await self.pubsub.subscribe("approval:requests")
         await self.pubsub.subscribe("code_interpreter:actions")
-        print("Successfully subscribed to todo:actions, backlog:actions, terminal:actions, approval:requests, and code_interpreter:actions")
+        await self.pubsub.subscribe("file:actions")
+        print("Successfully subscribed to todo:actions, backlog:actions, terminal:actions, approval:requests, code_interpreter:actions, and file:actions")
         
     async def disconnect(self):
         """Disconnect from Redis."""
@@ -100,6 +102,8 @@ class RedisService:
             await self._handle_terminal_action(message)
         elif message_type == "code_interpreter_action":
             await self._handle_code_interpreter_action(message)
+        elif message_type == "file_action":
+            await self._handle_file_action(message)
         else:
             print(f"Unknown message type: {message_type}")
     
@@ -292,3 +296,44 @@ class RedisService:
                         
         except Exception as e:
             print(f"Error handling code interpreter action: {e}")
+    
+    async def _handle_file_action(self, message: dict):
+        """Handle file action messages."""
+        from ..main import sse_service
+        from ..models.file import File
+        from ..services.file_service import file_service
+        
+        payload = message.get("payload", {})
+        action = payload.get("action")
+        
+        try:
+            if action == "create":
+                data = payload.get("data", {})
+                file = File(
+                    id=data.get("id", str(uuid.uuid4())),
+                    session_id=data.get("session_id", "default_session"),
+                    name=data.get("name", ""),
+                    type=data.get("type", "file"),
+                    path=data.get("path", ""),
+                    size=data.get("size"),
+                    content=data.get("content"),
+                    created_at=data.get("created_at", int(time.time() * 1000)),
+                    updated_at=data.get("updated_at", int(time.time() * 1000))
+                )
+                created_file = await file_service.create_file(file)
+                await sse_service.send_event("file_created", {"file": created_file.dict()})
+                
+            elif action == "list":
+                files = await file_service.get_all_files()
+                files_data = [file.dict() for file in files]
+                await sse_service.send_event("file_list", {"files": files_data})
+                
+            elif action == "delete":
+                file_id = payload.get("fileId")
+                if file_id:
+                    success = await file_service.delete_file(file_id)
+                    if success:
+                        await sse_service.send_event("file_deleted", {"fileId": file_id})
+                        
+        except Exception as e:
+            print(f"Error handling file action: {e}")

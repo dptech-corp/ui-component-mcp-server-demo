@@ -318,7 +318,7 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
         </>
       ) : activeTab === 'file-browser' ? (
         <>
-          <FileBrowser disabled={loading} />
+          <FileBrowser disabled={loading || !isConnected} />
         </>
       ) : (
         <>

@@ -17,7 +17,7 @@ from .services.sse_service import SSEService
 from .services.todo_service import TodoService
 from .services.backlog_service import BacklogService
 from .services.code_interpreter_service import CodeInterpreterService
-from .routers import todos, approvals, backlogs, events, health, agent, code_interpreter
+from .routers import todos, approvals, backlogs, events, health, agent, code_interpreter, files
 
 
 redis_service = RedisService()
@@ -65,6 +65,7 @@ app.include_router(todos.router, prefix="/api")
 app.include_router(approvals.router, prefix="/api")
 app.include_router(backlogs.router, prefix="/api")
 app.include_router(code_interpreter.router, prefix="/api")
+app.include_router(files.router, prefix="/api")
 app.include_router(agent.router, prefix="/api")
 
 app.state.redis_service = redis_service

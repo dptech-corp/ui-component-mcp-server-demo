@@ -1,129 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Folder, File, FolderOpen, ChevronRight, ChevronDown } from 'lucide-react';
 import { FileItem } from '@/types/file';
+import { useFiles } from '@/hooks/useFiles';
 
 interface FileBrowserProps {
   disabled?: boolean;
 }
 
-const mockFileStructure: FileItem[] = [
-  {
-    id: '1',
-    name: 'src',
-    type: 'folder',
-    modified: Date.now() - 86400000,
-    path: '/src',
-    expanded: true,
-    children: [
-      {
-        id: '2',
-        name: 'components',
-        type: 'folder',
-        modified: Date.now() - 3600000,
-        path: '/src/components',
-        expanded: false,
-        children: [
-          {
-            id: '3',
-            name: 'Button.tsx',
-            type: 'file',
-            size: 2048,
-            modified: Date.now() - 1800000,
-            path: '/src/components/Button.tsx'
-          },
-          {
-            id: '4',
-            name: 'Input.tsx',
-            type: 'file',
-            size: 1536,
-            modified: Date.now() - 3600000,
-            path: '/src/components/Input.tsx'
-          }
-        ]
-      },
-      {
-        id: '5',
-        name: 'utils',
-        type: 'folder',
-        modified: Date.now() - 7200000,
-        path: '/src/utils',
-        expanded: false,
-        children: [
-          {
-            id: '6',
-            name: 'helpers.ts',
-            type: 'file',
-            size: 1024,
-            modified: Date.now() - 7200000,
-            path: '/src/utils/helpers.ts'
-          }
-        ]
-      },
-      {
-        id: '7',
-        name: 'App.tsx',
-        type: 'file',
-        size: 4096,
-        modified: Date.now() - 1800000,
-        path: '/src/App.tsx'
-      },
-      {
-        id: '8',
-        name: 'index.ts',
-        type: 'file',
-        size: 512,
-        modified: Date.now() - 86400000,
-        path: '/src/index.ts'
-      }
-    ]
-  },
-  {
-    id: '9',
-    name: 'public',
-    type: 'folder',
-    modified: Date.now() - 172800000,
-    path: '/public',
-    expanded: false,
-    children: [
-      {
-        id: '10',
-        name: 'index.html',
-        type: 'file',
-        size: 1024,
-        modified: Date.now() - 172800000,
-        path: '/public/index.html'
-      },
-      {
-        id: '11',
-        name: 'favicon.ico',
-        type: 'file',
-        size: 256,
-        modified: Date.now() - 172800000,
-        path: '/public/favicon.ico'
-      }
-    ]
-  },
-  {
-    id: '12',
-    name: 'package.json',
-    type: 'file',
-    size: 2048,
-    modified: Date.now() - 86400000,
-    path: '/package.json'
-  },
-  {
-    id: '13',
-    name: 'README.md',
-    type: 'file',
-    size: 3072,
-    modified: Date.now() - 259200000,
-    path: '/README.md'
-  }
-];
 
 export function FileBrowser({ disabled }: FileBrowserProps) {
-  const [fileStructure, setFileStructure] = useState<FileItem[]>(mockFileStructure);
+  const { files, loading, error } = useFiles();
+  const [fileStructure, setFileStructure] = useState<FileItem[]>([]);
   const [selectedItem, setSelectedItem] = useState<FileItem | null>(null);
+
+  useEffect(() => {
+    setFileStructure(files);
+  }, [files]);
 
   const formatFileSize = (bytes?: number) => {
     if (!bytes) return '';
@@ -218,7 +110,15 @@ export function FileBrowser({ disabled }: FileBrowserProps) {
         </div>
         
         <div className="max-h-96 overflow-y-auto">
-          {fileStructure.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-8 text-gray-500">
+              <p>加载中...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8 text-red-500">
+              <p>加载失败: {error}</p>
+            </div>
+          ) : fileStructure.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <File className="mx-auto h-12 w-12 text-gray-400 mb-4" />
               <p>暂无文件</p>
@@ -252,16 +152,16 @@ export function FileBrowser({ disabled }: FileBrowserProps) {
       <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
         <div className="flex">
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-gray-800">文件浏览器提示</h3>
+            <h3 className="text-sm font-medium text-gray-800">文件浏览器</h3>
             <div className="mt-2 text-sm text-gray-700">
               <p>
-                这是一个模拟的文件浏览器，展示了典型的项目文件结构。
+                显示系统中的所有文件，支持通过 MCP 工具创建和管理。
               </p>
               <ul className="mt-2 list-disc list-inside space-y-1">
                 <li>点击文件夹可以展开/收起</li>
                 <li>点击文件可以查看详细信息</li>
                 <li>支持嵌套文件夹结构</li>
-                <li>显示文件大小和修改时间</li>
+                <li>实时更新文件变化</li>
               </ul>
             </div>
           </div>

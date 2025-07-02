@@ -104,6 +104,23 @@ class Database:
                         updated_at BIGINT NOT NULL
                     )
                 """)
+                
+                await cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS files (
+                        id VARCHAR(255) PRIMARY KEY,
+                        session_id VARCHAR(255) NOT NULL,
+                        name VARCHAR(255) NOT NULL,
+                        type VARCHAR(50) NOT NULL,
+                        path TEXT NOT NULL,
+                        size BIGINT,
+                        content LONGTEXT,
+                        created_at BIGINT NOT NULL,
+                        updated_at BIGINT NOT NULL,
+                        INDEX idx_session_id (session_id),
+                        INDEX idx_path (path),
+                        INDEX idx_type (type)
+                    )
+                """)
                 await conn.commit()
     
     @asynccontextmanager
