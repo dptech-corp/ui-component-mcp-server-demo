@@ -12,6 +12,8 @@ class SSEService:
     
     def __init__(self):
         self.connections: Set[asyncio.Queue] = set()
+        self._cleanup_task = None
+        self._start_cleanup_task()
         
     async def add_connection(self) -> asyncio.Queue:
         """Add a new SSE connection."""
@@ -62,3 +64,31 @@ class SSEService:
             print(f"SSE stream error: {e}")
         finally:
             await self.remove_connection(queue)
+            
+    def _start_cleanup_task(self):
+        """Start background task to clean up dead connections."""
+        if self._cleanup_task is None or self._cleanup_task.done():
+            self._cleanup_task = asyncio.create_task(self._cleanup_connections())
+    
+    async def _cleanup_connections(self):
+        """Periodically clean up dead connections."""
+        while True:
+            try:
+                await asyncio.sleep(60)
+                dead_connections = set()
+                
+                for queue in self.connections.copy():
+                    try:
+                        if queue.qsize() > 100:
+                            dead_connections.add(queue)
+                    except Exception:
+                        dead_connections.add(queue)
+                
+                for queue in dead_connections:
+                    self.connections.discard(queue)
+                    
+                if dead_connections:
+                    print(f"Cleaned up {len(dead_connections)} dead SSE connections")
+                    
+            except Exception as e:
+                print(f"Error in SSE cleanup task: {e}")
