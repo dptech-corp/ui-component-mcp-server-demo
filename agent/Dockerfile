@@ -17,11 +17,10 @@ RUN pip install pymysql cryptography
 COPY pyproject.toml uv.lock ./
 
 # Install dependencies
-RUN uv sync --frozen --no-dev
+RUN uv sync
 
 # Copy application code
 COPY src/ ./src/
-RUN rm -rf ./src/ui_component_agent.egg-info
 COPY start_web.sh start_api.sh ./
 
 # Make scripts executable
