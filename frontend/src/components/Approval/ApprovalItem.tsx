@@ -5,6 +5,7 @@ interface ApprovalItemProps {
   approval: Approval;
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
+  onDelete: (id: string) => void;
   disabled?: boolean;
 }
 
@@ -55,10 +56,10 @@ const ConfirmationDialog = ({
   );
 };
 
-export function ApprovalItem({ approval, onApprove, onReject, disabled }: ApprovalItemProps) {
+export function ApprovalItem({ approval, onApprove, onReject, onDelete, disabled }: ApprovalItemProps) {
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
-    type: 'approve' | 'reject';
+    type: 'approve' | 'reject' | 'delete';
   }>({
     isOpen: false,
     type: 'approve'
@@ -89,11 +90,17 @@ export function ApprovalItem({ approval, onApprove, onReject, disabled }: Approv
     setConfirmDialog({ isOpen: true, type: 'reject' });
   };
 
+  const handleDelete = () => {
+    setConfirmDialog({ isOpen: true, type: 'delete' });
+  };
+
   const confirmAction = () => {
     if (confirmDialog.type === 'approve') {
       onApprove(approval.id);
-    } else {
+    } else if (confirmDialog.type === 'reject') {
       onReject(approval.id);
+    } else if (confirmDialog.type === 'delete') {
+      onDelete(approval.id);
     }
     setConfirmDialog({ isOpen: false, type: 'approve' });
   };
@@ -127,39 +134,58 @@ export function ApprovalItem({ approval, onApprove, onReject, disabled }: Approv
             </div>
           </div>
           
-          {approval.status === 'pending' && (
-            <div className="flex space-x-2 ml-4">
-              <button
-                onClick={handleApprove}
-                disabled={disabled}
-                className="px-3 py-1 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Approve
-              </button>
-              <button
-                onClick={handleReject}
-                disabled={disabled}
-                className="px-3 py-1 text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Reject
-              </button>
-            </div>
-          )}
+          <div className="flex space-x-2 ml-4">
+            {approval.status === 'pending' && (
+              <>
+                <button
+                  onClick={handleApprove}
+                  disabled={disabled}
+                  className="px-3 py-1 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Approve
+                </button>
+                <button
+                  onClick={handleReject}
+                  disabled={disabled}
+                  className="px-3 py-1 text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Reject
+                </button>
+              </>
+            )}
+            <button
+              onClick={handleDelete}
+              disabled={disabled}
+              className="px-3 py-1 text-sm font-medium text-white bg-gray-600 rounded hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Delete
+            </button>
+          </div>
         </div>
       </div>
 
       <ConfirmationDialog
         isOpen={confirmDialog.isOpen}
-        title={confirmDialog.type === 'approve' ? 'Confirm Approval' : 'Confirm Rejection'}
+        title={
+          confirmDialog.type === 'approve' ? 'Confirm Approval' : 
+          confirmDialog.type === 'reject' ? 'Confirm Rejection' : 
+          'Confirm Deletion'
+        }
         message={`Are you sure you want to ${confirmDialog.type} this request?\n\n"${approval.description}"`}
-        confirmText={confirmDialog.type === 'approve' ? 'Approve' : 'Reject'}
+        confirmText={
+          confirmDialog.type === 'approve' ? 'Approve' : 
+          confirmDialog.type === 'reject' ? 'Reject' : 
+          'Delete'
+        }
         cancelText="Cancel"
         onConfirm={confirmAction}
         onCancel={cancelAction}
         confirmButtonClass={
           confirmDialog.type === 'approve' 
             ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
-            : 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
+            : confirmDialog.type === 'reject'
+            ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
+            : 'bg-gray-600 hover:bg-gray-700 focus:ring-gray-500'
         }
       />
     </>

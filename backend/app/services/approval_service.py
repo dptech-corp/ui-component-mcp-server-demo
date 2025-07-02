@@ -97,5 +97,14 @@ class ApprovalService:
                         continue
                 
                 return approvals
+    
+    async def delete_approval(self, approval_id: str) -> bool:
+        """Delete an approval request."""
+        async with database.get_connection() as conn:
+            async with conn.cursor() as cursor:
+                await cursor.execute("DELETE FROM approvals WHERE id = %s", (approval_id,))
+                await conn.commit()
+                
+                return cursor.rowcount > 0
 
 approval_service = ApprovalService()

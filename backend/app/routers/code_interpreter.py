@@ -53,3 +53,17 @@ async def update_state(state_id: str, state_data: CodeInterpreterUpdateRequest, 
     await sse_service.send_event("code_interpreter_state_updated", {"state": state.dict()})
     
     return state
+
+@router.delete("/code-interpreter/states/{state_id}")
+async def delete_state(state_id: str, request: Request):
+    """Delete a code interpreter state."""
+    code_interpreter_service = request.app.state.code_interpreter_service
+    sse_service = request.app.state.sse_service
+    
+    success = await code_interpreter_service.delete_state(state_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="State not found")
+    
+    await sse_service.send_event("code_interpreter_state_deleted", {"stateId": state_id})
+    
+    return {"message": "Code interpreter state deleted successfully"}

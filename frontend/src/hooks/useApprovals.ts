@@ -61,12 +61,28 @@ export function useApprovals() {
     fetchApprovals();
   }, []);
 
+  const deleteApproval = async (approvalId: string) => {
+    try {
+      const response = await fetch(`${apiUrl}/api/approvals/${approvalId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      await fetchApprovals();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete approval');
+      console.error('Error deleting approval:', err);
+    }
+  };
+
   return {
     approvals,
     loading,
     error,
     approveRequest,
     rejectRequest,
+    deleteApproval,
     refetch: fetchApprovals,
   };
 }

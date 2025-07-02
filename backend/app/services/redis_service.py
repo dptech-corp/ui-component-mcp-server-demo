@@ -283,5 +283,12 @@ class RedisService:
                     if state:
                         await sse_service.send_event("code_interpreter_state_retrieved", {"state": state.dict()})
                         
+            elif action == "delete":
+                state_id = payload.get("state_id")
+                if state_id:
+                    success = await code_interpreter_service.delete_state(state_id)
+                    if success:
+                        await sse_service.send_event("code_interpreter_state_deleted", {"stateId": state_id})
+                        
         except Exception as e:
             print(f"Error handling code interpreter action: {e}")

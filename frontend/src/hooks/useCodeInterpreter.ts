@@ -34,6 +34,12 @@ export function useCodeInterpreter(): CodeInterpreterHookReturn {
           }
           break;
           
+        case 'code_interpreter_state_deleted':
+          if (lastEvent.data.stateId) {
+            setStates((prev: CodeInterpreterState[]) => prev.filter((state: CodeInterpreterState) => state.id !== lastEvent.data.stateId));
+          }
+          break;
+          
         case 'code_interpreter_state_retrieved':
           if (lastEvent.data.state) {
             setStates((prev: CodeInterpreterState[]) => {
@@ -164,6 +170,28 @@ export function useCodeInterpreter(): CodeInterpreterHookReturn {
     }
   }, [apiUrl]);
 
+  const deleteState = useCallback(async (id: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch(`${apiUrl}/api/code-interpreter/states/${id}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '删除代码解释器状态失败';
+      setError(errorMessage);
+      console.error('Failed to delete code interpreter state:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [apiUrl]);
+
   const selectState = useCallback((state: CodeInterpreterState | null) => {
     setSelectedState(state);
   }, []);
@@ -179,6 +207,7 @@ export function useCodeInterpreter(): CodeInterpreterHookReturn {
     error,
     createState,
     updateState,
+    deleteState,
     getState,
     fetchStates,
     selectState,

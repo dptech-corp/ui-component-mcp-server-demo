@@ -39,8 +39,8 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
     moveToTodo
   } = useTodos();
   const { lastEvent } = useSSE();
-  const { approvals, loading: approvalsLoading, error: approvalsError, approveRequest, rejectRequest, refetch: refetchApprovals } = useApprovals();
-  const { states: codeInterpreterStates, selectedState, loading: codeInterpreterLoading, error: codeInterpreterError, selectState } = useCodeInterpreter();
+  const { approvals, loading: approvalsLoading, error: approvalsError, approveRequest, rejectRequest, deleteApproval, refetch: refetchApprovals } = useApprovals();
+  const { states: codeInterpreterStates, selectedState, loading: codeInterpreterLoading, error: codeInterpreterError, selectState, deleteState } = useCodeInterpreter();
 
   useEffect(() => {
     if (lastEvent) {
@@ -300,6 +300,7 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
               loading={codeInterpreterLoading}
               error={codeInterpreterError}
               onSelectState={selectState}
+              onDeleteState={deleteState}
               selectedState={selectedState}
             />
           )}
@@ -312,6 +313,7 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
             error={approvalsError}
             onApprove={approveRequest}
             onReject={rejectRequest}
+            onDelete={deleteApproval}
           />
         </>
       )}

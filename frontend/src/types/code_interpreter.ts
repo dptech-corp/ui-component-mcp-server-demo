@@ -27,6 +27,7 @@ export interface CodeInterpreterHookReturn {
   selectedState: CodeInterpreterState | null;
   createState: (code: string, description?: string) => Promise<void>;
   updateState: (id: string, updates: Partial<CodeInterpreterState>) => Promise<void>;
+  deleteState: (id: string) => Promise<void>;
   getState: (id: string) => Promise<void>;
   fetchStates: () => Promise<void>;
   selectState: (state: CodeInterpreterState | null) => void;

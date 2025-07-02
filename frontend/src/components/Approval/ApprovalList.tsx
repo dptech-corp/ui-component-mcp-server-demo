@@ -8,9 +8,10 @@ interface ApprovalListProps {
   error: string | null;
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
-export function ApprovalList({ approvals, loading, error, onApprove, onReject }: ApprovalListProps) {
+export function ApprovalList({ approvals, loading, error, onApprove, onReject, onDelete }: ApprovalListProps) {
 
   if (loading) {
     return (
@@ -54,6 +55,7 @@ export function ApprovalList({ approvals, loading, error, onApprove, onReject }:
             approval={approval}
             onApprove={() => onApprove(approval.id)}
             onReject={() => onReject(approval.id)}
+            onDelete={() => onDelete(approval.id)}
           />
         ))}
       </div>

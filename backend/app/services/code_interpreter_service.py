@@ -127,5 +127,14 @@ class CodeInterpreterService:
             state.updated_at = timestamp
         
         return state
+    
+    async def delete_state(self, state_id: str) -> bool:
+        """Delete a code interpreter state."""
+        async with database.get_connection() as conn:
+            async with conn.cursor() as cursor:
+                await cursor.execute("DELETE FROM code_interpreter_states WHERE id = %s", (state_id,))
+                await conn.commit()
+                
+                return cursor.rowcount > 0
 
 code_interpreter_service = CodeInterpreterService()

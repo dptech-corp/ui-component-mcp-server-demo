@@ -5,6 +5,7 @@ interface CodeInterpreterListProps {
   loading: boolean;
   error: string | null;
   onSelectState: (state: CodeInterpreterState) => void;
+  onDeleteState: (id: string) => void;
   selectedState: CodeInterpreterState | null;
 }
 
@@ -13,6 +14,7 @@ export function CodeInterpreterList({
   loading, 
   error, 
   onSelectState, 
+  onDeleteState,
   selectedState 
 }: CodeInterpreterListProps) {
   const getStatusColor = (status: string) => {
@@ -80,24 +82,39 @@ export function CodeInterpreterList({
       {states.map((state) => (
         <div
           key={state.id}
-          onClick={() => onSelectState(state)}
-          className={`bg-white border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
+          className={`bg-white border rounded-lg p-4 transition-colors ${
             selectedState?.id === state.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
           }`}
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-900">{state.ticket_id}</span>
-            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(state.status)}`}>
-              {getStatusText(state.status)}
-            </span>
-          </div>
-          
-          {state.description && (
-            <p className="text-sm text-gray-600 mb-2">{state.description}</p>
-          )}
-          
-          <div className="text-xs text-gray-500">
-            创建时间: {formatTimestamp(state.created_at)}
+          <div 
+            onClick={() => onSelectState(state)}
+            className="cursor-pointer hover:bg-gray-50 transition-colors -m-4 p-4 rounded-lg"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-gray-900">{state.ticket_id}</span>
+              <div className="flex items-center gap-2">
+                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(state.status)}`}>
+                  {getStatusText(state.status)}
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteState(state.id);
+                  }}
+                  className="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                >
+                  删除
+                </button>
+              </div>
+            </div>
+            
+            {state.description && (
+              <p className="text-sm text-gray-600 mb-2">{state.description}</p>
+            )}
+            
+            <div className="text-xs text-gray-500">
+              创建时间: {formatTimestamp(state.created_at)}
+            </div>
           </div>
         </div>
       ))}

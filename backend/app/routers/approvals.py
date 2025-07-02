@@ -78,3 +78,22 @@ async def reject_request(approval_id: str):
     except Exception as e:
         print(f"Error rejecting request: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/approvals/{approval_id}")
+async def delete_approval(approval_id: str):
+    """Delete an approval request."""
+    try:
+        from ..main import sse_service
+        
+        success = await approval_service.delete_approval(approval_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Approval not found")
+        
+        await sse_service.send_event("approval_deleted", {"approvalId": approval_id})
+        
+        return {"message": "Approval deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error deleting approval: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
