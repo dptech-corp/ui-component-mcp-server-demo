@@ -1,8 +1,8 @@
 /**
- * Shared Todo types
+ * Shared Plan types
  */
 
-export interface TodoItem {
+export interface PlanItem {
   id: string;
   title: string;
   description?: string;
@@ -11,18 +11,18 @@ export interface TodoItem {
   updatedAt: number;
 }
 
-export interface TodoState {
-  items: TodoItem[];
+export interface PlanState {
+  items: PlanItem[];
   loading: boolean;
   error?: string;
 }
 
-export interface TodoCreateRequest {
+export interface PlanCreateRequest {
   title: string;
   description?: string;
 }
 
-export interface TodoUpdateRequest {
+export interface PlanUpdateRequest {
   title?: string;
   description?: string;
   completed?: boolean;

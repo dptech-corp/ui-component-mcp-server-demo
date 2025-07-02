@@ -80,9 +80,9 @@ const { isConnected, lastEvent } = useSSE('/events');
 ```
 
 支持的 SSE 事件：
-- `todo_added`: 新增 todo
-- `todo_updated`: 更新 todo
-- `todo_deleted`: 删除 todo
+- `plan_added`: 新增 plan
+- `plan_updated`: 更新 plan
+- `plan_deleted`: 删除 plan
 
 ### 状态管理
 

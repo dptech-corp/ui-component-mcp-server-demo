@@ -3,15 +3,15 @@
  */
 
 export const REDIS_CHANNELS = {
-  TODO_ACTIONS: 'todo:actions',
-  TODO_EVENTS: 'todo:events',
+  PLAN_ACTIONS: 'plan:actions',
+  PLAN_EVENTS: 'plan:events',
   COMPONENT_STATE: 'component:state',
 } as const;
 
 export const SSE_EVENTS = {
-  TODO_ADDED: 'todo_added',
-  TODO_UPDATED: 'todo_updated',
-  TODO_DELETED: 'todo_deleted',
+  PLAN_ADDED: 'plan_added',
+  PLAN_UPDATED: 'plan_updated',
+  PLAN_DELETED: 'plan_deleted',
   BACKLOG_DELETED: 'backlog_deleted',
   APPROVAL_DELETED: 'approval_deleted',
   CODE_INTERPRETER_STATE_DELETED: 'code_interpreter_state_deleted',

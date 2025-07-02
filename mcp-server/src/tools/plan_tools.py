@@ -1,4 +1,4 @@
-"""Todo component MCP tools."""
+"""Plan component MCP tools."""
 
 import time
 import uuid
@@ -8,27 +8,27 @@ from fastmcp import FastMCP
 
 from ..redis_client import RedisClient
 
-def register_todo_tools(mcp: FastMCP, redis_client: RedisClient):
-    """Register todo-related MCP tools."""
+def register_plan_tools(mcp: FastMCP, redis_client: RedisClient):
+    """Register plan-related MCP tools."""
     
     @mcp.tool()
-    async def add_todo(title: str, description: str = "") -> dict:
-        """添加新的 todo 项
+    async def add_plan(title: str, description: str = "") -> dict:
+        """添加新的 plan 项
         
         Args:
-            title: Todo 标题
-            description: Todo 描述 (可选)
+            title: Plan 标题
+            description: Plan 描述 (可选)
             
         Returns:
             操作结果
         """
         message = {
             "id": str(uuid.uuid4()),
-            "type": "todo_action",
+            "type": "plan_action",
             "timestamp": int(time.time() * 1000),
             "source": "mcp",
-            "target": "todo_component",
-            "component": "todo",
+            "target": "plan_component",
+            "component": "plan",
             "payload": {
                 "action": "add",
                 "data": {
@@ -38,45 +38,45 @@ def register_todo_tools(mcp: FastMCP, redis_client: RedisClient):
             }
         }
         
-        await redis_client.publish_message("todo:actions", message)
-        return {"success": True, "message": f"Todo '{title}' added successfully"}
+        await redis_client.publish_message("plan:actions", message)
+        return {"success": True, "message": f"Plan '{title}' added successfully"}
     
     @mcp.tool()
-    async def delete_todo(todo_id: str) -> dict:
-        """删除指定的 todo 项
+    async def delete_plan(plan_id: str) -> dict:
+        """删除指定的 plan 项
         
         Args:
-            todo_id: Todo 项的 ID
+            plan_id: Plan 项的 ID
             
         Returns:
             操作结果
         """
         message = {
             "id": str(uuid.uuid4()),
-            "type": "todo_action",
+            "type": "plan_action",
             "timestamp": int(time.time() * 1000),
             "source": "mcp",
-            "target": "todo_component",
-            "component": "todo",
+            "target": "plan_component",
+            "component": "plan",
             "payload": {
                 "action": "delete",
-                "todoId": todo_id
+                "planId": plan_id
             }
         }
         
-        await redis_client.publish_message("todo:actions", message)
-        return {"success": True, "message": f"Todo {todo_id} deleted successfully"}
+        await redis_client.publish_message("plan:actions", message)
+        return {"success": True, "message": f"Plan {plan_id} deleted successfully"}
     
     @mcp.tool()
-    async def update_todo(
-        todo_id: str, 
+    async def update_plan(
+        plan_id: str, 
         title: str = "", 
         description: str = ""
     ) -> dict:
-        """更新 todo 项内容
+        """更新 plan 项内容
         
         Args:
-            todo_id: Todo 项的 ID
+            plan_id: Plan 项的 ID
             title: 新的标题 (可选)
             description: 新的描述 (可选)
             
@@ -91,85 +91,85 @@ def register_todo_tools(mcp: FastMCP, redis_client: RedisClient):
             
         message = {
             "id": str(uuid.uuid4()),
-            "type": "todo_action",
+            "type": "plan_action",
             "timestamp": int(time.time() * 1000),
             "source": "mcp",
-            "target": "todo_component",
-            "component": "todo",
+            "target": "plan_component",
+            "component": "plan",
             "payload": {
                 "action": "update",
-                "todoId": todo_id,
+                "planId": plan_id,
                 "data": data
             }
         }
         
-        await redis_client.publish_message("todo:actions", message)
-        return {"success": True, "message": f"Todo {todo_id} updated successfully"}
+        await redis_client.publish_message("plan:actions", message)
+        return {"success": True, "message": f"Plan {plan_id} updated successfully"}
     
     @mcp.tool()
-    async def toggle_todo(todo_id: str) -> dict:
-        """切换 todo 完成状态
+    async def toggle_plan(plan_id: str) -> dict:
+        """切换 plan 完成状态
         
         Args:
-            todo_id: Todo 项的 ID
+            plan_id: Plan 项的 ID
             
         Returns:
             操作结果
         """
         message = {
             "id": str(uuid.uuid4()),
-            "type": "todo_action",
+            "type": "plan_action",
             "timestamp": int(time.time() * 1000),
             "source": "mcp",
-            "target": "todo_component",
-            "component": "todo",
+            "target": "plan_component",
+            "component": "plan",
             "payload": {
                 "action": "toggle",
-                "todoId": todo_id
+                "planId": plan_id
             }
         }
         
-        await redis_client.publish_message("todo:actions", message)
-        return {"success": True, "message": f"Todo {todo_id} status toggled successfully"}
+        await redis_client.publish_message("plan:actions", message)
+        return {"success": True, "message": f"Plan {plan_id} status toggled successfully"}
     
     @mcp.tool()
-    async def list_todo() -> dict:
-        """获取所有 todo 项列表
+    async def list_plan() -> dict:
+        """获取所有 plan 项列表
         
         Returns:
-            包含所有 todo 项的列表
+            包含所有 plan 项的列表
         """
         import httpx
         
         message = {
             "id": str(uuid.uuid4()),
-            "type": "todo_action",
+            "type": "plan_action",
             "timestamp": int(time.time() * 1000),
             "source": "mcp",
-            "target": "todo_component",
-            "component": "todo",
+            "target": "plan_component",
+            "component": "plan",
             "payload": {
                 "action": "list"
             }
         }
         
-        await redis_client.publish_message("todo:actions", message)
+        await redis_client.publish_message("plan:actions", message)
         
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.get("http://backend:8000/api/todos")
                 response.raise_for_status()
-                todos_data = response.json()
+                plans_data = response.json()
                 
                 return {
                     "success": True,
-                    "todos": todos_data,
-                    "count": len(todos_data)
+                    "plans": plans_data,
+                    "count": len(plans_data)
                 }
                 
         except Exception as e:
             return {
                 "success": False,
-                "error": f"Failed to get todos: {str(e)}",
-                "todos": []
+                "error": f"Failed to get plans: {str(e)}",
+                "plans": []
             }

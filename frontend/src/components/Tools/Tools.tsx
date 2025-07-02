@@ -1,43 +1,43 @@
 import { useEffect } from 'react';
-import { TodoItem } from '@/types/todo';
+import { PlanItem } from '@/types/plan';
 import { TerminalCommand } from '@/types/terminal';
-import { TodoInput } from './TodoInput';
-import { TodoItemComponent } from './TodoItem';
-import { TodoStats } from './TodoStats';
+import { PlanInput } from './PlanInput';
+import { PlanItemComponent } from './PlanItem';
+import { PlanStats } from './PlanStats';
 import { BacklogInput } from './BacklogInput';
 import { BacklogItemComponent } from './BacklogItem';
 import { TerminalOutput } from './TerminalOutput';
 import { ApprovalList } from '../Approval/ApprovalList';
 import { CodeInterpreterList } from '../CodeInterpreter/CodeInterpreterList';
 import { CodeInterpreterWidget } from '../CodeInterpreter/CodeInterpreterWidget';
-import { useTodos } from '@/hooks/useTodos';
+import { usePlans } from '@/hooks/usePlans';
 import { useApprovals } from '@/hooks/useApprovals';
 import { useCodeInterpreter } from '@/hooks/useCodeInterpreter';
 import { useSSE } from '@/contexts/SSEContext';
 
 interface ToolsProps {
-  activeTab: 'todo' | 'backlog' | 'terminal' | 'approval' | 'code-interpreter';
-  setActiveTab: (tab: 'todo' | 'backlog' | 'terminal' | 'approval' | 'code-interpreter') => void;
+  activeTab: 'plan' | 'backlog' | 'terminal' | 'approval' | 'code-interpreter';
+  setActiveTab: (tab: 'plan' | 'backlog' | 'terminal' | 'approval' | 'code-interpreter') => void;
   terminalCommands: TerminalCommand[];
   isConnected: boolean;
 }
 
 export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }: ToolsProps) {
   const { 
-    todos, 
+    plans, 
     backlogItems, 
     loading, 
     error, 
-    addTodo, 
-    updateTodo, 
-    deleteTodo, 
-    toggleTodo, 
-    fetchTodos,
+    addPlan, 
+    updatePlan, 
+    deletePlan, 
+    togglePlan, 
+    fetchPlans,
     addBacklogItem,
     updateBacklogItem,
     deleteBacklogItem,
     moveToTodo
-  } = useTodos();
+  } = usePlans();
   const { lastEvent } = useSSE();
   const { approvals, loading: approvalsLoading, error: approvalsError, approveRequest, rejectRequest, deleteApproval, refetch: refetchApprovals } = useApprovals();
   const { states: codeInterpreterStates, selectedState, loading: codeInterpreterLoading, error: codeInterpreterError, selectState, deleteState } = useCodeInterpreter();
@@ -45,11 +45,11 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
   useEffect(() => {
     if (lastEvent) {
       switch (lastEvent.event) {
-        case 'todo_added':
+        case 'plan_added':
           break;
-        case 'todo_updated':
+        case 'plan_updated':
           break;
-        case 'todo_deleted':
+        case 'plan_deleted':
           break;
         case 'approval_request':
           if (lastEvent.data?.approval) {
@@ -72,23 +72,23 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
   }, [lastEvent, setActiveTab]);
 
   useEffect(() => {
-    fetchTodos();
-  }, [fetchTodos]);
+    fetchPlans();
+  }, [fetchPlans]);
 
-  const handleAddTodo = async (title: string, description?: string) => {
-    await addTodo(title, description);
+  const handleAddPlan = async (title: string, description?: string) => {
+    await addPlan(title, description);
   };
 
-  const handleUpdateTodo = async (id: string, updates: Partial<TodoItem>) => {
-    await updateTodo(id, updates);
+  const handleUpdatePlan = async (id: string, updates: Partial<PlanItem>) => {
+    await updatePlan(id, updates);
   };
 
-  const handleDeleteTodo = async (id: string) => {
-    await deleteTodo(id);
+  const handleDeletePlan = async (id: string) => {
+    await deletePlan(id);
   };
 
-  const handleToggleTodo = async (id: string) => {
-    await toggleTodo(id);
+  const handleTogglePlan = async (id: string) => {
+    await togglePlan(id);
   };
 
   const handleAddBacklogItem = (title: string, description?: string) => {
@@ -107,9 +107,9 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
     await moveToTodo(id);
   };
 
-  const handleSummarizeTodo = async (todo: TodoItem) => {
+  const handleSummarizePlan = async (plan: PlanItem) => {
     try {
-      const message = `分析 ${todo.title} 任务花了多久完成`;
+      const message = `分析 ${plan.title} 任务花了多久完成`;
       
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/agent/message`, {
         method: 'POST',
@@ -136,7 +136,7 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
     }
   };
 
-  if (loading && todos.length === 0) {
+  if (loading && plans.length === 0) {
     return (
       <div className="flex justify-center items-center py-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -149,7 +149,7 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
     <div className="space-y-6">
       {/* 连接状态指示器 */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium text-gray-900">Todo 列表</h3>
+        <h3 className="text-lg font-medium text-gray-900">Plan 列表</h3>
         <div className="flex items-center space-x-2">
           <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
           <span className="text-sm text-gray-600">
@@ -161,14 +161,14 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
       {/* Tab Navigation */}
       <div className="flex space-x-1 border-b border-gray-200">
         <button
-          onClick={() => setActiveTab('todo')}
+          onClick={() => setActiveTab('plan')}
           className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
-            activeTab === 'todo'
+            activeTab === 'plan'
               ? 'bg-white border-b-2 border-blue-500 text-blue-600'
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
-          Todo
+          Plan
         </button>
         <button
           onClick={() => setActiveTab('backlog')}
@@ -227,37 +227,37 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
       )}
 
       {/* Tab Content */}
-      {activeTab === 'todo' ? (
+      {activeTab === 'plan' ? (
         <>
-          {/* 添加新 Todo */}
-          <TodoInput onAdd={handleAddTodo} disabled={loading} />
+          {/* 添加新 Plan */}
+          <PlanInput onAdd={handleAddPlan} disabled={loading} />
 
-          {/* Todo 统计 */}
-          <TodoStats todos={todos} />
+          {/* Plan 统计 */}
+          <PlanStats plans={plans} />
 
-          {/* Todo 列表 */}
+          {/* Plan 列表 */}
           <div className="space-y-2">
-            {todos.length === 0 ? (
+            {plans.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                <p>暂无 Todo 项目</p>
-                <p className="text-sm mt-1">添加一个新的 Todo 开始吧！</p>
+                <p>暂无 Plan 项目</p>
+                <p className="text-sm mt-1">添加一个新的 Plan 开始吧！</p>
               </div>
             ) : (
-              todos.map((todo) => (
-                <TodoItemComponent
-                  key={todo.id}
-                  todo={todo}
-                  onUpdate={handleUpdateTodo}
-                  onDelete={handleDeleteTodo}
-                  onToggle={handleToggleTodo}
-                  onSummarize={handleSummarizeTodo}
+              plans.map((plan) => (
+                <PlanItemComponent
+                  key={plan.id}
+                  plan={plan}
+                  onUpdate={handleUpdatePlan}
+                  onDelete={handleDeletePlan}
+                  onToggle={handleTogglePlan}
+                  onSummarize={handleSummarizePlan}
                   disabled={loading}
                 />
               ))
             )}
           </div>
         </>
-      ) : activeTab === 'backlog' ? (
+      ): activeTab === 'backlog' ? (
         <>
           {/* 添加新 Backlog */}
           <BacklogInput onAdd={handleAddBacklogItem} disabled={loading} />
@@ -318,21 +318,21 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
         </>
       )}
 
-      {activeTab === 'todo' && (
+      {activeTab === 'plan' && (
         <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
           <div className="flex">
             <div className="ml-3">
               <h3 className="text-sm font-medium text-blue-800">MCP 控制提示</h3>
               <div className="mt-2 text-sm text-blue-700">
                 <p>
-                  这个 Todo 列表可以通过 MCP 工具进行控制。尝试使用以下 MCP 命令：
+                  这个 Plan 列表可以通过 MCP 工具进行控制。尝试使用以下 MCP 命令：
                 </p>
                 <ul className="mt-2 list-disc list-inside space-y-1">
-                  <li><code>add_todo("学习 MCP", "了解 Model Context Protocol")</code></li>
-                  <li><code>toggle_todo("todo_id")</code></li>
-                  <li><code>delete_todo("todo_id")</code></li>
-                  <li><code>update_todo("todo_id", "新的标题", "新的描述")</code></li>
-                  <li><code>list_todo()</code></li>
+                  <li><code>add_plan("学习 MCP", "了解 Model Context Protocol")</code></li>
+                  <li><code>toggle_plan("plan_id")</code></li>
+                  <li><code>delete_plan("plan_id")</code></li>
+                  <li><code>update_plan("plan_id", "新的标题", "新的描述")</code></li>
+                  <li><code>list_plan()</code></li>
                 </ul>
               </div>
             </div>

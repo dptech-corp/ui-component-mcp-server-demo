@@ -4,12 +4,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus } from 'lucide-react';
 
-interface TodoInputProps {
+interface PlanInputProps {
   onAdd: (title: string, description?: string) => void;
   disabled?: boolean;
 }
 
-export function TodoInput({ onAdd, disabled }: TodoInputProps) {
+export function PlanInput({ onAdd, disabled }: PlanInputProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [showDescription, setShowDescription] = useState(false);
@@ -29,7 +29,7 @@ export function TodoInput({ onAdd, disabled }: TodoInputProps) {
       <div className="flex space-x-2">
         <Input
           type="text"
-          placeholder="添加新的 Todo..."
+          placeholder="添加新的 Plan..."
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           disabled={disabled}

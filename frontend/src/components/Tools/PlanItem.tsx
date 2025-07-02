@@ -1,28 +1,28 @@
 import { useState } from 'react';
-import { TodoItem } from '@/types/todo';
+import { PlanItem } from '@/types/plan';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Edit2, Trash2, Save, X, Brain } from 'lucide-react';
 
-interface TodoItemProps {
-  todo: TodoItem;
-  onUpdate: (id: string, updates: Partial<TodoItem>) => void;
+interface PlanItemProps {
+  plan: PlanItem;
+  onUpdate: (id: string, updates: Partial<PlanItem>) => void;
   onDelete: (id: string) => void;
   onToggle: (id: string) => void;
-  onSummarize?: (todo: TodoItem) => void;
+  onSummarize?: (plan: PlanItem) => void;
   disabled?: boolean;
 }
 
-export function TodoItemComponent({ todo, onUpdate, onDelete, onToggle, onSummarize, disabled }: TodoItemProps) {
+export function PlanItemComponent({ plan, onUpdate, onDelete, onToggle, onSummarize, disabled }: PlanItemProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [editTitle, setEditTitle] = useState(todo.title);
-  const [editDescription, setEditDescription] = useState(todo.description || '');
+  const [editTitle, setEditTitle] = useState(plan.title);
+  const [editDescription, setEditDescription] = useState(plan.description || '');
 
   const handleSave = () => {
     if (editTitle.trim()) {
-      onUpdate(todo.id, {
+      onUpdate(plan.id, {
         title: editTitle.trim(),
         description: editDescription.trim() || undefined,
       });
@@ -31,33 +31,33 @@ export function TodoItemComponent({ todo, onUpdate, onDelete, onToggle, onSummar
   };
 
   const handleCancel = () => {
-    setEditTitle(todo.title);
-    setEditDescription(todo.description || '');
+    setEditTitle(plan.title);
+    setEditDescription(plan.description || '');
     setIsEditing(false);
   };
 
   const handleToggle = () => {
-    onToggle(todo.id);
+    onToggle(plan.id);
   };
 
   const handleDelete = () => {
-    if (window.confirm('确定要删除这个 Todo 吗？')) {
-      onDelete(todo.id);
+    if (window.confirm('确定要删除这个 Plan 吗？')) {
+      onDelete(plan.id);
     }
   };
 
   const handleSummarize = () => {
     if (onSummarize) {
-      onSummarize(todo);
+      onSummarize(plan);
     }
   };
 
   return (
-    <div className={`border rounded-lg p-4 ${todo.completed ? 'bg-gray-50' : 'bg-white'}`}>
+    <div className={`border rounded-lg p-4 ${plan.completed ? 'bg-gray-50' : 'bg-white'}`}>
       <div className="flex items-start space-x-3">
         {/* 复选框 */}
         <Checkbox
-          checked={todo.completed}
+          checked={plan.completed}
           onCheckedChange={handleToggle}
           disabled={disabled || isEditing}
           className="mt-1"
@@ -70,32 +70,32 @@ export function TodoItemComponent({ todo, onUpdate, onDelete, onToggle, onSummar
               <Input
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
-                placeholder="Todo 标题"
+                placeholder="Plan 标题"
                 disabled={disabled}
               />
               <Textarea
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
-                placeholder="Todo 描述 (可选)"
+                placeholder="Plan 描述 (可选)"
                 disabled={disabled}
                 rows={2}
               />
             </div>
           ) : (
             <div>
-              <h4 className={`font-medium ${todo.completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>
-                {todo.title}
+              <h4 className={`font-medium ${plan.completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+                {plan.title}
               </h4>
-              {todo.description && (
-                <p className={`mt-1 text-sm ${todo.completed ? 'line-through text-gray-400' : 'text-gray-600'}`}>
-                  {todo.description}
+              {plan.description && (
+                <p className={`mt-1 text-sm ${plan.completed ? 'line-through text-gray-400' : 'text-gray-600'}`}>
+                  {plan.description}
                 </p>
               )}
               <div className="mt-2 text-xs text-gray-400">
-                创建于: {new Date(todo.created_at).toLocaleString()}
-                {todo.updated_at !== todo.created_at && (
+                创建于: {new Date(plan.created_at).toLocaleString()}
+                {plan.updated_at !== plan.created_at && (
                   <span className="ml-2">
-                    更新于: {new Date(todo.updated_at).toLocaleString()}
+                    更新于: {new Date(plan.updated_at).toLocaleString()}
                   </span>
                 )}
               </div>

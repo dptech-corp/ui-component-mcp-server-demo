@@ -23,12 +23,12 @@ class RedisService:
         self.pubsub = self.redis.pubsub()
         
         print("Subscribing to Redis channels...")
-        await self.pubsub.subscribe("todo:actions")
+        await self.pubsub.subscribe("plan:actions")
         await self.pubsub.subscribe("backlog:actions")
         await self.pubsub.subscribe("terminal:actions")
         await self.pubsub.subscribe("approval:requests")
         await self.pubsub.subscribe("code_interpreter:actions")
-        print("Successfully subscribed to todo:actions, backlog:actions, terminal:actions, approval:requests, and code_interpreter:actions")
+        print("Successfully subscribed to plan:actions, backlog:actions, terminal:actions, approval:requests, and code_interpreter:actions")
         
     async def disconnect(self):
         """Disconnect from Redis."""
@@ -92,8 +92,8 @@ class RedisService:
         if component:
             await self._send_component_switch(component)
         
-        if message_type == "todo_action":
-            await self._handle_todo_action(message)
+        if message_type == "plan_action":
+            await self._handle_plan_action(message)
         elif message_type == "backlog_action":
             await self._handle_backlog_action(message)
         elif message_type == "terminal_action":
@@ -138,8 +138,8 @@ class RedisService:
             import traceback
             traceback.print_exc()
             
-    async def _handle_todo_action(self, message: dict):
-        """Handle todo action messages."""
+    async def _handle_plan_action(self, message: dict):
+        """Handle plan action messages."""
         from ..main import todo_service, sse_service
         
         payload = message.get("payload", {})
@@ -152,36 +152,36 @@ class RedisService:
                     title=data.get("title", ""),
                     description=data.get("description", "")
                 )
-                await sse_service.send_event("todo_added", {"todo": todo.dict()})
+                await sse_service.send_event("plan_added", {"todo": todo.dict()})
                 
             elif action == "delete":
-                todo_id = payload.get("todoId")
-                if todo_id:
-                    await todo_service.delete_todo(todo_id)
-                    await sse_service.send_event("todo_deleted", {"todoId": todo_id})
+                plan_id = payload.get("planId")
+                if plan_id:
+                    await todo_service.delete_todo(plan_id)
+                    await sse_service.send_event("plan_deleted", {"todoId": plan_id})
                     
             elif action == "update":
-                todo_id = payload.get("todoId")
+                plan_id = payload.get("planId")
                 data = payload.get("data", {})
-                if todo_id:
-                    todo = await todo_service.update_todo(todo_id, **data)
+                if plan_id:
+                    todo = await todo_service.update_todo(plan_id, **data)
                     if todo:
-                        await sse_service.send_event("todo_updated", {"todo": todo.dict()})
+                        await sse_service.send_event("plan_updated", {"todo": todo.dict()})
                         
             elif action == "toggle":
-                todo_id = payload.get("todoId")
-                if todo_id:
-                    todo = await todo_service.toggle_todo(todo_id)
+                plan_id = payload.get("planId")
+                if plan_id:
+                    todo = await todo_service.toggle_todo(plan_id)
                     if todo:
-                        await sse_service.send_event("todo_updated", {"todo": todo.dict()})
+                        await sse_service.send_event("plan_updated", {"todo": todo.dict()})
                         
             elif action == "list":
                 todos = await todo_service.get_all_todos()
                 todos_data = [todo.dict() for todo in todos]
-                await sse_service.send_event("todo_list", {"todos": todos_data})
+                await sse_service.send_event("plan_list", {"todos": todos_data})
                         
         except Exception as e:
-            print(f"Error handling todo action: {e}")
+            print(f"Error handling plan action: {e}")
             
     async def _handle_backlog_action(self, message: dict):
         """Handle backlog action messages."""

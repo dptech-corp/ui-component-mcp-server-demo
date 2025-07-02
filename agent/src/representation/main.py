@@ -128,7 +128,7 @@ def create_agent():
             url=f"{mcp_server_url}/sse",
             headers={}
         ),
-        tool_filter=["add_todo", "delete_todo", "update_todo", "toggle_todo", "list_todo", 
+        tool_filter=["add_plan", "delete_plan", "update_plan", "toggle_plan", "list_plan", 
                     "add_backlog", "delete_backlog", "update_backlog", "send_backlog_to_todo", "list_backlog",
                     "ask_for_approval"]
     )

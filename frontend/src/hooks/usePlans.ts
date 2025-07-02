@@ -1,17 +1,17 @@
 import { useState, useCallback, useEffect } from 'react';
-import { TodoItem, TodoCreateRequest, TodoUpdateRequest, BacklogItem } from '@/types/todo';
+import { PlanItem, PlanCreateRequest, PlanUpdateRequest, BacklogItem } from '@/types/plan';
 import { useSSE } from '@/contexts/SSEContext';
 
-interface UseTodosReturn {
-  todos: TodoItem[];
+interface UsePlansReturn {
+  plans: PlanItem[];
   backlogItems: BacklogItem[];
   loading: boolean;
   error: string | null;
-  addTodo: (title: string, description?: string) => Promise<void>;
-  updateTodo: (id: string, updates: Partial<TodoItem>) => Promise<void>;
-  deleteTodo: (id: string) => Promise<void>;
-  toggleTodo: (id: string) => Promise<void>;
-  fetchTodos: () => Promise<void>;
+  addPlan: (title: string, description?: string) => Promise<void>;
+  updatePlan: (id: string, updates: Partial<PlanItem>) => Promise<void>;
+  deletePlan: (id: string) => Promise<void>;
+  togglePlan: (id: string) => Promise<void>;
+  fetchPlans: () => Promise<void>;
   addBacklogItem: (title: string, description?: string) => Promise<void>;
   updateBacklogItem: (id: string, updates: Partial<BacklogItem>) => Promise<void>;
   deleteBacklogItem: (id: string) => Promise<void>;
@@ -19,8 +19,8 @@ interface UseTodosReturn {
   fetchBacklogs: () => Promise<void>;
 }
 
-export function useTodos(): UseTodosReturn {
-  const [todos, setTodos] = useState<TodoItem[]>([]);
+export function usePlans(): UsePlansReturn {
+  const [plans, setPlans] = useState<PlanItem[]>([]);
   const [backlogItems, setBacklogItems] = useState<BacklogItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,10 +31,10 @@ export function useTodos(): UseTodosReturn {
   useEffect(() => {
     if (lastEvent) {
       switch (lastEvent.event) {
-        case 'todo_added':
+        case 'plan_added':
           if (lastEvent.data.todo) {
-            setTodos(prev => {
-              const exists = prev.some(todo => todo.id === lastEvent.data.todo.id);
+            setPlans(prev => {
+              const exists = prev.some(plan => plan.id === lastEvent.data.todo.id);
               if (!exists) {
                 return [...prev, lastEvent.data.todo];
               }
@@ -43,23 +43,23 @@ export function useTodos(): UseTodosReturn {
           }
           break;
           
-        case 'todo_updated':
+        case 'plan_updated':
           if (lastEvent.data.todo) {
-            setTodos(prev => prev.map(todo => 
-              todo.id === lastEvent.data.todo.id ? lastEvent.data.todo : todo
+            setPlans(prev => prev.map(plan => 
+              plan.id === lastEvent.data.todo.id ? lastEvent.data.todo : plan
             ));
           }
           break;
           
-        case 'todo_deleted':
+        case 'plan_deleted':
           if (lastEvent.data.todoId) {
-            setTodos(prev => prev.filter(todo => todo.id !== lastEvent.data.todoId));
+            setPlans(prev => prev.filter(plan => plan.id !== lastEvent.data.todoId));
           }
           break;
           
-        case 'todo_list':
+        case 'plan_list':
           if (lastEvent.data.todos) {
-            setTodos(lastEvent.data.todos);
+            setPlans(lastEvent.data.todos);
           }
           break;
           
@@ -103,7 +103,7 @@ export function useTodos(): UseTodosReturn {
     }
   }, [lastEvent]);
 
-  const fetchTodos = useCallback(async () => {
+  const fetchPlans = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -114,29 +114,29 @@ export function useTodos(): UseTodosReturn {
       }
       
       const data = await response.json();
-      setTodos(data);
+      setPlans(data);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '获取 Todo 列表失败';
+      const errorMessage = err instanceof Error ? err.message : '获取 Plan 列表失败';
       setError(errorMessage);
-      console.error('Failed to fetch todos:', err);
+      console.error('Failed to fetch plans:', err);
     } finally {
       setLoading(false);
     }
   }, [apiUrl]);
 
-  const addTodo = useCallback(async (title: string, description?: string) => {
+  const addPlan = useCallback(async (title: string, description?: string) => {
     try {
       setLoading(true);
       setError(null);
       
-      const todoData: TodoCreateRequest = { title, description };
+      const planData: PlanCreateRequest = { title, description };
       
       const response = await fetch(`${apiUrl}/api/todos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(todoData),
+        body: JSON.stringify(planData),
       });
       
       if (!response.ok) {
@@ -144,20 +144,20 @@ export function useTodos(): UseTodosReturn {
       }
       
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '添加 Todo 失败';
+      const errorMessage = err instanceof Error ? err.message : '添加 Plan 失败';
       setError(errorMessage);
-      console.error('Failed to add todo:', err);
+      console.error('Failed to add plan:', err);
     } finally {
       setLoading(false);
     }
   }, [apiUrl]);
 
-  const updateTodo = useCallback(async (id: string, updates: Partial<TodoItem>) => {
+  const updatePlan = useCallback(async (id: string, updates: Partial<PlanItem>) => {
     try {
       setLoading(true);
       setError(null);
       
-      const updateData: TodoUpdateRequest = {
+      const updateData: PlanUpdateRequest = {
         title: updates.title,
         description: updates.description,
         completed: updates.completed,
@@ -176,15 +176,15 @@ export function useTodos(): UseTodosReturn {
       }
       
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '更新 Todo 失败';
+      const errorMessage = err instanceof Error ? err.message : '更新 Plan 失败';
       setError(errorMessage);
-      console.error('Failed to update todo:', err);
+      console.error('Failed to update plan:', err);
     } finally {
       setLoading(false);
     }
   }, [apiUrl]);
 
-  const deleteTodo = useCallback(async (id: string) => {
+  const deletePlan = useCallback(async (id: string) => {
     try {
       setLoading(true);
       setError(null);
@@ -198,15 +198,15 @@ export function useTodos(): UseTodosReturn {
       }
       
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '删除 Todo 失败';
+      const errorMessage = err instanceof Error ? err.message : '删除 Plan 失败';
       setError(errorMessage);
-      console.error('Failed to delete todo:', err);
+      console.error('Failed to delete plan:', err);
     } finally {
       setLoading(false);
     }
   }, [apiUrl]);
 
-  const toggleTodo = useCallback(async (id: string) => {
+  const togglePlan = useCallback(async (id: string) => {
     try {
       setLoading(true);
       setError(null);
@@ -220,9 +220,9 @@ export function useTodos(): UseTodosReturn {
       }
       
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '切换 Todo 状态失败';
+      const errorMessage = err instanceof Error ? err.message : '切换 Plan 状态失败';
       setError(errorMessage);
-      console.error('Failed to toggle todo:', err);
+      console.error('Failed to toggle plan:', err);
     } finally {
       setLoading(false);
     }
@@ -336,22 +336,22 @@ export function useTodos(): UseTodosReturn {
   }, [apiUrl]);
 
   useEffect(() => {
-    fetchTodos();
+    fetchPlans();
     fetchBacklogs();
-  }, [fetchTodos, fetchBacklogs]);
+  }, [fetchPlans, fetchBacklogs]);
 
 
 
   return {
-    todos,
+    plans,
     backlogItems,
     loading,
     error,
-    addTodo,
-    updateTodo,
-    deleteTodo,
-    toggleTodo,
-    fetchTodos,
+    addPlan,
+    updatePlan,
+    deletePlan,
+    togglePlan,
+    fetchPlans,
     addBacklogItem,
     updateBacklogItem,
     deleteBacklogItem,

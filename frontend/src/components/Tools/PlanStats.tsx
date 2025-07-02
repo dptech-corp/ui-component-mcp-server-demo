@@ -1,12 +1,12 @@
-import { TodoItem } from '@/types/todo';
+import { PlanItem } from '@/types/plan';
 
-interface TodoStatsProps {
-  todos: TodoItem[];
+interface PlanStatsProps {
+  plans: PlanItem[];
 }
 
-export function TodoStats({ todos }: TodoStatsProps) {
-  const total = todos.length;
-  const completed = todos.filter(todo => todo.completed).length;
+export function PlanStats({ plans }: PlanStatsProps) {
+  const total = plans.length;
+  const completed = plans.filter(plan => plan.completed).length;
   const pending = total - completed;
 
   if (total === 0) {
