@@ -1,4 +1,3 @@
-// @ts-ignore - 忽略 React 模块类型声明错误
 import { useState, useEffect } from 'react';
 import { useSSE } from '@/contexts/SSEContext';
 import type { FileItem } from '@/types/file';
@@ -9,7 +8,7 @@ export function useFiles() {
   const [error, setError] = useState<string | null>(null);
   const { lastEvent } = useSSE();
 
-  const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   const fetchFiles = async () => {
     try {
