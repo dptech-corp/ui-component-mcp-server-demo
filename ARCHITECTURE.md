@@ -24,13 +24,13 @@ graph TB
     subgraph "Backend Layer"
         API[FastAPI Backend]
         SSE[SSE Service]
-        TodoService[Todo Service]
+        PlanService[Plan Service]
         AgentProxy[Agent Proxy]
     end
     
     subgraph "Frontend Layer"
         React[React App]
-        TodoComponent[Todo Component]
+        PlanComponent[Plan Component]
         AgentChat[Agent Chat]
         SSEHook[SSE Hook]
     end
@@ -41,9 +41,9 @@ graph TB
     Redis --> API
     API --> SSE
     SSE --> React
-    React --> TodoComponent
+    React --> PlanComponent
     React --> AgentChat
-    TodoComponent --> SSEHook
+    PlanComponent --> SSEHook
     AgentChat --> AgentProxy
     AgentProxy --> Agent
 ```
@@ -56,14 +56,14 @@ graph TB
 **技术栈**: Python + fastmcp + Redis
 
 **核心功能**:
-- 注册 MCP 工具 (add_todo, update_todo, delete_todo, toggle_todo)
+- 注册 MCP 工具 (add_plan, update_plan, delete_plan, toggle_plan)
 - 接收 MCP 调用请求
 - 生成标准化的 Redis 消息
 - 发布消息到对应的 Redis 通道
 
 **关键文件**:
 - `mcp-server/src/main.py` - MCP 服务器主入口
-- `mcp-server/src/tools/todo_tools.py` - Todo 相关的 MCP 工具
+- `mcp-server/src/tools/plan_tools.py` - Plan 相关的 MCP 工具
 - `mcp-server/src/redis_client.py` - Redis 客户端封装
 
 ### 2. Backend (FastAPI)
@@ -73,7 +73,7 @@ graph TB
 
 **核心功能**:
 - 订阅 Redis 消息通道
-- 处理业务逻辑 (Todo CRUD 操作)
+- 处理业务逻辑 (Plan CRUD 操作)
 - 管理内存状态 (演示用途)
 - 通过 SSE 向前端推送实时更新
 - 提供 REST API 接口
@@ -84,7 +84,7 @@ graph TB
 - `backend/app/main.py` - FastAPI 应用主入口
 - `backend/app/services/redis_service.py` - Redis 消息处理
 - `backend/app/services/sse_service.py` - SSE 服务
-- `backend/app/services/todo_service.py` - Todo 业务逻辑
+- `backend/app/services/plan_service.py` - Plan 业务逻辑
 - `backend/app/routers/` - API 路由定义
 - `backend/app/routers/agent.py` - Agent 消息代理路由
 - `backend/app/models/agent.py` - Agent 消息数据模型
@@ -95,7 +95,7 @@ graph TB
 **技术栈**: React + TypeScript + Tailwind CSS + shadcn/ui
 
 **核心功能**:
-- 渲染 Todo List 组件
+- 渲染 Plan List 组件
 - 建立 SSE 连接
 - 处理实时状态更新
 - 提供用户交互界面
@@ -104,10 +104,10 @@ graph TB
 
 **关键文件**:
 - `frontend/src/App.tsx` - 应用主组件
-- `frontend/src/components/Tools/` - 工具组件（包含 Todo、Backlog、Terminal）
+- `frontend/src/components/Tools/` - 工具组件（包含 Plan、Backlog、Terminal）
 - `frontend/src/components/AgentChat/` - Agent 对话组件
 - `frontend/src/hooks/useSSE.ts` - SSE 连接 Hook
-- `frontend/src/hooks/useTodos.ts` - Todo 状态管理 Hook
+- `frontend/src/hooks/usePlans.ts` - Plan 状态管理 Hook
 - `frontend/src/hooks/useAgent.ts` - Agent 交互 Hook
 - `frontend/src/types/agent.ts` - Agent 相关类型定义
 
@@ -143,24 +143,24 @@ graph TB
 ```python
 # MCP 工具调用示例
 @tool
-async def add_todo(title: str, description: str = "") -> str:
-    """添加新的 todo 项"""
+async def add_plan(title: str, description: str = "") -> str:
+    """添加新的 plan 项"""
     message = {
-        "type": "todo_add",
+        "type": "plan_add",
         "data": {
             "title": title,
             "description": description,
             "timestamp": datetime.now().isoformat()
         }
     }
-    await redis_client.publish("todo_channel", json.dumps(message))
-    return f"Todo '{title}' 添加成功"
+    await redis_client.publish("plan_channel", json.dumps(message))
+    return f"Plan '{title}' 添加成功"
 ```
 
 ### 2. Redis 消息格式
 ```typescript
 interface Message {
-  type: string;           // 消息类型 (todo_add, todo_update, etc.)
+  type: string;           // 消息类型 (plan_add, plan_update, etc.)
   data: any;             // 消息数据
   timestamp: string;     // 时间戳
   component?: string;    // 目标组件 (可选)
@@ -174,11 +174,11 @@ async def handle_redis_message(message: dict):
     message_type = message.get("type")
     data = message.get("data", {})
     
-    if message_type == "todo_add":
-        todo = await todo_service.create_todo(data)
+    if message_type == "plan_add":
+        plan = await plan_service.create_plan(data)
         await sse_service.broadcast({
-            "event": "todo_added",
-            "data": {"todo": todo}
+            "event": "plan_added",
+            "data": {"plan": plan}
         })
 ```
 
@@ -188,12 +188,12 @@ async def handle_redis_message(message: dict):
 useEffect(() => {
   if (lastEvent) {
     switch (lastEvent.event) {
-      case 'todo_added':
-        setTodos(prev => [...prev, lastEvent.data.todo]);
+      case 'plan_added':
+        setPlans(prev => [...prev, lastEvent.data.plan]);
         break;
-      case 'todo_updated':
-        setTodos(prev => prev.map(todo => 
-          todo.id === lastEvent.data.todo.id ? lastEvent.data.todo : todo
+      case 'plan_updated':
+        setPlans(prev => prev.map(plan => 
+          plan.id === lastEvent.data.plan.id ? lastEvent.data.plan : plan
         ));
         break;
     }
@@ -241,9 +241,9 @@ async def send_message_to_agent(message_data: AgentMessageRequest):
 
 ## 数据模型
 
-### Todo 模型
+### Plan 模型
 ```typescript
-interface TodoItem {
+interface PlanItem {
   id: string;
   title: string;
   description?: string;
@@ -277,16 +277,16 @@ interface AgentMessage {
 ### 消息类型
 ```typescript
 type MessageType = 
-  | "todo_add"
-  | "todo_update" 
-  | "todo_delete"
-  | "todo_toggle"
+  | "plan_add"
+  | "plan_update" 
+  | "plan_delete"
+  | "plan_toggle"
   | "error";
 
 type EventType =
-  | "todo_added"
-  | "todo_updated"
-  | "todo_deleted"
+  | "plan_added"
+  | "plan_updated"
+  | "plan_deleted"
   | "error";
 
 type AgentMessageType =

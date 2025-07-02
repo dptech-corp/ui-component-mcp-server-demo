@@ -11,12 +11,12 @@ MCP (Model Context Protocol) 服务器组件，负责接收外部工具调用并
 
 ## 支持的工具
 
-### Todo 组件工具
+### Plan 组件工具
 
-- `add_todo(title: str, description: str = "")` - 添加新的 todo 项
-- `delete_todo(todo_id: str)` - 删除指定的 todo 项
-- `update_todo(todo_id: str, title: str = None, description: str = None)` - 更新 todo 项
-- `toggle_todo(todo_id: str)` - 切换 todo 完成状态
+- `add_plan(title: str, description: str = "")` - 添加新的 plan 项
+- `delete_plan(plan_id: str)` - 删除指定的 plan 项
+- `update_plan(plan_id: str, title: str = None, description: str = None)` - 更新 plan 项
+- `toggle_plan(plan_id: str)` - 切换 plan 完成状态
 
 ## 环境变量
 
