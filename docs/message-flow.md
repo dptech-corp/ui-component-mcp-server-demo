@@ -81,7 +81,7 @@ Redis 订阅 → 消息解析 → 业务逻辑处理 → 状态更新 → SSE �
 4. **SSE 事件构建**: 准备推送给前端的事件数据
    ```json
    {
-     "event": "todo_added",
+     "event": "plan_added",
      "data": {
        "todo": {
          "id": "todo_987654321",
@@ -116,13 +116,13 @@ SSE 连接 → 事件接收 → 数据解析 → 状态同步 → UI 重新渲�
    ```typescript
    const handleSSEEvent = (eventData: SSEEvent) => {
        switch (eventData.event) {
-           case 'todo_added':
+           case 'plan_added':
                addTodoToState(eventData.data.todo);
                break;
-           case 'todo_updated':
+           case 'plan_updated':
                updateTodoInState(eventData.data.todo);
                break;
-           case 'todo_deleted':
+           case 'plan_deleted':
                removeTodoFromState(eventData.data.todoId);
                break;
        }

@@ -75,7 +75,7 @@ async def send_backlog_to_todo(backlog_id: str, request: Request):
         raise HTTPException(status_code=404, detail="Backlog not found")
     
     await sse_service.send_event("backlog_sent_to_todo", result)
-    await sse_service.send_event("todo_added", {"todo": result["todo"]})
+    await sse_service.send_event("plan_added", {"todo": result["todo"]})
     await sse_service.send_event("backlog_deleted", {"backlogId": backlog_id})
     
     return {"message": "Backlog sent to todo successfully", "todo": result["todo"]}

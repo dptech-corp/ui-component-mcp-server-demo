@@ -47,10 +47,16 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
     if (lastEvent) {
       switch (lastEvent.event) {
         case 'plan_added':
+          fetchPlans();
+          setActiveTab('plan');
           break;
         case 'plan_updated':
+          fetchPlans();
+          setActiveTab('plan');
           break;
         case 'plan_deleted':
+          fetchPlans();
+          setActiveTab('plan');
           break;
         case 'approval_request':
           if (lastEvent.data?.approval) {

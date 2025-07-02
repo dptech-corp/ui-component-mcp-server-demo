@@ -27,7 +27,7 @@ async def create_todo(todo_data: TodoCreate, request: Request):
         description=todo_data.description
     )
     
-    await sse_service.send_event("todo_added", {"todo": todo.dict()})
+    await sse_service.send_event("plan_added", {"todo": todo.dict()})
     
     return todo
 
@@ -44,7 +44,7 @@ async def update_todo(todo_id: str, todo_data: TodoUpdate, request: Request):
     if not todo:
         raise HTTPException(status_code=404, detail="Todo not found")
     
-    await sse_service.send_event("todo_updated", {"todo": todo.dict()})
+    await sse_service.send_event("plan_updated", {"todo": todo.dict()})
     
     return todo
 
@@ -59,7 +59,7 @@ async def delete_todo(todo_id: str, request: Request):
     if not success:
         raise HTTPException(status_code=404, detail="Todo not found")
     
-    await sse_service.send_event("todo_deleted", {"todoId": todo_id})
+    await sse_service.send_event("plan_deleted", {"todoId": todo_id})
     
     return {"message": "Todo deleted successfully"}
 
@@ -74,6 +74,6 @@ async def toggle_todo(todo_id: str, request: Request):
     if not todo:
         raise HTTPException(status_code=404, detail="Todo not found")
     
-    await sse_service.send_event("todo_updated", {"todo": todo.dict()})
+    await sse_service.send_event("plan_updated", {"todo": todo.dict()})
     
     return todo
