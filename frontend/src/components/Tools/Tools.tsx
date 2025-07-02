@@ -156,7 +156,7 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
     <div className="space-y-6">
       {/* 连接状态指示器 */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium text-gray-900">Plan 列表</h3>
+        <h3 className="text-lg font-medium text-gray-900">表征任务管理</h3>
         <div className="flex items-center space-x-2">
           <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
           <span className="text-sm text-gray-600">
@@ -343,17 +343,18 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
         <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
           <div className="flex">
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-blue-800">MCP 控制提示</h3>
+              <h3 className="text-sm font-medium text-blue-800">表征代理控制提示</h3>
               <div className="mt-2 text-sm text-blue-700">
                 <p>
-                  这个 Plan 列表可以通过 MCP 工具进行控制。尝试使用以下 MCP 命令：
+                  通用表征代理支持计划驱动的任务执行，可委托给理论专家、电镜操作专家、表征分析专家和软件工程专家。
+                  尝试使用以下 MCP 命令：
                 </p>
                 <ul className="mt-2 list-disc list-inside space-y-1">
-                  <li><code>add_plan("学习 MCP", "了解 Model Context Protocol")</code></li>
-                  <li><code>toggle_plan("plan_id")</code></li>
-                  <li><code>delete_plan("plan_id")</code></li>
-                  <li><code>update_plan("plan_id", "新的标题", "新的描述")</code></li>
-                  <li><code>list_plan()</code></li>
+                  <li><code>add_plan("表征分析任务", "XRD数据解析和相组成分析")</code></li>
+                  <li><code>toggle_plan("plan_id")</code> - 标记任务完成</li>
+                  <li><code>delete_plan("plan_id")</code> - 删除任务</li>
+                  <li><code>update_plan("plan_id", "新标题", "新描述")</code> - 更新任务</li>
+                  <li><code>list_plan()</code> - 查看所有任务</li>
                 </ul>
               </div>
             </div>
