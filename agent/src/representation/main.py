@@ -20,15 +20,15 @@ representation_agent_instruction = """
 对于不同问题你可以选用不同的工作流程，一般来讲，大体是下面几种：
 - 对于表征相关领域的理论问题(显微学/衍射与成像技术/波谱学与能谱学)，查询知识库后给出严谨回答
 - 对于具体型号电镜相关操作问题，查询对应操作手册后给出回答
-- 如果用户想让你帮忙执行电镜具体操作，交由电镜操作专家子代理处理
-- 对于表征分析问题，交由表征分析专家子代理 uni-aims 处理
-- 对于软件工程问题，交由软件工程专家子代理处理
+- 如果用户想让你帮忙执行电镜具体操作，使用 transfer_to_agent(agent_name='microscopy_expert') 交由电镜操作专家子代理处理
+- 对于表征分析问题，使用 transfer_to_agent(agent_name='characterization_expert') 交由表征分析专家子代理 uni-aims 处理
+- 对于软件工程问题，使用 transfer_to_agent(agent_name='software_expert') 交由软件工程专家子代理处理
 
 此外，对于复杂问题，你也可以先指定计划，然后分步分配给子代理处理。
 
 你可以访问以下专业化的子代理。你必须将任务委托给合适的子代理来执行操作。
 
-- 电镜操作专家子代理
+- microscopy_expert (电镜操作专家子代理)
 功能用途：
 1. 处理各种型号电镜的具体操作指导和问题解答
 2. 提供电镜设备的维护、校准和故障排除建议
@@ -38,8 +38,9 @@ representation_agent_instruction = """
 1. "如何调整透射电镜的聚焦条件以获得最佳分辨率？"
 2. "扫描电镜样品制备时应该注意哪些关键步骤？"
 3. "电镜成像过程中出现漂移现象应该如何处理？"
+委托方式：使用 transfer_to_agent(agent_name='microscopy_expert')
 
-- 表征分析专家子代理 uni-aims
+- characterization_expert (表征分析专家子代理 uni-aims)
 功能用途：
 1. 执行各种材料表征数据的深度分析和解释
 2. 提供XRD、XPS、FTIR、拉曼等谱学数据的专业解读
@@ -49,8 +50,9 @@ representation_agent_instruction = """
 1. "请分析这组XRD数据并确定晶体结构和相组成"
 2. "根据TEM图像计算纳米颗粒的尺寸分布"
 3. "解释XPS谱图中的化学态信息和元素组成"
+委托方式：使用 transfer_to_agent(agent_name='characterization_expert')
 
-- 软件工程专家子代理
+- software_expert (软件工程专家子代理)
 功能用途：
 1. 开发和优化表征数据处理的自动化工具
 2. 构建数据分析流水线和可视化界面
@@ -60,6 +62,7 @@ representation_agent_instruction = """
 1. "开发一个自动化的XRD峰位拟合和相分析程序"
 2. "设计一个电镜图像批量处理和统计分析工具"
 3. "构建多模态表征数据的集成分析平台"
+委托方式：使用 transfer_to_agent(agent_name='software_expert')
 
 ## 复杂问题的处理流程
 你必须为每个用户查询遵循以下交互过程。
@@ -114,9 +117,60 @@ def create_agent():
         tool_filter=["add_todo", "delete_todo", "update_todo", "toggle_todo", "list_todo", 
                     "add_backlog", "delete_backlog", "update_backlog", "send_backlog_to_todo", "list_backlog",
                     "ls", "cat_run_sh", "bash_run_sh", "ask_for_approval",
-                    "create_python_notebook", "get_notebook_state",
-                    "representation_analysis", "microscopy_operation", "software_engineering"]
+                    "create_python_notebook", "get_notebook_state"]
     )
+    
+    microscopy_expert = LlmAgent(
+        model=LiteLlm(
+            model=os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash"),
+            api_key=os.getenv("OPENAI_API_KEY"),
+            api_base=os.getenv("OPENAI_API_BASE_URL")),
+        name="microscopy_expert",
+        description="电镜操作专家子代理，专门处理各种型号电镜的具体操作指导、设备维护、样品制备和成像参数优化等问题。",
+        instruction="""你是电镜操作专家子代理。你的专业领域包括：
+1. 处理各种型号电镜的具体操作指导和问题解答
+2. 提供电镜设备的维护、校准和故障排除建议
+3. 指导样品制备和成像参数优化
+4. 解答电镜操作过程中的技术问题
+
+请根据用户的具体问题提供专业、准确的电镜操作指导。""",
+        tools=[mcp_toolset]
+    )
+    
+    characterization_expert = LlmAgent(
+        model=LiteLlm(
+            model=os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash"),
+            api_key=os.getenv("OPENAI_API_KEY"),
+            api_base=os.getenv("OPENAI_API_BASE_URL")),
+        name="characterization_expert",
+        description="表征分析专家子代理 uni-aims，专门执行各种材料表征数据的深度分析和解释，包括XRD、XPS、FTIR、拉曼等谱学数据解读。",
+        instruction="""你是表征分析专家子代理 uni-aims。你的专业领域包括：
+1. 执行各种材料表征数据的深度分析和解释
+2. 提供XRD、XPS、FTIR、拉曼等谱学数据的专业解读
+3. 进行电镜图像的定量分析和结构表征
+4. 协助制定综合表征方案和实验设计
+
+请根据用户提供的表征数据或分析需求，提供专业、详细的分析结果和解释。""",
+        tools=[mcp_toolset]
+    )
+    
+    software_expert = LlmAgent(
+        model=LiteLlm(
+            model=os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash"),
+            api_key=os.getenv("OPENAI_API_KEY"),
+            api_base=os.getenv("OPENAI_API_BASE_URL")),
+        name="software_expert",
+        description="软件工程专家子代理，专门开发和优化表征数据处理的自动化工具、构建数据分析流水线和集成系统。",
+        instruction="""你是软件工程专家子代理。你的专业领域包括：
+1. 开发和优化表征数据处理的自动化工具
+2. 构建数据分析流水线和可视化界面
+3. 集成各种表征设备的数据采集和处理系统
+4. 提供代码优化和软件架构设计建议
+
+请根据用户的软件开发需求，提供专业的代码实现、架构设计或优化建议。""",
+        tools=[mcp_toolset]
+    )
+    
     print(f"model: {os.getenv('LLM_MODEL')}")
     # print(f"api_key: {os.getenv('OPENAI_API_KEY')}")
     # print(f"api_base: {os.getenv('OPENAI_API_BASE_URL')}")
@@ -127,8 +181,10 @@ def create_agent():
             api_key=os.getenv("OPENAI_API_KEY"),
             api_base=os.getenv("OPENAI_API_BASE_URL")),
         name="representation_expert_agent",
+        description="表征专家代理，协调和管理表征相关任务，可以委托给专业的子代理处理具体问题。",
         instruction=representation_agent_instruction,
-        tools=[mcp_toolset]
+        tools=[mcp_toolset],
+        sub_agents=[microscopy_expert, characterization_expert, software_expert]
     )
     
     return agent
