@@ -14,10 +14,11 @@ import { usePlans } from '@/hooks/usePlans';
 import { useApprovals } from '@/hooks/useApprovals';
 import { useCodeInterpreter } from '@/hooks/useCodeInterpreter';
 import { useSSE } from '@/contexts/SSEContext';
+import { FileBrowser } from './FileBrowser';
 
 interface ToolsProps {
-  activeTab: 'plan' | 'backlog' | 'terminal' | 'approval' | 'code-interpreter';
-  setActiveTab: (tab: 'plan' | 'backlog' | 'terminal' | 'approval' | 'code-interpreter') => void;
+  activeTab: 'plan' | 'backlog' | 'terminal' | 'approval' | 'code-interpreter' | 'file-browser';
+  setActiveTab: (tab: 'plan' | 'backlog' | 'terminal' | 'approval' | 'code-interpreter' | 'file-browser') => void;
   terminalCommands: TerminalCommand[];
   isConnected: boolean;
 }
@@ -210,6 +211,16 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
         >
           Code Interpreter
         </button>
+        <button
+          onClick={() => setActiveTab('file-browser')}
+          className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
+            activeTab === 'file-browser'
+              ? 'bg-white border-b-2 border-blue-500 text-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          File Browser
+        </button>
       </div>
 
       {/* 错误提示 */}
@@ -304,6 +315,10 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
               selectedState={selectedState}
             />
           )}
+        </>
+      ) : activeTab === 'file-browser' ? (
+        <>
+          <FileBrowser disabled={loading || !isConnected} />
         </>
       ) : (
         <>

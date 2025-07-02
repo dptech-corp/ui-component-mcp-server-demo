@@ -17,7 +17,7 @@ from .services.sse_service import SSEService
 from .services.todo_service import TodoService
 from .services.backlog_service import BacklogService
 from .services.code_interpreter_service import CodeInterpreterService
-from .routers import todos, approvals, backlogs, events, health, agent, code_interpreter
+from .routers import todos, approvals, backlogs, events, health, agent, code_interpreter, files
 
 
 redis_service = RedisService()
@@ -29,18 +29,27 @@ code_interpreter_service = CodeInterpreterService()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan manager."""
+    """Application lifespan manager with proper cleanup."""
     await database.connect()
     
     redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
     await redis_service.connect(redis_url)
     
-    asyncio.create_task(redis_service.listen_for_messages())
+    redis_task = asyncio.create_task(redis_service.listen_for_messages())
+    app.state.redis_task = redis_task
     
     yield
     
+    print("Shutting down services...")
+    redis_task.cancel()
+    try:
+        await redis_task
+    except asyncio.CancelledError:
+        pass
+        
     await redis_service.disconnect()
     await database.disconnect()
+    print("Services shut down complete")
 
 
 app = FastAPI(
@@ -65,6 +74,7 @@ app.include_router(todos.router, prefix="/api")
 app.include_router(approvals.router, prefix="/api")
 app.include_router(backlogs.router, prefix="/api")
 app.include_router(code_interpreter.router, prefix="/api")
+app.include_router(files.router, prefix="/api")
 app.include_router(agent.router, prefix="/api")
 
 app.state.redis_service = redis_service

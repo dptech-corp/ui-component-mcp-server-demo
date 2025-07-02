@@ -11,7 +11,7 @@ class Database:
     
     def __init__(self):
         self.pool: Optional[aiomysql.Pool] = None
-        self.database_url = os.getenv("DATABASE_URL", "mysql://ui_user:ui_password@localhost:3306/ui_component_db")
+        self.database_url = os.getenv("DATABASE_URL", "mysql://demo:2KPe)RL!7Xaa!(pEhXbFO@localhost:3306/deepmodeling-sessions")
     
     async def connect(self):
         """Connect to the database and create connection pool."""
@@ -34,8 +34,11 @@ class Database:
                 password=password,
                 db=database,
                 minsize=5,
-                maxsize=20,
-                autocommit=False
+                maxsize=50,
+                autocommit=False,
+                pool_recycle=3600,
+                connect_timeout=10,
+                echo=False
             )
             
             await self.create_tables()
@@ -102,6 +105,23 @@ class Database:
                         widget_url TEXT,
                         created_at BIGINT NOT NULL,
                         updated_at BIGINT NOT NULL
+                    )
+                """)
+                
+                await cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS files (
+                        id VARCHAR(255) PRIMARY KEY,
+                        session_id VARCHAR(255) NOT NULL,
+                        name VARCHAR(255) NOT NULL,
+                        type VARCHAR(50) NOT NULL,
+                        path TEXT NOT NULL,
+                        size BIGINT,
+                        content LONGTEXT,
+                        created_at BIGINT NOT NULL,
+                        updated_at BIGINT NOT NULL,
+                        INDEX idx_session_id (session_id),
+                        INDEX idx_path (path(255)),
+                        INDEX idx_type (type)
                     )
                 """)
                 await conn.commit()

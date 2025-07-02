@@ -3,6 +3,7 @@
 import asyncio
 import json
 import time
+import uuid
 from typing import Optional
 
 from redis.asyncio import Redis
@@ -15,20 +16,39 @@ class RedisService:
     def __init__(self):
         self.redis: Optional[Redis] = None
         self.pubsub = None
+        self._reconnect_attempts = 0
+        self._max_reconnect_attempts = 5
+        self._reconnect_delay = 1.0
         
     async def connect(self, redis_url: str):
-        """Connect to Redis."""
+        """Connect to Redis with connection pooling."""
         print(f"Connecting to Redis at: {redis_url}")
-        self.redis = Redis.from_url(redis_url)
-        self.pubsub = self.redis.pubsub()
+        self.redis = Redis.from_url(
+            redis_url,
+            max_connections=10,
+            retry_on_timeout=True,
+            socket_keepalive=True,
+            socket_keepalive_options={},
+            health_check_interval=30
+        )
+        await self._setup_pubsub()
         
-        print("Subscribing to Redis channels...")
-        await self.pubsub.subscribe("plan:actions")
-        await self.pubsub.subscribe("backlog:actions")
-        await self.pubsub.subscribe("terminal:actions")
-        await self.pubsub.subscribe("approval:requests")
-        await self.pubsub.subscribe("code_interpreter:actions")
-        print("Successfully subscribed to plan:actions, backlog:actions, terminal:actions, approval:requests, and code_interpreter:actions")
+    async def _setup_pubsub(self):
+        """Setup pubsub with proper error handling."""
+        try:
+            self.pubsub = self.redis.pubsub()
+            print("Subscribing to Redis channels...")
+            await self.pubsub.subscribe("plan:actions")
+            await self.pubsub.subscribe("backlog:actions")
+            await self.pubsub.subscribe("terminal:actions")
+            await self.pubsub.subscribe("approval:requests")
+            await self.pubsub.subscribe("code_interpreter:actions")
+            await self.pubsub.subscribe("file:actions")
+            print("Successfully subscribed to all channels")
+            self._reconnect_attempts = 0
+        except Exception as e:
+            print(f"Error setting up pubsub: {e}")
+            raise
         
     async def disconnect(self):
         """Disconnect from Redis."""
@@ -62,26 +82,33 @@ class RedisService:
             return False
             
     async def listen_for_messages(self):
-        """Listen for Redis messages and process them."""
-        if not self.pubsub:
-            print("No pubsub connection available")
-            return
-            
-        print("Starting to listen for Redis messages...")
-        async for message in self.pubsub.listen():
-            if message["type"] == "message":
-                try:
-                    print(f"Received Redis message: {message}")
-                    channel = message["channel"].decode() if isinstance(message["channel"], bytes) else message["channel"]
+        """Listen for Redis messages with reconnection logic."""
+        while True:
+            try:
+                if not self.pubsub:
+                    print("No pubsub connection available, attempting to reconnect...")
+                    await self._reconnect()
+                    continue
                     
-                    if channel == "approval:requests":
-                        data = json.loads(message["data"])
-                        await self._handle_approval_request(data)
-                    else:
-                        data = json.loads(message["data"])
-                        await self._process_message(data)
-                except Exception as e:
-                    print(f"Error processing message: {e}")
+                print("Starting to listen for Redis messages...")
+                async for message in self.pubsub.listen():
+                    if message["type"] == "message":
+                        try:
+                            print(f"Received Redis message: {message}")
+                            channel = message["channel"].decode() if isinstance(message["channel"], bytes) else message["channel"]
+                            
+                            if channel == "approval:requests":
+                                data = json.loads(message["data"])
+                                await self._handle_approval_request(data)
+                            else:
+                                data = json.loads(message["data"])
+                                await self._process_message(data)
+                        except Exception as e:
+                            print(f"Error processing message: {e}")
+            except Exception as e:
+                print(f"Redis connection error: {e}")
+                await self._reconnect()
+                await asyncio.sleep(self._reconnect_delay)
                     
     async def _process_message(self, message: dict):
         """Process a received message."""
@@ -100,6 +127,8 @@ class RedisService:
             await self._handle_terminal_action(message)
         elif message_type == "code_interpreter_action":
             await self._handle_code_interpreter_action(message)
+        elif message_type == "file_action":
+            await self._handle_file_action(message)
         else:
             print(f"Unknown message type: {message_type}")
     
@@ -292,3 +321,62 @@ class RedisService:
                         
         except Exception as e:
             print(f"Error handling code interpreter action: {e}")
+    
+    async def _handle_file_action(self, message: dict):
+        """Handle file action messages."""
+        from ..main import sse_service
+        from ..models.file import File
+        from ..services.file_service import file_service
+        
+        payload = message.get("payload", {})
+        action = payload.get("action")
+        
+        try:
+            if action == "create":
+                data = payload.get("data", {})
+                file = File(
+                    id=data.get("id", str(uuid.uuid4())),
+                    session_id=data.get("session_id", "default_session"),
+                    name=data.get("name", ""),
+                    type=data.get("type", "file"),
+                    path=data.get("path", ""),
+                    size=data.get("size"),
+                    content=data.get("content"),
+                    created_at=data.get("created_at", int(time.time() * 1000)),
+                    updated_at=data.get("updated_at", int(time.time() * 1000))
+                )
+                created_file = await file_service.create_file(file)
+                await sse_service.send_event("file_created", {"file": created_file.dict()})
+                
+            elif action == "list":
+                files = await file_service.get_all_files()
+                files_data = [file.dict() for file in files]
+                await sse_service.send_event("file_list", {"files": files_data})
+                
+            elif action == "delete":
+                file_id = payload.get("fileId")
+                if file_id:
+                    success = await file_service.delete_file(file_id)
+                    if success:
+                        await sse_service.send_event("file_deleted", {"fileId": file_id})
+                        
+        except Exception as e:
+            print(f"Error handling file action: {e}")
+            
+    async def _reconnect(self):
+        """Reconnect to Redis with exponential backoff."""
+        if self._reconnect_attempts >= self._max_reconnect_attempts:
+            print(f"Max reconnection attempts ({self._max_reconnect_attempts}) reached")
+            return
+            
+        self._reconnect_attempts += 1
+        delay = self._reconnect_delay * (2 ** (self._reconnect_attempts - 1))
+        print(f"Reconnecting to Redis (attempt {self._reconnect_attempts}/{self._max_reconnect_attempts}) in {delay}s...")
+        
+        try:
+            await asyncio.sleep(delay)
+            if self.pubsub:
+                await self.pubsub.close()
+            await self._setup_pubsub()
+        except Exception as e:
+            print(f"Reconnection failed: {e}")
