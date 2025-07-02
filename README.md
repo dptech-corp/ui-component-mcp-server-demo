@@ -11,7 +11,7 @@
 - **Frontend**: React 前端，通过 SSE 接收实时更新
 - **Redis**: 作为消息通道，连接 MCP 和后端服务
 - **Agent**: Google ADK 智能代理，通过自然语言控制 MCP 工具
-- **Demo 组件**: 简单的 Todo List，演示完整的消息流程
+- **Demo 组件**: 简单的 Plan List，演示完整的消息流程
 
 ## 技术架构
 
@@ -109,21 +109,21 @@ docker-compose up -d
 
 ## Demo 功能
 
-### Todo List 组件
-项目包含一个简单的 Todo List 组件，演示完整的 MCP 驱动的状态管理：
+### Plan List 组件
+项目包含一个简单的 Plan List 组件，演示完整的 MCP 驱动的状态管理：
 
-- **添加任务**: 通过 MCP 工具添加新的 todo 项
-- **更新任务**: 修改任务标题、描述或完成状态
-- **删除任务**: 移除不需要的任务
+- **添加计划**: 通过 MCP 工具添加新的 plan 项
+- **更新计划**: 修改计划标题、描述或完成状态
+- **删除计划**: 移除不需要的计划
 - **实时同步**: 所有操作通过 SSE 实时同步到前端
 
 ### MCP 工具
 MCP Server 提供以下工具：
 
-- `add_todo`: 添加新的 todo 项
-- `update_todo`: 更新现有 todo 项
-- `delete_todo`: 删除 todo 项
-- `toggle_todo`: 切换 todo 完成状态
+- `add_plan`: 添加新的 plan 项
+- `update_plan`: 更新现有 plan 项
+- `delete_plan`: 删除 plan 项
+- `toggle_plan`: 切换 plan 完成状态
 
 ### 反向消息链路
 支持从前端向 Agent 发送消息的双向通信功能：
