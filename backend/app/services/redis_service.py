@@ -15,20 +15,38 @@ class RedisService:
     def __init__(self):
         self.redis: Optional[Redis] = None
         self.pubsub = None
+        self._reconnect_attempts = 0
+        self._max_reconnect_attempts = 5
+        self._reconnect_delay = 1.0
         
     async def connect(self, redis_url: str):
-        """Connect to Redis."""
+        """Connect to Redis with connection pooling."""
         print(f"Connecting to Redis at: {redis_url}")
-        self.redis = Redis.from_url(redis_url)
-        self.pubsub = self.redis.pubsub()
+        self.redis = Redis.from_url(
+            redis_url,
+            max_connections=10,
+            retry_on_timeout=True,
+            socket_keepalive=True,
+            socket_keepalive_options={},
+            health_check_interval=30
+        )
+        await self._setup_pubsub()
         
-        print("Subscribing to Redis channels...")
-        await self.pubsub.subscribe("todo:actions")
-        await self.pubsub.subscribe("backlog:actions")
-        await self.pubsub.subscribe("terminal:actions")
-        await self.pubsub.subscribe("approval:requests")
-        await self.pubsub.subscribe("code_interpreter:actions")
-        print("Successfully subscribed to todo:actions, backlog:actions, terminal:actions, approval:requests, and code_interpreter:actions")
+    async def _setup_pubsub(self):
+        """Setup pubsub with proper error handling."""
+        try:
+            self.pubsub = self.redis.pubsub()
+            print("Subscribing to Redis channels...")
+            await self.pubsub.subscribe("todo:actions")
+            await self.pubsub.subscribe("backlog:actions")
+            await self.pubsub.subscribe("terminal:actions")
+            await self.pubsub.subscribe("approval:requests")
+            await self.pubsub.subscribe("code_interpreter:actions")
+            print("Successfully subscribed to all channels")
+            self._reconnect_attempts = 0
+        except Exception as e:
+            print(f"Error setting up pubsub: {e}")
+            raise
         
     async def disconnect(self):
         """Disconnect from Redis."""
@@ -62,26 +80,33 @@ class RedisService:
             return False
             
     async def listen_for_messages(self):
-        """Listen for Redis messages and process them."""
-        if not self.pubsub:
-            print("No pubsub connection available")
-            return
-            
-        print("Starting to listen for Redis messages...")
-        async for message in self.pubsub.listen():
-            if message["type"] == "message":
-                try:
-                    print(f"Received Redis message: {message}")
-                    channel = message["channel"].decode() if isinstance(message["channel"], bytes) else message["channel"]
+        """Listen for Redis messages with reconnection logic."""
+        while True:
+            try:
+                if not self.pubsub:
+                    print("No pubsub connection available, attempting to reconnect...")
+                    await self._reconnect()
+                    continue
                     
-                    if channel == "approval:requests":
-                        data = json.loads(message["data"])
-                        await self._handle_approval_request(data)
-                    else:
-                        data = json.loads(message["data"])
-                        await self._process_message(data)
-                except Exception as e:
-                    print(f"Error processing message: {e}")
+                print("Starting to listen for Redis messages...")
+                async for message in self.pubsub.listen():
+                    if message["type"] == "message":
+                        try:
+                            print(f"Received Redis message: {message}")
+                            channel = message["channel"].decode() if isinstance(message["channel"], bytes) else message["channel"]
+                            
+                            if channel == "approval:requests":
+                                data = json.loads(message["data"])
+                                await self._handle_approval_request(data)
+                            else:
+                                data = json.loads(message["data"])
+                                await self._process_message(data)
+                        except Exception as e:
+                            print(f"Error processing message: {e}")
+            except Exception as e:
+                print(f"Redis connection error: {e}")
+                await self._reconnect()
+                await asyncio.sleep(self._reconnect_delay)
                     
     async def _process_message(self, message: dict):
         """Process a received message."""
@@ -292,3 +317,21 @@ class RedisService:
                         
         except Exception as e:
             print(f"Error handling code interpreter action: {e}")
+            
+    async def _reconnect(self):
+        """Reconnect to Redis with exponential backoff."""
+        if self._reconnect_attempts >= self._max_reconnect_attempts:
+            print(f"Max reconnection attempts ({self._max_reconnect_attempts}) reached")
+            return
+            
+        self._reconnect_attempts += 1
+        delay = self._reconnect_delay * (2 ** (self._reconnect_attempts - 1))
+        print(f"Reconnecting to Redis (attempt {self._reconnect_attempts}/{self._max_reconnect_attempts}) in {delay}s...")
+        
+        try:
+            await asyncio.sleep(delay)
+            if self.pubsub:
+                await self.pubsub.close()
+            await self._setup_pubsub()
+        except Exception as e:
+            print(f"Reconnection failed: {e}")

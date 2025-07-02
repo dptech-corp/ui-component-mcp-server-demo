@@ -29,18 +29,27 @@ code_interpreter_service = CodeInterpreterService()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan manager."""
+    """Application lifespan manager with proper cleanup."""
     await database.connect()
     
     redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
     await redis_service.connect(redis_url)
     
-    asyncio.create_task(redis_service.listen_for_messages())
+    redis_task = asyncio.create_task(redis_service.listen_for_messages())
+    app.state.redis_task = redis_task
     
     yield
     
+    print("Shutting down services...")
+    redis_task.cancel()
+    try:
+        await redis_task
+    except asyncio.CancelledError:
+        pass
+        
     await redis_service.disconnect()
     await database.disconnect()
+    print("Services shut down complete")
 
 
 app = FastAPI(
