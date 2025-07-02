@@ -11,7 +11,7 @@ class Database:
     
     def __init__(self):
         self.pool: Optional[aiomysql.Pool] = None
-        self.database_url = os.getenv("DATABASE_URL", "mysql://ui_user:ui_password@localhost:3306/ui_component_db")
+        self.database_url = os.getenv("DATABASE_URL", "mysql://demo:2KPe)RL!7Xaa!(pEhXbFO@localhost:3306/deepmodeling-sessions")
     
     async def connect(self):
         """Connect to the database and create connection pool."""
@@ -117,7 +117,7 @@ class Database:
                         created_at BIGINT NOT NULL,
                         updated_at BIGINT NOT NULL,
                         INDEX idx_session_id (session_id),
-                        INDEX idx_path (path),
+                        INDEX idx_path (path(255)),
                         INDEX idx_type (type)
                     )
                 """)
