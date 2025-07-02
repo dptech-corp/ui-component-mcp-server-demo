@@ -8,6 +8,7 @@ control of the todo list component.
 import os
 from google.adk.agents import LlmAgent
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, SseServerParams
+from google.adk.tools import agent_tool
 from dotenv import load_dotenv
 from google.adk.models.lite_llm import LiteLlm
 
@@ -18,11 +19,11 @@ representation_agent_instruction = """
 因为在处理科学问题，所以你需要严格、准确。
 
 对于不同问题你可以选用不同的工作流程，一般来讲，大体是下面几种：
-- 对于表征相关领域的理论问题(显微学/衍射与成像技术/波谱学与能谱学)，使用 transfer_to_agent(agent_name='theory_expert') 交由领域理论专家子代理处理
+- 对于表征相关领域的理论问题(显微学/衍射与成像技术/波谱学与能谱学)，调用 theory_expert 工具交由领域理论专家子代理处理
 - 对于具体型号电镜相关操作问题，查询对应操作手册后给出回答
-- 如果用户想让你帮忙执行电镜具体操作，使用 transfer_to_agent(agent_name='microscopy_expert') 交由电镜操作专家子代理处理
-- 对于表征分析问题，使用 transfer_to_agent(agent_name='representation_analyze_expert') 交由表征分析专家子代理 uni-aims 处理
-- 对于软件工程问题，使用 transfer_to_agent(agent_name='software_expert') 交由软件工程专家子代理处理
+- 如果用户想让你帮忙执行电镜具体操作，调用 microscopy_expert 工具交由电镜操作专家子代理处理
+- 对于表征分析问题，调用 representation_analyze_expert 工具交由表征分析专家子代理 uni-aims 处理
+- 对于软件工程问题，调用 software_expert 工具交由软件工程专家子代理处理
 
 此外，对于复杂问题，你也可以先指定计划，然后分步分配给子代理处理。
 
@@ -38,7 +39,7 @@ representation_agent_instruction = """
 1. "电子显微镜的分辨率极限是由什么因素决定的？"
 2. "X射线衍射的布拉格定律如何应用于晶体结构测定？"
 3. "拉曼光谱中的峰位移与分子振动模式有什么关系？"
-委托方式：使用 transfer_to_agent(agent_name='theory_expert')
+委托方式：调用 theory_expert 工具
 
 - microscopy_expert (电镜操作专家子代理)
 功能用途：
@@ -50,7 +51,7 @@ representation_agent_instruction = """
 1. "如何调整透射电镜的聚焦条件以获得最佳分辨率？"
 2. "扫描电镜样品制备时应该注意哪些关键步骤？"
 3. "电镜成像过程中出现漂移现象应该如何处理？"
-委托方式：使用 transfer_to_agent(agent_name='microscopy_expert')
+委托方式：调用 microscopy_expert 工具
 
 - representation_analyze_expert (表征分析专家子代理 uni-aims)
 功能用途：
@@ -62,7 +63,7 @@ representation_agent_instruction = """
 1. "请分析这组XRD数据并确定晶体结构和相组成"
 2. "根据TEM图像计算纳米颗粒的尺寸分布"
 3. "解释XPS谱图中的化学态信息和元素组成"
-委托方式：使用 transfer_to_agent(agent_name='representation_analyze_expert')
+委托方式：调用 representation_analyze_expert 工具
 
 - software_expert (软件工程专家子代理)
 功能用途：
@@ -74,7 +75,7 @@ representation_agent_instruction = """
 1. "开发一个自动化的XRD峰位拟合和相分析程序"
 2. "设计一个电镜图像批量处理和统计分析工具"
 3. "构建多模态表征数据的集成分析平台"
-委托方式：使用 transfer_to_agent(agent_name='software_expert')
+委托方式：调用 software_expert 工具
 
 ## 复杂问题的处理流程
 你必须为每个用户查询遵循以下交互过程。
@@ -198,6 +199,11 @@ def create_agent():
 请根据用户的软件开发需求，提供专业的代码实现、架构设计或优化建议。""",
     )
     
+    theory_expert_tool = agent_tool.AgentTool(agent=theory_expert)
+    microscopy_expert_tool = agent_tool.AgentTool(agent=microscopy_expert)
+    representation_analyze_expert_tool = agent_tool.AgentTool(agent=representation_analyze_expert)
+    software_expert_tool = agent_tool.AgentTool(agent=software_expert)
+    
     agent = LlmAgent(
         model=LiteLlm(
             model=os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash"),
@@ -206,8 +212,7 @@ def create_agent():
         name="representation_expert_agent",
         description="表征专家代理，协调和管理表征相关任务，可以委托给专业的子代理处理具体问题。",
         instruction=representation_agent_instruction,
-        tools=[mcp_toolset],
-        sub_agents=[theory_expert, microscopy_expert, representation_analyze_expert, software_expert]
+        tools=[mcp_toolset, theory_expert_tool, microscopy_expert_tool, representation_analyze_expert_tool, software_expert_tool]
     )
     
     return agent
