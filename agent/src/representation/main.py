@@ -122,6 +122,7 @@ def create_agent():
     
     mcp_server_url = os.getenv("MCP_SERVER_URL", "http://mcp-server:8001")
     
+    # Main MCP toolset for todo and backlog related tools
     mcp_toolset = MCPToolset(
         connection_params=SseServerParams(
             url=f"{mcp_server_url}/sse",
@@ -129,7 +130,16 @@ def create_agent():
         ),
         tool_filter=["add_todo", "delete_todo", "update_todo", "toggle_todo", "list_todo", 
                     "add_backlog", "delete_backlog", "update_backlog", "send_backlog_to_todo", "list_backlog",
-                    "ls", "cat_run_sh", "bash_run_sh", "ask_for_approval",
+                    "ask_for_approval"]
+    )
+    
+    # Software expert MCP toolset for file system and notebook tools
+    software_expert_mcp_toolset = MCPToolset(
+        connection_params=SseServerParams(
+            url=f"{mcp_server_url}/sse",
+            headers={}
+        ),
+        tool_filter=["ls", "cat_run_sh", "bash_run_sh", 
                     "create_python_notebook", "get_notebook_state"]
     )
 
@@ -197,6 +207,7 @@ def create_agent():
 4. 提供代码优化和软件架构设计建议
 
 请根据用户的软件开发需求，提供专业的代码实现、架构设计或优化建议。""",
+        tools=[software_expert_mcp_toolset]
     )
     
     theory_expert_tool = agent_tool.AgentTool(agent=theory_expert)
