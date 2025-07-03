@@ -4,8 +4,6 @@ import { TerminalCommand } from '@/types/terminal';
 import { PlanInput } from './PlanInput';
 import { PlanItemComponent } from './PlanItem';
 import { PlanStats } from './PlanStats';
-import { BacklogInput } from './BacklogInput';
-import { BacklogItemComponent } from './BacklogItem';
 import { TerminalOutput } from './TerminalOutput';
 import { ApprovalList } from '../Approval/ApprovalList';
 import { CodeInterpreterList } from '../CodeInterpreter/CodeInterpreterList';
@@ -17,31 +15,30 @@ import { useSSE } from '@/contexts/SSEContext';
 import { FileBrowser } from './FileBrowser';
 
 interface ToolsProps {
-  activeTab: 'plan' | 'backlog' | 'terminal' | 'approval' | 'code-interpreter' | 'file-browser';
-  setActiveTab: (tab: 'plan' | 'backlog' | 'terminal' | 'approval' | 'code-interpreter' | 'file-browser') => void;
+  // hide backlog
+  activeTab: 'plan' | 'terminal' | 'approval' | 'code-interpreter' | 'file-browser' | 'microscope-operation';
+  setActiveTab: (tab: 'plan' | 'terminal' | 'approval' | 'code-interpreter' | 'file-browser' | 'microscope-operation') => void;
   terminalCommands: TerminalCommand[];
   isConnected: boolean;
 }
 
+// @ts-ignore
 export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }: ToolsProps) {
+
+  // @ts-ignore
   const { 
     plans, 
-    backlogItems, 
     loading, 
     error, 
     addPlan, 
     updatePlan, 
     deletePlan, 
     togglePlan, 
-    fetchPlans,
-    addBacklogItem,
-    updateBacklogItem,
-    deleteBacklogItem,
-    moveToTodo
+    fetchPlans
   } = usePlans();
   const { lastEvent } = useSSE();
   const { approvals, loading: approvalsLoading, error: approvalsError, approveRequest, rejectRequest, deleteApproval, refetch: refetchApprovals } = useApprovals();
-  const { states: codeInterpreterStates, selectedState, loading: codeInterpreterLoading, error: codeInterpreterError, selectState, deleteState } = useCodeInterpreter();
+  const { states: codeInterpreterStates, selectedState, loading: codeInterpreterLoading, error: codeInterpreterError, selectState, deleteState, updateState } = useCodeInterpreter();
 
   useEffect(() => {
     if (lastEvent) {
@@ -96,22 +93,6 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
 
   const handleTogglePlan = async (id: string) => {
     await togglePlan(id);
-  };
-
-  const handleAddBacklogItem = (title: string, description?: string) => {
-    addBacklogItem(title, description);
-  };
-
-  const handleUpdateBacklogItem = (id: string, updates: Partial<any>) => {
-    updateBacklogItem(id, updates);
-  };
-
-  const handleDeleteBacklogItem = (id: string) => {
-    deleteBacklogItem(id);
-  };
-
-  const handleMoveToTodo = async (id: string) => {
-    await moveToTodo(id);
   };
 
   const handleSummarizePlan = async (plan: PlanItem) => {
@@ -178,26 +159,6 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
           Plan
         </button>
         <button
-          onClick={() => setActiveTab('backlog')}
-          className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
-            activeTab === 'backlog'
-              ? 'bg-white border-b-2 border-blue-500 text-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          Backlog
-        </button>
-        <button
-          onClick={() => setActiveTab('terminal')}
-          className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
-            activeTab === 'terminal'
-              ? 'bg-white border-b-2 border-blue-500 text-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          Terminal
-        </button>
-        <button
           onClick={() => setActiveTab('approval')}
           className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
             activeTab === 'approval'
@@ -206,6 +167,16 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
           }`}
         >
           Approval
+        </button>
+        <button
+          onClick={() => setActiveTab('microscope-operation')}
+          className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
+            activeTab === 'microscope-operation'
+              ? 'bg-white border-b-2 border-blue-500 text-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Microscope Operation
         </button>
         <button
           onClick={() => setActiveTab('code-interpreter')}
@@ -226,6 +197,16 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
           }`}
         >
           File Browser
+        </button>
+        <button
+          onClick={() => setActiveTab('terminal')}
+          className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
+            activeTab === 'terminal'
+              ? 'bg-white border-b-2 border-blue-500 text-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Terminal
         </button>
       </div>
 
@@ -274,35 +255,35 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
             )}
           </div>
         </>
-      ): activeTab === 'backlog' ? (
+      ) : activeTab === 'approval' ? (
         <>
-          {/* 添加新 Backlog */}
-          <BacklogInput onAdd={handleAddBacklogItem} disabled={loading} />
-
-          {/* Backlog 列表 */}
-          <div className="space-y-2">
-            {backlogItems.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <p>暂无 Backlog 项目</p>
-                <p className="text-sm mt-1">添加一个新的 Backlog 开始吧！</p>
-              </div>
-            ) : (
-              backlogItems.map((item) => (
-                <BacklogItemComponent
-                  key={item.id}
-                  item={item}
-                  onUpdate={handleUpdateBacklogItem}
-                  onDelete={handleDeleteBacklogItem}
-                  onAddToTodo={handleMoveToTodo}
-                  disabled={loading}
-                />
-              ))
-            )}
-          </div>
+          <ApprovalList 
+            approvals={approvals}
+            loading={approvalsLoading}
+            error={approvalsError}
+            onApprove={approveRequest}
+            onReject={rejectRequest}
+            onDelete={deleteApproval}
+          />
         </>
-      ) : activeTab === 'terminal' ? (
+      ) : activeTab === 'microscope-operation' ? (
         <>
-          <TerminalOutput commands={terminalCommands} disabled={loading} />
+          <div className="h-full">
+            <div className="mb-4">
+              <h3 className="text-lg font-medium text-gray-900">显微镜操作 - Hyper-Fib 工作流</h3>
+              <p className="text-sm text-gray-600">集成的 hyper-fib 前端应用，提供工作流程可视化和实时控制功能</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg overflow-hidden" style={{ height: 'calc(100vh - 300px)' }}>
+              <iframe
+                src="http://localhost:3001"
+                className="w-full h-full"
+                title="Hyper-Fib Frontend"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals"
+              />
+            </div>
+          </div>
         </>
       ) : activeTab === 'code-interpreter' ? (
         <>
@@ -310,6 +291,7 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
             <CodeInterpreterWidget 
               state={selectedState}
               onBack={() => selectState(null)}
+              onUpdateState={updateState}
             />
           ) : (
             <CodeInterpreterList
@@ -328,14 +310,7 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
         </>
       ) : (
         <>
-          <ApprovalList 
-            approvals={approvals}
-            loading={approvalsLoading}
-            error={approvalsError}
-            onApprove={approveRequest}
-            onReject={rejectRequest}
-            onDelete={deleteApproval}
-          />
+          <TerminalOutput commands={terminalCommands} disabled={loading} />
         </>
       )}
 
