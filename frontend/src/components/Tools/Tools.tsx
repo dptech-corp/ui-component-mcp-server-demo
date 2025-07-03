@@ -159,16 +159,6 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
           Plan
         </button>
         <button
-          onClick={() => setActiveTab('terminal')}
-          className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
-            activeTab === 'terminal'
-              ? 'bg-white border-b-2 border-blue-500 text-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          Terminal
-        </button>
-        <button
           onClick={() => setActiveTab('approval')}
           className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
             activeTab === 'approval'
@@ -177,6 +167,16 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
           }`}
         >
           Approval
+        </button>
+        <button
+          onClick={() => setActiveTab('microscope-operation')}
+          className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
+            activeTab === 'microscope-operation'
+              ? 'bg-white border-b-2 border-blue-500 text-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Microscope Operation
         </button>
         <button
           onClick={() => setActiveTab('code-interpreter')}
@@ -199,14 +199,14 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
           File Browser
         </button>
         <button
-          onClick={() => setActiveTab('microscope-operation')}
+          onClick={() => setActiveTab('terminal')}
           className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
-            activeTab === 'microscope-operation'
+            activeTab === 'terminal'
               ? 'bg-white border-b-2 border-blue-500 text-blue-600'
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
-          Microscope Operation
+          Terminal
         </button>
       </div>
 
@@ -255,32 +255,16 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
             )}
           </div>
         </>
-      ): activeTab === 'terminal' ? (
+      ) : activeTab === 'approval' ? (
         <>
-          <TerminalOutput commands={terminalCommands} disabled={loading} />
-        </>
-      ) : activeTab === 'code-interpreter' ? (
-        <>
-          {selectedState ? (
-            <CodeInterpreterWidget 
-              state={selectedState}
-              onBack={() => selectState(null)}
-              onUpdateState={updateState}
-            />
-          ) : (
-            <CodeInterpreterList
-              states={codeInterpreterStates}
-              loading={codeInterpreterLoading}
-              error={codeInterpreterError}
-              onSelectState={selectState}
-              onDeleteState={deleteState}
-              selectedState={selectedState}
-            />
-          )}
-        </>
-      ) : activeTab === 'file-browser' ? (
-        <>
-          <FileBrowser disabled={loading || !isConnected} />
+          <ApprovalList 
+            approvals={approvals}
+            loading={approvalsLoading}
+            error={approvalsError}
+            onApprove={approveRequest}
+            onReject={rejectRequest}
+            onDelete={deleteApproval}
+          />
         </>
       ) : activeTab === 'microscope-operation' ? (
         <>
@@ -305,16 +289,32 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
             </div>
           </div>
         </>
+      ) : activeTab === 'code-interpreter' ? (
+        <>
+          {selectedState ? (
+            <CodeInterpreterWidget 
+              state={selectedState}
+              onBack={() => selectState(null)}
+              onUpdateState={updateState}
+            />
+          ) : (
+            <CodeInterpreterList
+              states={codeInterpreterStates}
+              loading={codeInterpreterLoading}
+              error={codeInterpreterError}
+              onSelectState={selectState}
+              onDeleteState={deleteState}
+              selectedState={selectedState}
+            />
+          )}
+        </>
+      ) : activeTab === 'file-browser' ? (
+        <>
+          <FileBrowser disabled={loading || !isConnected} />
+        </>
       ) : (
         <>
-          <ApprovalList 
-            approvals={approvals}
-            loading={approvalsLoading}
-            error={approvalsError}
-            onApprove={approveRequest}
-            onReject={rejectRequest}
-            onDelete={deleteApproval}
-          />
+          <TerminalOutput commands={terminalCommands} disabled={loading} />
         </>
       )}
 
