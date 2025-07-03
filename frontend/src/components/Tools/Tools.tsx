@@ -4,8 +4,6 @@ import { TerminalCommand } from '@/types/terminal';
 import { PlanInput } from './PlanInput';
 import { PlanItemComponent } from './PlanItem';
 import { PlanStats } from './PlanStats';
-import { BacklogInput } from './BacklogInput';
-import { BacklogItemComponent } from './BacklogItem';
 import { TerminalOutput } from './TerminalOutput';
 import { ApprovalList } from '../Approval/ApprovalList';
 import { CodeInterpreterList } from '../CodeInterpreter/CodeInterpreterList';
@@ -17,8 +15,8 @@ import { useSSE } from '@/contexts/SSEContext';
 import { FileBrowser } from './FileBrowser';
 
 interface ToolsProps {
-  activeTab: 'plan' | 'backlog' | 'terminal' | 'approval' | 'code-interpreter' | 'file-browser';
-  setActiveTab: (tab: 'plan' | 'backlog' | 'terminal' | 'approval' | 'code-interpreter' | 'file-browser') => void;
+  activeTab: 'plan' | 'terminal' | 'approval' | 'code-interpreter' | 'file-browser';
+  setActiveTab: (tab: 'plan' | 'terminal' | 'approval' | 'code-interpreter' | 'file-browser') => void;
   terminalCommands: TerminalCommand[];
   isConnected: boolean;
 }
@@ -26,18 +24,13 @@ interface ToolsProps {
 export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }: ToolsProps) {
   const { 
     plans, 
-    backlogItems, 
     loading, 
     error, 
     addPlan, 
     updatePlan, 
     deletePlan, 
     togglePlan, 
-    fetchPlans,
-    addBacklogItem,
-    updateBacklogItem,
-    deleteBacklogItem,
-    moveToTodo
+    fetchPlans
   } = usePlans();
   const { lastEvent } = useSSE();
   const { approvals, loading: approvalsLoading, error: approvalsError, approveRequest, rejectRequest, deleteApproval, refetch: refetchApprovals } = useApprovals();
@@ -98,21 +91,6 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
     await togglePlan(id);
   };
 
-  const handleAddBacklogItem = (title: string, description?: string) => {
-    addBacklogItem(title, description);
-  };
-
-  const handleUpdateBacklogItem = (id: string, updates: Partial<any>) => {
-    updateBacklogItem(id, updates);
-  };
-
-  const handleDeleteBacklogItem = (id: string) => {
-    deleteBacklogItem(id);
-  };
-
-  const handleMoveToTodo = async (id: string) => {
-    await moveToTodo(id);
-  };
 
   const handleSummarizePlan = async (plan: PlanItem) => {
     try {
@@ -176,16 +154,6 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
           }`}
         >
           Plan
-        </button>
-        <button
-          onClick={() => setActiveTab('backlog')}
-          className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
-            activeTab === 'backlog'
-              ? 'bg-white border-b-2 border-blue-500 text-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          Backlog
         </button>
         <button
           onClick={() => setActiveTab('terminal')}
@@ -274,33 +242,7 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
             )}
           </div>
         </>
-      ): activeTab === 'backlog' ? (
-        <>
-          {/* 添加新 Backlog */}
-          <BacklogInput onAdd={handleAddBacklogItem} disabled={loading} />
-
-          {/* Backlog 列表 */}
-          <div className="space-y-2">
-            {backlogItems.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <p>暂无 Backlog 项目</p>
-                <p className="text-sm mt-1">添加一个新的 Backlog 开始吧！</p>
-              </div>
-            ) : (
-              backlogItems.map((item) => (
-                <BacklogItemComponent
-                  key={item.id}
-                  item={item}
-                  onUpdate={handleUpdateBacklogItem}
-                  onDelete={handleDeleteBacklogItem}
-                  onAddToTodo={handleMoveToTodo}
-                  disabled={loading}
-                />
-              ))
-            )}
-          </div>
-        </>
-      ) : activeTab === 'terminal' ? (
+      ): activeTab === 'terminal' ? (
         <>
           <TerminalOutput commands={terminalCommands} disabled={loading} />
         </>

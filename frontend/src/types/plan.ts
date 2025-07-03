@@ -23,16 +23,3 @@ export interface PlanUpdateRequest {
   description?: string;
   completed?: boolean;
 }
-
-export interface BacklogItem {
-  id: string;
-  title: string;
-  description?: string;
-  created_at: number;
-  updated_at: number;
-}
-
-export interface BacklogCreateRequest {
-  title: string;
-  description?: string;
-}
