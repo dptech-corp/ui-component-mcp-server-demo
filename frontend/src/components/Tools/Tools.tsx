@@ -268,24 +268,20 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
         </>
       ) : activeTab === 'microscope-operation' ? (
         <>
-          <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-            <div className="flex">
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-blue-800">显微镜操作</h3>
-                <div className="mt-2 text-sm text-blue-700">
-                  <p>显微镜操作界面即将集成 hyper-fib 前端应用。</p>
-                  <p className="mt-2">当前为 Mock 内容，后续将通过 iframe 嵌入 hyper-fib-frontend。</p>
-                  <div className="mt-4 p-4 bg-white rounded border">
-                    <p className="font-medium">预期功能：</p>
-                    <ul className="mt-2 list-disc list-inside space-y-1">
-                      <li>工作流程可视化</li>
-                      <li>实时状态监控</li>
-                      <li>暂停/恢复控制</li>
-                      <li>参数配置</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
+          <div className="h-full">
+            <div className="mb-4">
+              <h3 className="text-lg font-medium text-gray-900">显微镜操作 - Hyper-Fib 工作流</h3>
+              <p className="text-sm text-gray-600">集成的 hyper-fib 前端应用，提供工作流程可视化和实时控制功能</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg overflow-hidden" style={{ height: 'calc(100vh - 300px)' }}>
+              <iframe
+                src="http://localhost:3001"
+                className="w-full h-full"
+                title="Hyper-Fib Frontend"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals"
+              />
             </div>
           </div>
         </>
