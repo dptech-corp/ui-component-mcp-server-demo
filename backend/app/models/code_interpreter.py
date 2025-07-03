@@ -6,7 +6,7 @@ class CodeInterpreterState(BaseModel):
     ticket_id: str
     code: str
     description: Optional[str] = ""
-    status: str = "pending"  # pending, running, completed, error
+    status: str = "pending"  # pending, running, completed, error, approved
     result: Optional[str] = None
     widget_url: Optional[str] = None
     created_at: int

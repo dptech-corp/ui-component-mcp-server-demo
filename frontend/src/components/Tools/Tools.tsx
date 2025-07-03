@@ -255,6 +255,7 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
             <CodeInterpreterWidget 
               state={selectedState}
               onBack={() => selectState(null)}
+              onUpdateState={updateState}
             />
           ) : (
             <CodeInterpreterList

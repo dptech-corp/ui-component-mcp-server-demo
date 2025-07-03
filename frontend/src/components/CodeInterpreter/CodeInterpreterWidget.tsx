@@ -3,9 +3,10 @@ import { CodeInterpreterState } from '@/types/code_interpreter';
 interface CodeInterpreterWidgetProps {
   state: CodeInterpreterState;
   onBack: () => void;
+  onUpdateState: (id: string, updates: Partial<CodeInterpreterState>) => Promise<void>;
 }
 
-export function CodeInterpreterWidget({ state, onBack }: CodeInterpreterWidgetProps) {
+export function CodeInterpreterWidget({ state, onBack, onUpdateState }: CodeInterpreterWidgetProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -22,12 +23,6 @@ export function CodeInterpreterWidget({ state, onBack }: CodeInterpreterWidgetPr
         <p className="text-sm text-gray-600">{state.description}</p>
       )}
       
-      <div className="bg-gray-50 rounded p-3">
-        <h4 className="text-sm font-medium text-gray-800 mb-2">代码:</h4>
-        <pre className="text-sm text-gray-800 whitespace-pre-wrap font-mono">
-          {state.code}
-        </pre>
-      </div>
       
       {state.result && (
         <div className="bg-green-50 border border-green-200 rounded p-3">
@@ -35,6 +30,17 @@ export function CodeInterpreterWidget({ state, onBack }: CodeInterpreterWidgetPr
           <pre className="text-sm text-green-700 whitespace-pre-wrap font-mono">
             {state.result}
           </pre>
+        </div>
+      )}
+      
+      {state.status !== 'approved' && (
+        <div className="flex justify-end">
+          <button
+            onClick={() => onUpdateState(state.id, { status: 'approved' })}
+            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            确认
+          </button>
         </div>
       )}
       

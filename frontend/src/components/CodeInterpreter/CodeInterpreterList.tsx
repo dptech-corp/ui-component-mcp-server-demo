@@ -25,6 +25,8 @@ export function CodeInterpreterList({
         return 'bg-blue-100 text-blue-800';
       case 'completed':
         return 'bg-green-100 text-green-800';
+      case 'approved':
+        return 'bg-green-100 text-green-800';
       case 'error':
         return 'bg-red-100 text-red-800';
       default:
@@ -40,6 +42,8 @@ export function CodeInterpreterList({
         return '运行中';
       case 'completed':
         return '已完成';
+      case 'approved':
+        return '已确认';
       case 'error':
         return '错误';
       default:
