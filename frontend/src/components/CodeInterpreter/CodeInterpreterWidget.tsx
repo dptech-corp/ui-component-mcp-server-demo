@@ -18,15 +18,15 @@ interface ConfirmationDialogProps {
   confirmButtonClass: string;
 }
 
-const ConfirmationDialog = ({ 
-  isOpen, 
-  title, 
-  message, 
-  confirmText, 
-  cancelText, 
-  onConfirm, 
-  onCancel, 
-  confirmButtonClass 
+const ConfirmationDialog = ({
+  isOpen,
+  title,
+  message,
+  confirmText,
+  cancelText,
+  onConfirm,
+  onCancel,
+  confirmButtonClass
 }: ConfirmationDialogProps) => {
   if (!isOpen) return null;
 
@@ -58,14 +58,22 @@ export function CodeInterpreterWidget({ state, onBack, onUpdateState }: CodeInte
   const [confirmDialog, setConfirmDialog] = useState({
     isOpen: false
   });
+  const [isConfirming, setIsConfirming] = useState(false);
 
   const handleConfirm = () => {
     setConfirmDialog({ isOpen: true });
   };
 
-  const confirmAction = () => {
-    onUpdateState(state.id, { status: 'approved' });
+  const confirmAction = async () => {
+    setIsConfirming(true);
     setConfirmDialog({ isOpen: false });
+
+    try {
+      await onUpdateState(state.id, { status: 'approved' });
+    } catch (error) {
+      console.error('Failed to update state:', error);
+      setIsConfirming(false);
+    }
   };
 
   const cancelAction = () => {
@@ -83,12 +91,12 @@ export function CodeInterpreterWidget({ state, onBack, onUpdateState }: CodeInte
         </button>
         <h3 className="text-lg font-medium text-gray-900">{state.ticket_id}</h3>
       </div>
-      
+
       {state.description && (
         <p className="text-sm text-gray-600">{state.description}</p>
       )}
-      
-      
+
+
       {state.result && (
         <div className="bg-green-50 border border-green-200 rounded p-3">
           <h4 className="text-sm font-medium text-green-800 mb-1">执行结果:</h4>
@@ -97,21 +105,21 @@ export function CodeInterpreterWidget({ state, onBack, onUpdateState }: CodeInte
           </pre>
         </div>
       )}
-      
+
       <div className="flex justify-end">
         <button
-          onClick={state.status === 'approved' ? undefined : handleConfirm}
-          disabled={state.status === 'approved'}
+          onClick={state.status === 'approved' || isConfirming ? undefined : handleConfirm}
+          disabled={state.status === 'approved' || isConfirming}
           className={`px-4 py-2 rounded focus:outline-none focus:ring-2 ${
-            state.status === 'approved'
+            state.status === 'approved' || isConfirming
               ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
               : 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500'
           }`}
         >
-          {state.status === 'approved' ? '已确认' : '确认'}
+          {state.status === 'approved' ? '已确认' : isConfirming ? '确认中...' : '确认'}
         </button>
       </div>
-      
+
       {state.widget_url && (
         <div className="border rounded-lg overflow-hidden" style={{ height: '500px' }}>
           <iframe
