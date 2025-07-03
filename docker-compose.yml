@@ -123,6 +123,36 @@ services:
     restart: unless-stopped
     command: ["./start_web.sh"]
 
+  hyper-fib-backend:
+    build:
+      context: ./hyper-fib
+      dockerfile: Dockerfile.backend
+    container_name: hyper-fib-backend
+    ports:
+      - "5001:5001"
+    environment:
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./hyper-fib:/app
+    restart: unless-stopped
+
+  hyper-fib-frontend:
+    build:
+      context: ./hyper-fib/frontend/app
+      dockerfile: Dockerfile
+    container_name: hyper-fib-frontend
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - REACT_APP_BACKEND_URL=http://localhost:5001
+    depends_on:
+      - hyper-fib-backend
+    volumes:
+      - ./hyper-fib/frontend/app/src:/app/src
+      - ./hyper-fib/frontend/app/public:/app/public
+    restart: unless-stopped
+
 volumes:
   redis_data:
     driver: local

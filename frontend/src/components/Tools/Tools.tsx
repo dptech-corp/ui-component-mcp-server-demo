@@ -16,8 +16,8 @@ import { FileBrowser } from './FileBrowser';
 
 interface ToolsProps {
   // hide backlog
-  activeTab: 'plan' | 'terminal' | 'approval' | 'code-interpreter' | 'file-browser';
-  setActiveTab: (tab: 'plan' | 'terminal' | 'approval' | 'code-interpreter' | 'file-browser') => void;
+  activeTab: 'plan' | 'terminal' | 'approval' | 'code-interpreter' | 'file-browser' | 'microscope-operation';
+  setActiveTab: (tab: 'plan' | 'terminal' | 'approval' | 'code-interpreter' | 'file-browser' | 'microscope-operation') => void;
   terminalCommands: TerminalCommand[];
   isConnected: boolean;
 }
@@ -38,7 +38,7 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
   } = usePlans();
   const { lastEvent } = useSSE();
   const { approvals, loading: approvalsLoading, error: approvalsError, approveRequest, rejectRequest, deleteApproval, refetch: refetchApprovals } = useApprovals();
-  const { states: codeInterpreterStates, selectedState, loading: codeInterpreterLoading, error: codeInterpreterError, selectState, deleteState } = useCodeInterpreter();
+  const { states: codeInterpreterStates, selectedState, loading: codeInterpreterLoading, error: codeInterpreterError, selectState, deleteState, updateState } = useCodeInterpreter();
 
   useEffect(() => {
     if (lastEvent) {
@@ -198,6 +198,16 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
         >
           File Browser
         </button>
+        <button
+          onClick={() => setActiveTab('microscope-operation')}
+          className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
+            activeTab === 'microscope-operation'
+              ? 'bg-white border-b-2 border-blue-500 text-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Microscope Operation
+        </button>
       </div>
 
       {/* 错误提示 */}
@@ -271,6 +281,29 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
       ) : activeTab === 'file-browser' ? (
         <>
           <FileBrowser disabled={loading || !isConnected} />
+        </>
+      ) : activeTab === 'microscope-operation' ? (
+        <>
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+            <div className="flex">
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-blue-800">显微镜操作</h3>
+                <div className="mt-2 text-sm text-blue-700">
+                  <p>显微镜操作界面即将集成 hyper-fib 前端应用。</p>
+                  <p className="mt-2">当前为 Mock 内容，后续将通过 iframe 嵌入 hyper-fib-frontend。</p>
+                  <div className="mt-4 p-4 bg-white rounded border">
+                    <p className="font-medium">预期功能：</p>
+                    <ul className="mt-2 list-disc list-inside space-y-1">
+                      <li>工作流程可视化</li>
+                      <li>实时状态监控</li>
+                      <li>暂停/恢复控制</li>
+                      <li>参数配置</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </>
       ) : (
         <>
