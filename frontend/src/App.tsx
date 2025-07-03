@@ -81,9 +81,6 @@ function AppContent() {
         <Panel defaultSize={40} minSize={20}>
           <div className="h-full p-4">
             <div className="h-full bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="bg-gray-100 px-4 py-2 border-b">
-                <h3 className="text-sm font-medium text-gray-700">Dev UI</h3>
-              </div>
               <iframe
                 src="http://localhost:3002/"
                 className="w-full h-full border-0"
