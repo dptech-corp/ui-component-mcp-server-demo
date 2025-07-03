@@ -24,9 +24,9 @@ export async function POST(req: NextRequest) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          appName: 'chat',
-          userId: 'default-user',
-          sessionId: 'default-session',
+          appName: 'representation',
+          userId: 'demo',
+          sessionId: 'demo',
           newMessage: {
             parts: [
               {
@@ -40,9 +40,29 @@ export async function POST(req: NextRequest) {
       })
 
       if (response.ok) {
-        const data = await response.json()
+        // Get the raw response text first to check for streaming format
+        const rawResponse = await response.text()
+        console.log('ADK API raw response:', rawResponse)
         
-        if (Array.isArray(data)) {
+        // Check if response starts with data: (SSE format) and clean it
+        let jsonText = rawResponse
+        if (jsonText.startsWith('data:')) {
+          jsonText = jsonText.substring(5).trim()
+        }
+        
+        // Parse the cleaned JSON
+        const data = JSON.parse(jsonText)
+        console.log('ADK API response:', data)
+        
+        // Handle the specific response structure from the API
+        if (data.content && data.content.parts) {
+          // Extract text from the parts array
+          responseText = data.content.parts
+            .map((part: any) => part.text || '')
+            .filter((text: string) => text.length > 0)
+            .join(' ')
+        } else if (Array.isArray(data)) {
+          // Fallback for array responses
           responseText = data
             .map((event: any) => {
               if (event.content && event.content.parts) {
@@ -56,6 +76,7 @@ export async function POST(req: NextRequest) {
             .filter((text: string) => text.length > 0)
             .join('\n')
         } else {
+          // Last resort fallback
           responseText = JSON.stringify(data)
         }
       }

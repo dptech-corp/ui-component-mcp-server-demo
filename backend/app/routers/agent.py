@@ -20,7 +20,7 @@ async def send_message_to_agent(message_data: AgentMessageRequest, request: Requ
         if not session_id:
             async with httpx.AsyncClient() as client:
                 session_response = await client.post(
-                    "http://ui-mcp-agent:8002/apps/representation/users/bbb/sessions",
+                    "http://ui-mcp-agent:8002/apps/representation/users/demo/sessions",
                     json={"additionalProp1": {}},
                     timeout=10.0
                 )
@@ -36,7 +36,7 @@ async def send_message_to_agent(message_data: AgentMessageRequest, request: Requ
         
         agent_request_data = {
             "appName": "representation", 
-            "userId": "bbb",
+            "userId": "demo",
             "sessionId": session_id,
             "newMessage": {
                 "parts": [
@@ -84,7 +84,7 @@ async def stream_message_to_agent(message_data: AgentStreamRequest, request: Req
         if not session_id:
             async with httpx.AsyncClient() as client:
                 session_response = await client.post(
-                    "http://ui-mcp-agent:8002/apps/representation/users/bbb/sessions",
+                    "http://ui-mcp-agent:8002/apps/representation/users/demo/sessions",
                     json={"additionalProp1": {}},
                     timeout=10.0
                 )
@@ -100,7 +100,7 @@ async def stream_message_to_agent(message_data: AgentStreamRequest, request: Req
         
         agent_request_data = {
             "appName": "representation",
-            "userId": "bbb",
+            "userId": "demo",
             "sessionId": session_id,
             "newMessage": {
                 "parts": [
@@ -194,7 +194,7 @@ async def create_agent_session(session_data: SessionCreateRequest = SessionCreat
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                "http://ui-mcp-agent:8002/apps/representation/users/bbb/sessions",
+                "http://ui-mcp-agent:8002/apps/representation/users/demo/sessions",
                 json=session_data.dict(),
                 timeout=10.0
             )

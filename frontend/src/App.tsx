@@ -37,7 +37,7 @@ function AppContent() {
     <div className="h-screen bg-gray-50">
       <PanelGroup direction="horizontal" className="h-full">
         <Panel defaultSize={60} minSize={30}>
-          <div className="h-full overflow-auto">
+          <div className="h-full overflow-auto scrollbar-thin">
             <div className="px-2 py-4">
               <header className="text-center mb-6">
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
