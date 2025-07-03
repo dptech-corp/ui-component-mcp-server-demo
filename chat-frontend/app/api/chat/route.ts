@@ -13,35 +13,64 @@ export async function POST(req: NextRequest) {
 
     const lastMessage = messages[messages.length - 1]
     
-    const response = await fetch('http://localhost:8002/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message: lastMessage.content,
-        session_id: 'default'
-      }),
-    })
+    const adkApiUrl = process.env.ADK_API_URL || 'http://agent:8002'
+    
+    let responseText = ''
+    
+    try {
+      const response = await fetch(`${adkApiUrl}/run_sse`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          appName: 'chat',
+          userId: 'default-user',
+          sessionId: 'default-session',
+          newMessage: {
+            parts: [
+              {
+                text: lastMessage.content
+              }
+            ],
+            role: 'user'
+          },
+          streaming: false
+        }),
+      })
 
-    if (!response.ok) {
-      throw new Error(`ADK API error: ${response.status}`)
+      if (response.ok) {
+        const data = await response.json()
+        
+        if (Array.isArray(data)) {
+          responseText = data
+            .map((event: any) => {
+              if (event.content && event.content.parts) {
+                return event.content.parts
+                  .map((part: any) => part.text || '')
+                  .filter((text: string) => text.length > 0)
+                  .join(' ')
+              }
+              return ''
+            })
+            .filter((text: string) => text.length > 0)
+            .join('\n')
+        } else {
+          responseText = JSON.stringify(data)
+        }
+      }
+    } catch (adkError) {
+      console.error('ADK API error:', adkError)
+    }
+    
+    if (!responseText) {
+      responseText = `收到您的消息："${lastMessage.content}"。目前ADK API服务暂时不可用，这是一个模拟响应。请检查agent服务是否正常运行。\n\n作为科学代理，我可以帮助您：\n- 分析材料数据\n- 处理实验结果\n- 提供研究建议\n- 协助文献调研\n\n请在ADK服务恢复后重新尝试获得完整功能。`
     }
 
-    const data = await response.json()
-    
     const encoder = new TextEncoder()
     const stream = new ReadableStream({
       start(controller) {
-        const responseText = Array.isArray(data.response) 
-          ? data.response.map(event => event.content || JSON.stringify(event)).join('\n')
-          : JSON.stringify(data.response)
-        
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify({
-          type: 'text',
-          content: responseText
-        })}\n\n`))
-        
+        controller.enqueue(encoder.encode(`0:"${responseText.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"\n`))
         controller.close()
       },
     })

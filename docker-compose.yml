@@ -146,7 +146,7 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
       - NEXT_PUBLIC_SSE_URL=http://localhost:8000/events
-      - NEXT_PUBLIC_ADK_API_URL=http://localhost:8002
+      - ADK_API_URL=http://agent:8002
     depends_on:
       backend:
         condition: service_healthy
