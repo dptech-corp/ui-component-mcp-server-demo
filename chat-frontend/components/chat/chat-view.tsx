@@ -46,14 +46,9 @@ export function ChatView() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="bg-white border-b px-6 py-4">
-        <h1 className="text-2xl font-bold text-gray-900">通用表征代理</h1>
-        <p className="text-gray-600">具备读算作报能力的智能协作平台</p>
-      </div>
-
       <div
         ref={scrollRef}
-        className="flex-1 overflow-auto p-6"
+        className="flex-1 overflow-auto p-4"
       >
         {messages.length === 0 ? (
           <div className="h-full flex items-center justify-center">
@@ -75,8 +70,8 @@ export function ChatView() {
         )}
       </div>
 
-      <div className="bg-white border-t p-6">
-        <div className="max-w-4xl mx-auto">
+      <div className="bg-white border-t p-4">
+        <div className="w-full">
           <ChatInput
             value={inputValue}
             onChange={handleInputChange}
