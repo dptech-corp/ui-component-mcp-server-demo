@@ -72,7 +72,6 @@ services:
         condition: service_healthy
     volumes:
       - ./backend/app:/app/app
-      - backend_data:/app/data
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -119,7 +118,9 @@ services:
       mcp-server:
         condition: service_started
     volumes:
-      - ./agent/src:/app/src
+      - ./agent:/app
+      
+
     restart: unless-stopped
     command: ["./start_web.sh"]
 

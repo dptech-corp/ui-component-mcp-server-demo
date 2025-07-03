@@ -11,6 +11,7 @@ from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, SseServerParams
 from google.adk.tools import agent_tool
 from dotenv import load_dotenv
 from google.adk.models.lite_llm import LiteLlm
+from utils.MyMCPToolset import MyMCPToolset
 
 load_dotenv()
 
@@ -175,14 +176,15 @@ def create_agent():
     mcp_server_url = os.getenv("MCP_SERVER_URL", "http://mcp-server:8001")
     
     # Main MCP toolset for todo and backlog related tools
-    mcp_toolset = MCPToolset(
+    mcp_toolset = MyMCPToolset(
         connection_params=SseServerParams(
             url=f"{mcp_server_url}/sse",
             headers={}
         ),
         tool_filter=["add_plan", "delete_plan", "update_plan", "toggle_plan", "list_plan", 
                     "add_backlog", "delete_backlog", "update_backlog", "send_backlog_to_todo", "list_backlog",
-                    "ask_for_approval"]
+                    "ask_for_approval"],
+        tools_set_long_running=["ask_for_approval"]
     )
     
     # Software expert MCP toolset for file system and notebook tools

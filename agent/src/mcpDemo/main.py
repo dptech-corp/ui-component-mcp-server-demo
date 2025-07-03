@@ -7,14 +7,7 @@ This server provides MCP tools for controlling UI components through Redis messa
 import os
 from fastmcp import FastMCP
 from mcp.server.session import ServerSession
-
-from .redis_client import RedisClient
-from .tools.plan_tools import register_plan_tools
-from .tools.backlog_tools import register_backlog_tools
-from .tools.terminal_tools import register_terminal_tools
-from .tools.approval_tools import register_approval_tools
-from .tools.code_interpreter_tools import register_code_interpreter_tools
-from .tools.file_tools import register_file_tools
+from approval_tools import register_approval_tools
 
 old_received_request = ServerSession._received_request
 
@@ -34,19 +27,11 @@ def main():
     """Main entry point for the MCP server."""
 
     # TODO P1 改造成 google adk mcp toolset 来使用 context, long running 等
-    
-    redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
     port = int(os.getenv("MCP_PORT", "8001"))
     
     mcp = FastMCP("ui-component-demo")
     
-    redis_client = RedisClient(redis_url)
-    register_plan_tools(mcp, redis_client)
-    register_backlog_tools(mcp, redis_client)
-    register_terminal_tools(mcp, redis_client)
-    register_approval_tools(mcp, redis_client)
-    register_code_interpreter_tools(mcp, redis_client)
-    register_file_tools(mcp, redis_client)
+    register_approval_tools(mcp)
     
     print(f"Starting MCP server on port {port} with SSE transport")
     
