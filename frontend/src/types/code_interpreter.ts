@@ -3,7 +3,7 @@ export interface CodeInterpreterState {
   ticket_id: string;
   code: string;
   description?: string;
-  status: 'pending' | 'running' | 'completed' | 'error';
+  status: 'pending' | 'running' | 'completed' | 'error' | 'approved';
   result?: string;
   widget_url?: string;
   created_at: number;
@@ -16,7 +16,7 @@ export interface CodeInterpreterCreateRequest {
 }
 
 export interface CodeInterpreterUpdateRequest {
-  status?: 'pending' | 'running' | 'completed' | 'error';
+  status?: 'pending' | 'running' | 'completed' | 'error' | 'approved';
   result?: string;
 }
 
