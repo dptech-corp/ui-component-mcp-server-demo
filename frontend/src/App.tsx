@@ -85,9 +85,9 @@ function AppContent() {
                 <h3 className="text-sm font-medium text-gray-700">Dev UI</h3>
               </div>
               <iframe
-                src="http://localhost:8002/dev-ui/"
+                src="http://localhost:3002/"
                 className="w-full h-full border-0"
-                title="Dev UI"
+                title="Chat Interface"
               />
             </div>
           </div>
