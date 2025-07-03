@@ -41,7 +41,7 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
   } = usePlans();
   const { lastEvent } = useSSE();
   const { approvals, loading: approvalsLoading, error: approvalsError, approveRequest, rejectRequest, deleteApproval, refetch: refetchApprovals } = useApprovals();
-  const { states: codeInterpreterStates, selectedState, loading: codeInterpreterLoading, error: codeInterpreterError, selectState, deleteState } = useCodeInterpreter();
+  const { states: codeInterpreterStates, selectedState, loading: codeInterpreterLoading, error: codeInterpreterError, selectState, deleteState, updateState } = useCodeInterpreter();
 
   useEffect(() => {
     if (lastEvent) {
