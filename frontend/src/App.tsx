@@ -38,17 +38,17 @@ function AppContent() {
       <PanelGroup direction="horizontal" className="h-full">
         <Panel defaultSize={60} minSize={30}>
           <div className="h-full overflow-auto">
-            <div className="container mx-auto px-4 py-8">
-              <header className="text-center mb-8">
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            <div className="px-2 py-4">
+              <header className="text-center mb-6">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
                   通用表征代理
                 </h1>
-                <p className="text-lg text-gray-600">
+                <p className="text-base text-gray-600">
                   具备读算作报能力的智能协作平台，打通多个专业子系统，实现人/代理/工具平等协作
                 </p>
               </header>
 
-              <main className="max-w-2xl mx-auto">
+              <main className="w-full">
                 <div className="bg-white rounded-lg shadow-md p-6">
                   <h2 className="text-2xl font-semibold text-gray-800 mb-4">
                     协作工具集
