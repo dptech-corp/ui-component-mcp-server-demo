@@ -19,7 +19,7 @@ class TodoService:
         async with database.get_connection() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
-                    "SELECT id, title, description, completed, created_at, updated_at FROM todos ORDER BY created_at DESC"
+                    "SELECT id, title, description, completed, created_at, updated_at FROM todos ORDER BY created_at ASC"
                 )
                 rows = await cursor.fetchall()
                 
