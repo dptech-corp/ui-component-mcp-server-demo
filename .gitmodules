@@ -1,0 +1,3 @@
+[submodule "hyper-fib"]
+	path = hyper-fib
+	url = git@github.com:dptech-corp/hyper-fib.git
