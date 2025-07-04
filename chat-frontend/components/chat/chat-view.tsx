@@ -10,7 +10,8 @@ import { useChat } from 'ai/react'
 export function ChatView() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [inputValue, setInputValue] = useState('')
-  const { sessionId, setSessionId } = useChatStore()
+  const [historyLoaded, setHistoryLoaded] = useState(false)
+  const { sessionId, setSessionId, loadChatHistory } = useChatStore()
 
   useEffect(() => {
     if (!sessionId) {
@@ -25,6 +26,17 @@ export function ChatView() {
       scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
     },
   })
+
+  useEffect(() => {
+    if (sessionId && !historyLoaded) {
+      loadChatHistory().then((historyMessages) => {
+        if (historyMessages.length > 0) {
+          setMessages(historyMessages)
+        }
+        setHistoryLoaded(true)
+      })
+    }
+  }, [sessionId, historyLoaded, loadChatHistory, setMessages])
 
   const handleMessageSubmit = async (content: string) => {
     if (!content.trim()) return
