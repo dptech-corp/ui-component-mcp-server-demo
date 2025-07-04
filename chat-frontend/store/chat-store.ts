@@ -15,7 +15,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     if (!sessionId) return []
     
     try {
-      const response = await fetch(`http://localhost:8002/apps/representation/users/demo/sessions/${sessionId}`, {
+      const response = await fetch(`/api/chat/sessions/${sessionId}`, {
         method: 'GET',
         headers: {
           'accept': 'application/json'
