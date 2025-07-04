@@ -15,7 +15,7 @@ export function ChatView() {
 
   useEffect(() => {
     if (!sessionId) {
-      setSessionId(nanoid())
+      setSessionId('demo')
     }
   }, [sessionId, setSessionId])
 
