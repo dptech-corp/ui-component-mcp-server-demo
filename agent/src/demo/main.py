@@ -19,7 +19,6 @@ from google.adk.agents.invocation_context import InvocationContext
 from google.adk.agents import LlmAgent, BaseAgent
 from google.adk.events import Event
 from google.genai import types
-from agent.database import database
 from typing_extensions import override
 from google.adk.tools.mcp_tool.mcp_tool import MCPTool
 
@@ -197,7 +196,7 @@ def create_agent():
     # TODO P0: 添加 mcp 中真实的 ask_for_approval 并设置 long running
 
     # tools = [reimburse, LongRunningFunctionTool(ask_for_approval)]
-    tools = [reimburse, mcp_toolset]
+    tools = [reimburse,get_approval, mcp_toolset]
 
     
     agent = ReimbursementAgent(

@@ -11,8 +11,10 @@ from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, SseServerParams
 from google.adk.tools import agent_tool
 from dotenv import load_dotenv
 from google.adk.models.lite_llm import LiteLlm
+from utils.MyLlmAgent import MyLlmAgent
 from utils.MyMCPToolset import MyMCPToolset
-
+from utils.database import get_approval
+from theory_expert_agent import lightrag_agent
 load_dotenv()
 
 representation_agent_instruction = """
@@ -35,7 +37,7 @@ representation_agent_instruction = """
 对于复杂问题，你必须采用计划驱动的工作模式：
 1. **目标分析**：理解用户的总体目标和需求
 2. **计划制定**：将复杂目标分解为具体的执行步骤
-3. **计划创建**：使用 add_plan 为每个步骤创建对应的计划项
+3. 计划创建**：使用 add_plan 为每个步骤创建对应的计划项
 4. **逐步执行**：按顺序执行每个步骤，委托给相应的专家子代理
 5. **进度更新**：完成每个步骤后，使用 toggle_plan 标记对应计划为完成
 6. **整体跟踪**：监控所有计划的完成状态，确保目标达成
@@ -173,6 +175,7 @@ representation_agent_instruction = """
 def create_agent():
     """Create and configure the ADK agent with MCP tools."""
     
+    func_tools = [get_approval]
     mcp_server_url = os.getenv("MCP_SERVER_URL", "http://mcp-server:8001")
     
     # Main MCP toolset for todo and backlog related tools
@@ -200,38 +203,6 @@ def create_agent():
 
     
     # TODO add pocketflow tools
-    theory_expert = LlmAgent(
-        model=LiteLlm(
-            model=os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash"),
-            api_key=os.getenv("OPENAI_API_KEY"),
-            api_base=os.getenv("OPENAI_API_BASE_URL")),
-        name="theory_expert",
-        description="领域理论专家子代理，专门处理显微学、衍射与成像技术、波谱学与能谱学等领域的理论问题和概念解释。",
-        instruction="""你是领域理论专家子代理。你的专业领域包括：
-1. 处理显微学理论相关问题和概念解释
-2. 解答衍射与成像技术的基础原理和应用
-3. 提供波谱学与能谱学的理论知识和解释
-4. 解答材料表征领域的前沿理论问题
-
-请根据用户的理论问题，提供严谨、准确的科学解释和理论知识。""",
-    )
-    
-    microscopy_expert = LlmAgent(
-        model=LiteLlm(
-            model=os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash"),
-            api_key=os.getenv("OPENAI_API_KEY"),
-            api_base=os.getenv("OPENAI_API_BASE_URL")),
-        name="microscopy_expert",
-        description="电镜操作专家子代理，专门处理各种型号电镜的具体操作指导、设备维护、样品制备和成像参数优化等问题。",
-        instruction="""你是电镜操作专家子代理。你的专业领域包括：
-1. 处理各种型号电镜的具体操作指导和问题解答
-2. 提供电镜设备的维护、校准和故障排除建议
-3. 指导样品制备和成像参数优化
-4. 解答电镜操作过程中的技术问题
-
-请根据用户的具体问题提供专业、准确的电镜操作指导。""",
-    )
-    
     representation_analyze_expert = LlmAgent(
         model=LiteLlm(
             model=os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash"),
@@ -272,12 +243,17 @@ def create_agent():
         tools=[software_expert_mcp_toolset]
     )
     
+    # 使用函数创建专家代理
+    theory_expert = lightrag_agent.create_theory_expert()
+    microscopy_expert = lightrag_agent.create_microscopy_expert()
+    
     theory_expert_tool = agent_tool.AgentTool(agent=theory_expert)
     microscopy_expert_tool = agent_tool.AgentTool(agent=microscopy_expert)
-    representation_analyze_expert_tool = agent_tool.AgentTool(agent=representation_analyze_expert)
-    software_expert_tool = agent_tool.AgentTool(agent=software_expert)
+    # representation_analyze_expert_tool = agent_tool.AgentTool(agent=representation_analyze_expert)
+    # software_expert_tool = agent_tool.AgentTool(agent=software_expert)
     
-    agent = LlmAgent(
+    cu_tools = func_tools+[microscopy_expert_tool, theory_expert_tool]
+    agent = MyLlmAgent(
         model=LiteLlm(
             model=os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash"),
             api_key=os.getenv("OPENAI_API_KEY"),
@@ -285,9 +261,10 @@ def create_agent():
         name="representation_expert_agent",
         description="表征专家代理，协调和管理表征相关任务，可以委托给专业的子代理处理具体问题。",
         instruction=representation_agent_instruction,
-        tools=[mcp_toolset, theory_expert_tool, microscopy_expert_tool, representation_analyze_expert_tool, software_expert_tool]
+        tools=cu_tools
     )
     
     return agent
 
+# 创建 agent 实例
 root_agent = create_agent()
