@@ -1,0 +1,4 @@
+ui_component_agent.egg-info
+src/ui_component_agent.egg-info
+*.egg-info/
+.venv

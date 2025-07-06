@@ -12,6 +12,9 @@ export SESSION_DB_URL=${SESSION_DB_URL}
 
 cd /app/src
 
+# Add the project root directory to PYTHONPATH to resolve import issues
+export PYTHONPATH="$PYTHONPATH:/app/src"
+
 # Check if SESSION_DB_URL is set and not empty
 if [ -n "${SESSION_DB_URL}" ]; then
   uv run adk web --host 0.0.0.0 --port 8002 --session_service_uri $SESSION_DB_URL
