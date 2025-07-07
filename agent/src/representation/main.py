@@ -17,6 +17,8 @@ from google.adk.models.lite_llm import LiteLlm
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from software import software_expert_desc, software_expert
 from microscopy import microscopy_expert_desc, microscopy_expert
+from representation_analyze import representation_analyze_expert, representation_analyze_expert_desc
+from theory import theory_expert_desc, theory_expert
 
 load_dotenv()
 
@@ -48,31 +50,11 @@ representation_agent_instruction = f"""
 
 你可以访问以下专业化的子代理。你必须将任务委托给合适的子代理来执行操作。
 
-- theory_expert (领域理论专家子代理)
-功能用途：
-1. 处理显微学理论相关问题和概念解释
-2. 解答衍射与成像技术的基础原理和应用
-3. 提供波谱学与能谱学的理论知识和解释
-4. 解答材料表征领域的前沿理论问题
-示例查询：
-1. "电子显微镜的分辨率极限是由什么因素决定的？"
-2. "X射线衍射的布拉格定律如何应用于晶体结构测定？"
-3. "拉曼光谱中的峰位移与分子振动模式有什么关系？"
-委托方式：调用 theory_expert 工具
+- {theory_expert_desc}
 
 - {microscopy_expert_desc} 
 
-- representation_analyze_expert (表征分析专家子代理 uni-aims)
-功能用途：
-1. 执行各种材料表征数据的深度分析和解释
-2. 提供XRD、XPS、FTIR、拉曼等谱学数据的专业解读
-3. 进行电镜图像的定量分析和结构表征
-4. 协助制定综合表征方案和实验设计
-示例查询：
-1. "请分析这组XRD数据并确定晶体结构和相组成"
-2. "根据TEM图像计算纳米颗粒的尺寸分布"
-3. "解释XPS谱图中的化学态信息和元素组成"
-委托方式：调用 representation_analyze_expert 工具
+- {representation_analyze_expert_desc}
 
 - {software_expert_desc}
 
@@ -171,39 +153,6 @@ def create_agent():
         tool_filter=["add_plan", "delete_plan", "update_plan", "toggle_plan", "list_plan", 
                     "add_backlog", "delete_backlog", "update_backlog", "send_backlog_to_todo", "list_backlog",
                     "ask_for_approval"]
-    )
-    
-    # TODO add pocketflow tools
-    theory_expert = LlmAgent(
-        model=LiteLlm(
-            model=os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash"),
-            api_key=os.getenv("OPENAI_API_KEY"),
-            api_base=os.getenv("OPENAI_API_BASE_URL")),
-        name="theory_expert",
-        description="领域理论专家子代理，专门处理显微学、衍射与成像技术、波谱学与能谱学等领域的理论问题和概念解释。",
-        instruction="""你是领域理论专家子代理。你的专业领域包括：
-1. 处理显微学理论相关问题和概念解释
-2. 解答衍射与成像技术的基础原理和应用
-3. 提供波谱学与能谱学的理论知识和解释
-4. 解答材料表征领域的前沿理论问题
-
-请根据用户的理论问题，提供严谨、准确的科学解释和理论知识。""",
-    )
-   
-    representation_analyze_expert = LlmAgent(
-        model=LiteLlm(
-            model=os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash"),
-            api_key=os.getenv("OPENAI_API_KEY"),
-            api_base=os.getenv("OPENAI_API_BASE_URL")),
-        name="representation_analyze_expert",
-        description="表征分析专家子代理 uni-aims，专门执行各种材料表征数据的深度分析和解释，包括XRD、XPS、FTIR、拉曼等谱学数据解读。",
-        instruction="""你是表征分析专家子代理 uni-aims。你的专业领域包括：
-1. 执行各种材料表征数据的深度分析和解释
-2. 提供XRD、XPS、FTIR、拉曼等谱学数据的专业解读
-3. 进行电镜图像的定量分析和结构表征
-4. 协助制定综合表征方案和实验设计
-
-请根据用户提供的表征数据或分析需求，提供专业、详细的分析结果和解释。""",
     )
     
     theory_expert_tool = agent_tool.AgentTool(agent=theory_expert)

@@ -33,7 +33,16 @@ microscopy_expert_instruction = """电镜操作专家子代理，专门处理各
 请根据用户的具体问题提供专业、准确的电镜操作指导
 """
 
-microscopy_expert_mcp_toolset = MCPToolset()
+# TODO add pocketflow tools
+microscopy_expert_mcp_toolset = MCPToolset(
+    connection_params=SseServerParams(
+        url=f"{mcp_server_url}/sse",
+        headers={}
+    ),
+    tool_filter=[
+        "create_python_notebook", "get_notebook_state",
+        "create_file_tool", "list_files_tool"]
+)
     
 microscopy_expert = LlmAgent(
     model=LiteLlm(
