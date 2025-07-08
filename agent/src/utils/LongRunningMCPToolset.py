@@ -2,7 +2,7 @@ from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
 from typing import List
 from google.adk.tools.mcp_tool.mcp_tool import MCPTool
 
-class MyMCPToolset(MCPToolset):
+class LongRunningMCPToolset(MCPToolset):
     def __init__(
         self,
         tools_set_long_running: List[str] = [],

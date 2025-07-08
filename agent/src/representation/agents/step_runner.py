@@ -16,8 +16,8 @@ from software import software_expert_desc, software_expert
 from microscopy import microscopy_expert_desc, microscopy_expert
 from representation_analyze import representation_analyze_expert, representation_analyze_expert_desc
 from theory import theory_expert_desc, theory_expert
-from utils.MyLlmAgent import MyLlmAgent
-from utils.MyMCPToolset import MyMCPToolset
+from agent.src.utils.LongRunningLlmAgent import LongRunningLlmAgent
+from agent.src.utils.LongRunningMCPToolset import LongRunningMCPToolset
 from utils.database import get_approval
 load_dotenv()
 mcp_server_url = os.getenv("MCP_SERVER_URL", "http://mcp-server:8001")
@@ -52,7 +52,7 @@ step_runner_instruction = f"""
 """
 print(step_runner_instruction)
 func_tools = [get_approval]
-mcp_toolset = MyMCPToolset(
+mcp_toolset = LongRunningMCPToolset(
     connection_params=SseServerParams(
         url=f"{mcp_server_url}/sse",
         headers={}
@@ -69,7 +69,7 @@ representation_analyze_expert_tool = agent_tool.AgentTool(agent=representation_a
 software_expert_tool = agent_tool.AgentTool(agent=software_expert)
 cu_tools = func_tools+[mcp_toolset,microscopy_expert_tool, theory_expert_tool,representation_analyze_expert_tool,software_expert_tool]
     
-step_runner = MyLlmAgent(
+step_runner = LongRunningLlmAgent(
     name="step_runner",
     model=LiteLlm(
         model=os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash"),

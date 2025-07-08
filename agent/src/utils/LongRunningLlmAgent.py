@@ -9,7 +9,12 @@ from typing_extensions import override
 from utils.database import get_approval
 
 
-class MyLlmAgent(LlmAgent):
+class LongRunningLlmAgent(LlmAgent):
+    """
+    LongRunningLlmAgent 是一个自定义的 LlmAgent 类，
+    其特点是可以支持设置 long-running 功能。
+    """
+
     # Define fields that will be set after initialization
     long_running_function_call: types.FunctionCall | None = None
     long_running_function_response: types.FunctionResponse | None = None
