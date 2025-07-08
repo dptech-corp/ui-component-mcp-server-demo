@@ -185,11 +185,11 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
         </>
       ) : activeTab === 'file-browser' ? (
         <>
-          <FileBrowser disabled={loading || !isConnected} />
+          <FileBrowser disabled={!isConnected} />
         </>
       ) : (
         <>
-          <TerminalOutput commands={terminalCommands} disabled={loading} />
+          <TerminalOutput commands={terminalCommands} disabled={false} />
         </>
       )}
 

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Plan } from '../../types/plan';
 import { Button } from '../ui/button';
 import { Trash2 } from 'lucide-react';

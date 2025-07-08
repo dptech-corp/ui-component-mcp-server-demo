@@ -1,4 +1,3 @@
-import React from 'react';
 import { TodoItem } from '../../types/plan';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';

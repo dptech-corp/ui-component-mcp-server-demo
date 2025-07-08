@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Plan, TodoItem } from '../../types/plan';
 import { PlanList } from './PlanList';
 import { TodoList } from './TodoList';
