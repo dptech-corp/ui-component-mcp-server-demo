@@ -10,7 +10,7 @@ import os
 import sys
 from google.adk.agents import LlmAgent
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, SseConnectionParams
-from dotenv import load_dotenv
+
 from google.adk.models.lite_llm import LiteLlm
 from google.adk.tools.long_running_tool import LongRunningFunctionTool
 from google.adk.tools.tool_context import ToolContext
@@ -21,7 +21,7 @@ from google.adk.events import Event
 from google.genai import types
 from typing_extensions import override
 from google.adk.tools.mcp_tool.mcp_tool import MCPTool
-
+from dotenv import load_dotenv
 load_dotenv()
 class MyMCPToolset(MCPToolset):
     def __init__(
