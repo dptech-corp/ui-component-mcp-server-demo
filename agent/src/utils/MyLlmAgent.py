@@ -9,9 +9,6 @@ from typing_extensions import override
 from utils.database import get_approval
 
 
-
-
-
 class MyLlmAgent(LlmAgent):
     # Define fields that will be set after initialization
     long_running_function_call: types.FunctionCall | None = None

@@ -11,39 +11,26 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 from software import software_expert_desc, software_expert
 from microscopy import microscopy_expert_desc, microscopy_expert
 from representation_analyze import representation_analyze_expert, representation_analyze_expert_desc
-
+from utils.prompts import return_descriptions_root,return_instructions_root
+from utils.lightrag_tool import lightrag_tools
 load_dotenv()
 
 mcp_server_url = os.getenv("MCP_SERVER_URL", "http://mcp-server:8001")
-
-theory_expert_desc = """theory_expert (领域理论专家子代理)
-功能用途：
-1. 处理显微学理论相关问题和概念解释
-2. 解答衍射与成像技术的基础原理和应用
-3. 提供波谱学与能谱学的理论知识和解释
-4. 解答材料表征领域的前沿理论问题
-示例查询：
-1. "电子显微镜的分辨率极限是由什么因素决定的？"
-2. "X射线衍射的布拉格定律如何应用于晶体结构测定？"
-3. "拉曼光谱中的峰位移与分子振动模式有什么关系？"
-委托方式：调用 theory_expert 工具"""
-
-theory_expert_instruction = """你是领域理论专家子代理。你的专业领域包括：
-1. 处理显微学理论相关问题和概念解释
-2. 解答衍射与成像技术的基础原理和应用
-3. 提供波谱学与能谱学的理论知识和解释
-4. 解答材料表征领域的前沿理论问题
-
-请根据用户的理论问题，提供严谨、准确的科学解释和理论知识。"""
-
+theory_expert_desc = return_descriptions_root(target="theory_expert")
+tools = lightrag_tools
+# theory_tools = [tools[2], tools[3], tools[4]]  # 显微学、波谱学、衍射学工具
+theory_tools = []
 theory_expert = LlmAgent(
     model=LiteLlm(
         model=os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash"),
         api_key=os.getenv("OPENAI_API_KEY"),
         api_base=os.getenv("OPENAI_API_BASE_URL")),
     name="theory_expert",
-    description=theory_expert_desc,
-    instruction=theory_expert_instruction,
+    tools=theory_tools,
+    description=return_descriptions_root(target="theory_expert"),
+    instruction=return_instructions_root(target="theory_expert"),
 )
+
+
 
 root_agent = theory_expert

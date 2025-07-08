@@ -15,7 +15,7 @@ from google.adk.models.lite_llm import LiteLlm
 from utils.MyLlmAgent import MyLlmAgent
 from utils.MyMCPToolset import MyMCPToolset
 from utils.database import get_approval
-from theory_expert_agent import lightrag_agent
+
 
 # Add the parent directory to sys.path to allow absolute imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -166,7 +166,7 @@ def create_agent():
     representation_analyze_expert_tool = agent_tool.AgentTool(agent=representation_analyze_expert)
     software_expert_tool = agent_tool.AgentTool(agent=software_expert)
     
-    cu_tools = func_tools+[microscopy_expert_tool, theory_expert_tool]
+    cu_tools = func_tools+[mcp_toolset,microscopy_expert_tool, theory_expert_tool,representation_analyze_expert_tool,software_expert_tool]
     agent = MyLlmAgent(
         model=LiteLlm(
             model=os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash"),

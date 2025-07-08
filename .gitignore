@@ -189,5 +189,5 @@ celerybeat.pid
 dmypy.json
 
 # Work data directories
-agent/src/theory_expert_agent/work_dickens/
+agent/src/utils/lightrag_tool/work_dickens/
 

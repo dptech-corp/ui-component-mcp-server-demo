@@ -3465,15 +3465,6 @@ wheels = [
 ]
 
 [[package]]
-name = "pymysql"
-version = "1.1.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/b3/8f/ce59b5e5ed4ce8512f879ff1fa5ab699d211ae2495f1adaa5fbba2a1eada/pymysql-1.1.1.tar.gz", hash = "sha256:e127611aaf2b417403c60bf4dc570124aeb4a57f5f37b8e95ae399a42f904cd0", size = 47678 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/0c/94/e4181a1f6286f545507528c78016e00065ea913276888db2262507693ce5/PyMySQL-1.1.1-py3-none-any.whl", hash = "sha256:4de15da4c61dc132f4fb9ab763063e693d521a80fd0e87943b9a453dd4c19d6c", size = 44972 },
-]
-
-[[package]]
 name = "pyparsing"
 version = "3.2.3"
 source = { registry = "https://pypi.org/simple" }
@@ -4451,11 +4442,20 @@ name = "ui-component-agent"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "aiomysql" },
+    { name = "cryptography" },
     { name = "fastapi" },
     { name = "google-adk" },
     { name = "graspologic" },
     { name = "lightrag-hku" },
     { name = "litellm" },
+    { name = "nano-vectordb" },
+    { name = "networkx", version = "3.2.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.10.*'" },
+    { name = "networkx", version = "3.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "numpy" },
+    { name = "openai" },
+    { name = "pymysql" },
     { name = "python-dotenv" },
     { name = "sqlalchemy" },
     { name = "uvicorn", extra = ["standard"] },
@@ -4482,6 +4482,11 @@ requires-dist = [
     { name = "lightrag-hku", specifier = ">=1.3.8" },
     { name = "litellm", specifier = ">=1.72.6" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.6.0" },
+    { name = "nano-vectordb", specifier = ">=0.0.4.3" },
+    { name = "networkx", specifier = ">=3.0.0" },
+    { name = "numpy", specifier = ">=1.26.4" },
+    { name = "openai", specifier = ">=1.88.0" },
+    { name = "pymysql", specifier = ">=1.1.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.4.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.21.0" },
     { name = "python-dotenv", specifier = ">=1.0.0" },

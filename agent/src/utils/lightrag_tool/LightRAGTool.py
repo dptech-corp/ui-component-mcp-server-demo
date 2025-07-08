@@ -9,14 +9,14 @@ from lightrag.utils import EmbeddingFunc
 import numpy as np
 import logging
 from openai import AzureOpenAI
-from .prompts import return_instructions_root
+
 
 load_dotenv()
 
 # 配置日志
 logging.basicConfig(level=logging.INFO)
 
-class LightRAGAgent:
+class LightRAGTool:
     """LightRAG 代理类，管理所有 RAG 工具和初始化"""
     
     def __init__(self):
@@ -43,6 +43,7 @@ class LightRAGAgent:
         self._tools = None
         self._theory_expert = None
         self._microscopy_expert = None
+
         
     async def _llm_model_func(self, prompt, system_prompt=None, history_messages=[], keyword_extraction=False, **kwargs) -> str:
         """LLM 模型函数"""
@@ -161,7 +162,7 @@ class LightRAGAgent:
                 "error_message": f"检索文档时发生错误: {str(e)}"
             }
     
-    def knowledge_retrieval_xianweixue(self, query: str):
+    async def knowledge_retrieval_xianweixue(self, query: str):
         """
         此工具从显微成像，而且涉及到各类粒子的显微学相关的文档及参考材料。'
         Args:
@@ -174,7 +175,7 @@ class LightRAGAgent:
         print(f"--- knowledge_retrieval_tool_by_lightrag_xianweixue 被调用，查询：{query} ---")
         try:
             self.initialize()
-            llm_response = self._rag_list[2].query(query, param=QueryParam(mode="hybrid"))
+            llm_response = await self._rag_list[2].aquery(query, param=QueryParam(mode="hybrid"))
             return {
                 "status": "success",
                 "llm_response": llm_response,
@@ -186,7 +187,7 @@ class LightRAGAgent:
                 "error_message": f"检索文档时发生错误: {str(e)}"
             }
     
-    def knowledge_retrieval_bopuxue(self, query: str):
+    async def knowledge_retrieval_bopuxue(self, query: str):
         """
         此工具从谱学，而且涉及到各类粒子的谱学知识相关的文档及参考材料。'
         Args:
@@ -199,7 +200,7 @@ class LightRAGAgent:
         print(f"--- knowledge_retrieval_tool_by_lightrag_bopuxue 被调用，查询：{query} ---")
         try:
             self.initialize()
-            llm_response = self._rag_list[3].query(query, param=QueryParam(mode="hybrid"))
+            llm_response = await self._rag_list[3].aquery(query, param=QueryParam(mode="hybrid"))
             return {
                 "status": "success",
                 "llm_response": llm_response,
@@ -211,7 +212,7 @@ class LightRAGAgent:
                 "error_message": f"检索文档时发生错误: {str(e)}"
             }
     
-    def knowledge_retrieval_yanshexue(self, query: str):
+    async def knowledge_retrieval_yanshexue(self, query: str):
         """
         此工具从衍射，而且涉及到各类粒子的衍射知识相关的文档及参考材料。'
         Args:
@@ -224,7 +225,7 @@ class LightRAGAgent:
         print(f"--- knowledge_retrieval_tool_by_lightrag_yanshexue 被调用，查询：{query} ---")
         try:
             self.initialize()
-            llm_response = self._rag_list[4].query(query, param=QueryParam(mode="hybrid"))
+            llm_response = await self._rag_list[4].aquery(query, param=QueryParam(mode="hybrid"))
             return {
                 "status": "success",
                 "llm_response": llm_response,
@@ -236,7 +237,7 @@ class LightRAGAgent:
                 "error_message": f"检索文档时发生错误: {str(e)}"
             }
 
-    def _create_tools(self) -> List[FunctionTool]:
+    def create_tools(self) -> List[FunctionTool]:
         """创建 ADK 工具列表"""
         if self._tools is None:
             self._tools = [
@@ -248,44 +249,10 @@ class LightRAGAgent:
             ]
         return self._tools
 
-    def create_theory_expert(self) -> LlmAgent:
-        if self._theory_expert is None:
-            # tools = self._create_tools()
-            # theory_tools = [tools[2], tools[3], tools[4]]  # 显微学、波谱学、衍射学工具
-            self._theory_expert = LlmAgent(
-                model=LiteLlm(
-                    model=os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash"),
-                    api_key=os.getenv("OPENAI_API_KEY"),
-                    api_base=os.getenv("OPENAI_API_BASE_URL")),
-                name="theory_expert",
-                tools=[],
-                description="领域理论专家子代理，专门处理显微学、衍射与成像技术、波谱学与能谱学等领域的理论问题和概念解释。",
-                instruction="""你是领域理论专家子代理。你的专业领域包括：
-1. 处理显微学理论相关问题和概念解释
-2. 解答衍射与成像技术的基础原理和应用
-3. 提供波谱学与能谱学的理论知识和解释
-4. 解答材料表征领域的前沿理论问题
+    
 
-请根据用户的理论问题，提供严谨、准确的科学解释和理论知识。""",
-            )
-        return self._theory_expert
-
-    def create_microscopy_expert(self) -> LlmAgent:
-        """创建电镜操作专家代理"""
-        if self._microscopy_expert is None:
-            tools = self._create_tools()
-            microscopy_tools = [tools[0], tools[1]]  # TESCAN、国仪工具
-            self._microscopy_expert = LlmAgent(
-                model=LiteLlm(
-                    model=os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash"),
-                    api_key=os.getenv("OPENAI_API_KEY"),
-                    api_base=os.getenv("OPENAI_API_BASE_URL")),
-                tools=microscopy_tools,
-                name="microscopy_expert",
-                description="电镜操作专家子代理，专门处理各种型号电镜的具体操作指导、设备维护、样品制备和成像参数优化等问题。",
-                instruction=return_instructions_root("microscopy_expert")
-            )
-        return self._microscopy_expert
+    
+    
 
 
 
