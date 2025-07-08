@@ -1,2 +1,4 @@
 .env
-agent/src/demo/
+agent/src/demo/*
+!agent/src/demo/__init__.py
+!agent/src/demo/main.py
