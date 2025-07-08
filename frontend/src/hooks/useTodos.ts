@@ -7,6 +7,8 @@ export function useTodos() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { lastEvent } = useSSE();
+  
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   useEffect(() => {
     if (lastEvent) {
@@ -51,11 +53,15 @@ export function useTodos() {
     setError(null);
     
     try {
-      let url = '/api/todos';
+      let url = `${apiUrl}/api/todos`;
       const params = new URLSearchParams();
       
       if (sessionId) {
         params.append('session_id', sessionId);
+      }
+      
+      if (planId) {
+        params.append('plan_id', planId);
       }
       
       if (params.toString()) {
@@ -68,13 +74,7 @@ export function useTodos() {
       }
       
       const data = await response.json();
-      let filteredTodos = data;
-      
-      if (planId) {
-        filteredTodos = data.filter((todo: TodoItem) => todo.plan_id === planId);
-      }
-      
-      setTodos(filteredTodos);
+      setTodos(data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch todos';
       setError(errorMessage);
@@ -82,13 +82,13 @@ export function useTodos() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [apiUrl]);
 
   const toggleTodo = useCallback(async (todoId: string) => {
     setError(null);
     
     try {
-      const response = await fetch(`/api/todos/${todoId}/toggle`, {
+      const response = await fetch(`${apiUrl}/api/todos/${todoId}/toggle`, {
         method: 'POST',
       });
       
@@ -108,13 +108,13 @@ export function useTodos() {
       console.error('Error toggling todo:', err);
       throw err;
     }
-  }, []);
+  }, [apiUrl]);
 
   const deleteTodo = useCallback(async (todoId: string) => {
     setError(null);
     
     try {
-      const response = await fetch(`/api/todos/${todoId}`, {
+      const response = await fetch(`${apiUrl}/api/todos/${todoId}`, {
         method: 'DELETE',
       });
       
@@ -129,7 +129,7 @@ export function useTodos() {
       console.error('Error deleting todo:', err);
       throw err;
     }
-  }, []);
+  }, [apiUrl]);
 
   return {
     todos,

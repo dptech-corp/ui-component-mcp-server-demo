@@ -31,7 +31,7 @@ export function PlanManager({ sessionId = "default_session" }: PlanManagerProps)
         case 'todo_updated':
         case 'todo_deleted':
           if (selectedPlan) {
-            fetchTodos(sessionId);
+            fetchTodos(sessionId, selectedPlan.id);
           }
           break;
       }
@@ -47,7 +47,7 @@ export function PlanManager({ sessionId = "default_session" }: PlanManagerProps)
 
   const handleSelectPlan = (plan: Plan) => {
     setSelectedPlan(plan);
-    fetchTodos(sessionId);
+    fetchTodos(sessionId, plan.id);
   };
 
   const handleBackToPlans = () => {
