@@ -40,3 +40,27 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Custom thin scrollbar styles */
+.scrollbar-thin {
+  scrollbar-width: thin; /* Firefox */
+}
+
+/* For Webkit browsers like Chrome/Safari */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(155, 155, 155, 0.5);
+  border-radius: 20px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(155, 155, 155, 0.7);
+}

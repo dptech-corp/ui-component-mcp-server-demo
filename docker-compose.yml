@@ -137,6 +137,25 @@ services:
       - ./hyper-fib:/app
     restart: unless-stopped
 
+  chat-frontend:
+    build:
+      context: ./chat-frontend
+      dockerfile: Dockerfile
+    container_name: ui-mcp-chat-frontend
+    ports:
+      - "3002:3002"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_SSE_URL=http://localhost:8000/events
+      - ADK_API_URL=http://agent:8002
+    depends_on:
+      backend:
+        condition: service_healthy
+    volumes:
+      - ./chat-frontend:/app
+      - /app/node_modules
+    restart: unless-stopped
+
   hyper-fib-frontend:
     build:
       context: ./hyper-fib/frontend/app

@@ -35,3 +35,21 @@ class AgentResponse(BaseModel):
     success: bool
     response: Any
     error: Optional[str] = None
+
+
+class AgentStreamRequest(BaseModel):
+    """Agent stream request from frontend."""
+    message: str
+    sessionId: Optional[str] = None
+
+
+class SessionCreateRequest(BaseModel):
+    """Session creation request."""
+    additionalProp1: dict = {}
+
+
+class SessionCreateResponse(BaseModel):
+    """Session creation response."""
+    sessionId: str
+    success: bool
+    error: Optional[str] = None

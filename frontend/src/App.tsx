@@ -37,18 +37,18 @@ function AppContent() {
     <div className="h-screen bg-gray-50">
       <PanelGroup direction="horizontal" className="h-full">
         <Panel defaultSize={60} minSize={30}>
-          <div className="h-full overflow-auto">
-            <div className="container mx-auto px-4 py-8">
-              <header className="text-center mb-8">
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          <div className="h-full overflow-auto scrollbar-thin">
+            <div className="px-2 py-4">
+              <header className="text-center mb-6">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
                   通用表征代理
                 </h1>
-                <p className="text-lg text-gray-600">
+                <p className="text-base text-gray-600">
                   具备读算作报能力的智能协作平台，打通多个专业子系统，实现人/代理/工具平等协作
                 </p>
               </header>
 
-              <main className="max-w-2xl mx-auto">
+              <main className="w-full">
                 <div className="bg-white rounded-lg shadow-md p-6">
                   <h2 className="text-2xl font-semibold text-gray-800 mb-4">
                     协作工具集
@@ -81,13 +81,10 @@ function AppContent() {
         <Panel defaultSize={40} minSize={20}>
           <div className="h-full p-4">
             <div className="h-full bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="bg-gray-100 px-4 py-2 border-b">
-                <h3 className="text-sm font-medium text-gray-700">Dev UI</h3>
-              </div>
               <iframe
-                src="http://localhost:8002/dev-ui/"
+                src="http://localhost:3002/"
                 className="w-full h-full border-0"
-                title="Dev UI"
+                title="Chat Interface"
               />
             </div>
           </div>

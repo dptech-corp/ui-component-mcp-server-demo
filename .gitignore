@@ -141,7 +141,7 @@ temp/
 .env.production.local
 
 # Docker
-.dockerignore
+# .dockerignore
 
 # Redis data
 dump.rdb
