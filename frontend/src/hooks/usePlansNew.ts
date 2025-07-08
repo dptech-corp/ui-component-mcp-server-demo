@@ -7,6 +7,8 @@ export function usePlansNew() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { lastEvent } = useSSE();
+  
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   useEffect(() => {
     if (lastEvent) {
@@ -52,8 +54,8 @@ export function usePlansNew() {
     
     try {
       const url = sessionId 
-        ? `/api/plans?session_id=${encodeURIComponent(sessionId)}`
-        : '/api/plans';
+        ? `${apiUrl}/api/plans?session_id=${encodeURIComponent(sessionId)}`
+        : `${apiUrl}/api/plans`;
       
       const response = await fetch(url);
       if (!response.ok) {
@@ -69,13 +71,13 @@ export function usePlansNew() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [apiUrl]);
 
   const createPlan = useCallback(async (planData: PlanCreateRequest) => {
     setError(null);
     
     try {
-      const response = await fetch('/api/plans', {
+      const response = await fetch(`${apiUrl}/api/plans`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -95,13 +97,13 @@ export function usePlansNew() {
       console.error('Error creating plan:', err);
       throw err;
     }
-  }, []);
+  }, [apiUrl]);
 
   const deletePlan = useCallback(async (planId: string) => {
     setError(null);
     
     try {
-      const response = await fetch(`/api/plans/${planId}`, {
+      const response = await fetch(`${apiUrl}/api/plans/${planId}`, {
         method: 'DELETE',
       });
       
@@ -116,13 +118,13 @@ export function usePlansNew() {
       console.error('Error deleting plan:', err);
       throw err;
     }
-  }, []);
+  }, [apiUrl]);
 
   const updatePlan = useCallback(async (planId: string, updates: Partial<Plan>) => {
     setError(null);
     
     try {
-      const response = await fetch(`/api/plans/${planId}`, {
+      const response = await fetch(`${apiUrl}/api/plans/${planId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -146,7 +148,7 @@ export function usePlansNew() {
       console.error('Error updating plan:', err);
       throw err;
     }
-  }, []);
+  }, [apiUrl]);
 
   return {
     plans,
