@@ -14,13 +14,19 @@ class TodoService:
     def __init__(self):
         pass
         
-    async def get_all_todos(self) -> List[Todo]:
-        """Get all todo items."""
+    async def get_all_todos(self, session_id: Optional[str] = None) -> List[Todo]:
+        """Get all todo items, optionally filtered by session_id."""
         async with database.get_connection() as conn:
             async with conn.cursor() as cursor:
-                await cursor.execute(
-                    "SELECT id, title, description, completed, created_at, updated_at FROM todos ORDER BY created_at ASC"
-                )
+                if session_id:
+                    await cursor.execute(
+                        "SELECT id, title, description, completed, session_id, created_at, updated_at FROM todos WHERE session_id = %s ORDER BY created_at ASC",
+                        (session_id,)
+                    )
+                else:
+                    await cursor.execute(
+                        "SELECT id, title, description, completed, session_id, created_at, updated_at FROM todos ORDER BY created_at ASC"
+                    )
                 rows = await cursor.fetchall()
                 
                 todos = []
@@ -30,8 +36,9 @@ class TodoService:
                         title=row[1],
                         description=row[2] or "",
                         completed=bool(row[3]),
-                        created_at=row[4],
-                        updated_at=row[5]
+                        session_id=row[4] or "default_session",
+                        created_at=row[5],
+                        updated_at=row[6]
                     )
                     todos.append(todo)
                 
@@ -42,7 +49,7 @@ class TodoService:
         async with database.get_connection() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
-                    "SELECT id, title, description, completed, created_at, updated_at FROM todos WHERE id = %s",
+                    "SELECT id, title, description, completed, session_id, created_at, updated_at FROM todos WHERE id = %s",
                     (todo_id,)
                 )
                 row = await cursor.fetchone()
@@ -55,11 +62,12 @@ class TodoService:
                     title=row[1],
                     description=row[2] or "",
                     completed=bool(row[3]),
-                    created_at=row[4],
-                    updated_at=row[5]
+                    session_id=row[4] or "default_session",
+                    created_at=row[5],
+                    updated_at=row[6]
                 )
         
-    async def create_todo(self, title: str, description: str = "") -> Todo:
+    async def create_todo(self, title: str, description: str = "", session_id: str = "default_session") -> Todo:
         """Create a new todo item."""
         todo_id = str(uuid.uuid4())
         timestamp = int(time.time() * 1000)
@@ -67,8 +75,8 @@ class TodoService:
         async with database.get_connection() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
-                    "INSERT INTO todos (id, title, description, completed, created_at, updated_at) VALUES (%s, %s, %s, %s, %s, %s)",
-                    (todo_id, title, description, False, timestamp, timestamp)
+                    "INSERT INTO todos (id, title, description, completed, session_id, created_at, updated_at) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                    (todo_id, title, description, False, session_id, timestamp, timestamp)
                 )
                 await conn.commit()
         
@@ -77,6 +85,7 @@ class TodoService:
             title=title,
             description=description,
             completed=False,
+            session_id=session_id,
             created_at=timestamp,
             updated_at=timestamp
         )

@@ -177,9 +177,11 @@ class RedisService:
         try:
             if action == "add":
                 data = payload.get("data", {})
+                session_id = payload.get("session_id", "default_session")
                 todo = await todo_service.create_todo(
                     title=data.get("title", ""),
-                    description=data.get("description", "")
+                    description=data.get("description", ""),
+                    session_id=session_id
                 )
                 await sse_service.send_event("plan_added", {"plan": todo.dict()})
                 
@@ -205,7 +207,8 @@ class RedisService:
                         await sse_service.send_event("plan_updated", {"plan": todo.dict()})
                         
             elif action == "list":
-                todos = await todo_service.get_all_todos()
+                session_id = payload.get("session_id")
+                todos = await todo_service.get_all_todos(session_id=session_id)
                 todos_data = [todo.dict() for todo in todos]
                 await sse_service.send_event("plan_list", {"plans": todos_data})
                         

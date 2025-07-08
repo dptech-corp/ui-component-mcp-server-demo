@@ -3,6 +3,7 @@ export interface PlanItem {
   title: string;
   description?: string;
   completed: boolean;
+  session_id?: string;
   created_at: number;
   updated_at: number;
 }
@@ -16,12 +17,14 @@ export interface PlanState {
 export interface PlanCreateRequest {
   title: string;
   description?: string;
+  session_id?: string;
 }
 
 export interface PlanUpdateRequest {
   title?: string;
   description?: string;
   completed?: boolean;
+  session_id?: string;
 }
 
 export interface BacklogItem {
