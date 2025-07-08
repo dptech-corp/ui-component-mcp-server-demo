@@ -111,11 +111,12 @@ def register_plan_tools(mcp: FastMCP, redis_client: RedisClient):
         return {"success": True, "message": f"Plan {plan_id} updated successfully"}
     
     @mcp.tool()
-    async def toggle_plan(plan_id: str) -> dict:
-        """切换 plan 完成状态
+    async def update_plan_status(plan_id: str, status: str) -> dict:
+        """更新 plan 状态
         
         Args:
             plan_id: Plan 项的 ID
+            status: 新状态 (active, completed, archived)
             
         Returns:
             操作结果
@@ -128,14 +129,17 @@ def register_plan_tools(mcp: FastMCP, redis_client: RedisClient):
             "target": "plan_component",
             "component": "plan",
             "payload": {
-                "action": "toggle",
+                "action": "update",
                 "session_id": os.getenv("SESSION_ID", "default_session"),
-                "planId": plan_id
+                "planId": plan_id,
+                "data": {
+                    "status": status
+                }
             }
         }
         
         await redis_client.publish_message("plan:actions", message)
-        return {"success": True, "message": f"Plan {plan_id} status toggled successfully"}
+        return {"success": True, "message": f"Plan {plan_id} status updated to {status} successfully"}
     
     @mcp.tool()
     async def list_plan() -> dict:

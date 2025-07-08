@@ -20,12 +20,12 @@ class TodoService:
             async with conn.cursor() as cursor:
                 if session_id:
                     await cursor.execute(
-                        "SELECT id, title, description, completed, session_id, created_at, updated_at FROM todos WHERE session_id = %s ORDER BY created_at ASC",
+                        "SELECT id, title, description, completed, session_id, plan_id, created_at, updated_at FROM todos WHERE session_id = %s ORDER BY created_at ASC",
                         (session_id,)
                     )
                 else:
                     await cursor.execute(
-                        "SELECT id, title, description, completed, session_id, created_at, updated_at FROM todos ORDER BY created_at ASC"
+                        "SELECT id, title, description, completed, session_id, plan_id, created_at, updated_at FROM todos ORDER BY created_at ASC"
                     )
                 rows = await cursor.fetchall()
                 
@@ -37,8 +37,9 @@ class TodoService:
                         description=row[2] or "",
                         completed=bool(row[3]),
                         session_id=row[4] or "default_session",
-                        created_at=row[5],
-                        updated_at=row[6]
+                        plan_id=row[5],
+                        created_at=row[6],
+                        updated_at=row[7]
                     )
                     todos.append(todo)
                 
@@ -49,7 +50,7 @@ class TodoService:
         async with database.get_connection() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
-                    "SELECT id, title, description, completed, session_id, created_at, updated_at FROM todos WHERE id = %s",
+                    "SELECT id, title, description, completed, session_id, plan_id, created_at, updated_at FROM todos WHERE id = %s",
                     (todo_id,)
                 )
                 row = await cursor.fetchone()
@@ -63,11 +64,12 @@ class TodoService:
                     description=row[2] or "",
                     completed=bool(row[3]),
                     session_id=row[4] or "default_session",
-                    created_at=row[5],
-                    updated_at=row[6]
+                    plan_id=row[5],
+                    created_at=row[6],
+                    updated_at=row[7]
                 )
         
-    async def create_todo(self, title: str, description: str = "", session_id: str = "default_session") -> Todo:
+    async def create_todo(self, title: str, description: str = "", session_id: str = "default_session", plan_id: Optional[str] = None) -> Todo:
         """Create a new todo item."""
         todo_id = str(uuid.uuid4())
         timestamp = int(time.time() * 1000)
@@ -75,8 +77,8 @@ class TodoService:
         async with database.get_connection() as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(
-                    "INSERT INTO todos (id, title, description, completed, session_id, created_at, updated_at) VALUES (%s, %s, %s, %s, %s, %s, %s)",
-                    (todo_id, title, description, False, session_id, timestamp, timestamp)
+                    "INSERT INTO todos (id, title, description, completed, session_id, plan_id, created_at, updated_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                    (todo_id, title, description, False, session_id, plan_id, timestamp, timestamp)
                 )
                 await conn.commit()
         
@@ -86,6 +88,7 @@ class TodoService:
             description=description,
             completed=False,
             session_id=session_id,
+            plan_id=plan_id,
             created_at=timestamp,
             updated_at=timestamp
         )

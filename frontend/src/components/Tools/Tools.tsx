@@ -1,18 +1,14 @@
 import { useEffect } from 'react';
-import { PlanItem } from '@/types/plan';
 import { TerminalCommand } from '@/types/terminal';
-import { PlanInput } from './PlanInput';
-import { PlanItemComponent } from './PlanItem';
-import { PlanStats } from './PlanStats';
 import { TerminalOutput } from './TerminalOutput';
 import { ApprovalList } from '../Approval/ApprovalList';
 import { CodeInterpreterList } from '../CodeInterpreter/CodeInterpreterList';
 import { CodeInterpreterWidget } from '../CodeInterpreter/CodeInterpreterWidget';
-import { usePlans } from '@/hooks/usePlans';
 import { useApprovals } from '@/hooks/useApprovals';
 import { useCodeInterpreter } from '@/hooks/useCodeInterpreter';
 import { useSSE } from '@/contexts/SSEContext';
 import { FileBrowser } from './FileBrowser';
+import { PlanManager } from '../Plan/PlanManager';
 
 interface ToolsProps {
   // hide backlog
@@ -25,17 +21,6 @@ interface ToolsProps {
 // @ts-ignore
 export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }: ToolsProps) {
 
-  // @ts-ignore
-  const { 
-    plans, 
-    loading, 
-    error, 
-    addPlan, 
-    updatePlan, 
-    deletePlan, 
-    togglePlan, 
-    fetchPlans
-  } = usePlans();
   const { lastEvent } = useSSE();
   const { approvals, loading: approvalsLoading, error: approvalsError, approveRequest, rejectRequest, deleteApproval, refetch: refetchApprovals } = useApprovals();
   const { states: codeInterpreterStates, selectedState, loading: codeInterpreterLoading, error: codeInterpreterError, selectState, deleteState, updateState } = useCodeInterpreter();
@@ -43,16 +28,9 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
   useEffect(() => {
     if (lastEvent) {
       switch (lastEvent.event) {
-        case 'plan_added':
-          fetchPlans();
-          setActiveTab('plan');
-          break;
+        case 'plan_created':
         case 'plan_updated':
-          fetchPlans();
-          setActiveTab('plan');
-          break;
         case 'plan_deleted':
-          fetchPlans();
           setActiveTab('plan');
           break;
         case 'approval_request':
@@ -74,64 +52,6 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
       }
     }
   }, [lastEvent, setActiveTab]);
-
-  useEffect(() => {
-    fetchPlans();
-  }, [fetchPlans]);
-
-  const handleAddPlan = async (title: string, description?: string) => {
-    await addPlan(title, description);
-  };
-
-  const handleUpdatePlan = async (id: string, updates: Partial<PlanItem>) => {
-    await updatePlan(id, updates);
-  };
-
-  const handleDeletePlan = async (id: string) => {
-    await deletePlan(id);
-  };
-
-  const handleTogglePlan = async (id: string) => {
-    await togglePlan(id);
-  };
-
-  const handleSummarizePlan = async (plan: PlanItem) => {
-    try {
-      const message = `分析 ${plan.title} 任务花了多久完成`;
-      
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/agent/message`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message,
-          sessionId: null
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to send message to agent');
-      }
-
-      const result = await response.json();
-      console.log('Agent response:', result);
-      
-      alert(`Agent 响应: ${JSON.stringify(result.response)}`);
-    } catch (error) {
-      console.error('Error calling agent:', error);
-      alert('调用 Agent 失败，请稍后重试');
-    }
-  };
-
-  if (loading && plans.length === 0) {
-    return (
-      <div className="flex justify-center items-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2 text-gray-600">加载中...</span>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -210,51 +130,10 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
         </button>
       </div>
 
-      {/* 错误提示 */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-4">
-          <div className="flex">
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">错误</h3>
-              <div className="mt-2 text-sm text-red-700">
-                <p>{error}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Tab Content */}
       {activeTab === 'plan' ? (
-        <>
-          {/* 添加新 Plan */}
-          <PlanInput onAdd={handleAddPlan} disabled={loading} />
-
-          {/* Plan 统计 */}
-          <PlanStats plans={plans} />
-
-          {/* Plan 列表 */}
-          <div className="space-y-2">
-            {plans.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <p>暂无 Plan 项目</p>
-                <p className="text-sm mt-1">添加一个新的 Plan 开始吧！</p>
-              </div>
-            ) : (
-              plans.map((plan) => (
-                <PlanItemComponent
-                  key={plan.id}
-                  plan={plan}
-                  onUpdate={handleUpdatePlan}
-                  onDelete={handleDeletePlan}
-                  onToggle={handleTogglePlan}
-                  onSummarize={handleSummarizePlan}
-                  disabled={loading}
-                />
-              ))
-            )}
-          </div>
-        </>
+        <PlanManager sessionId="default_session" />
       ) : activeTab === 'approval' ? (
         <>
           <ApprovalList 
@@ -306,11 +185,11 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
         </>
       ) : activeTab === 'file-browser' ? (
         <>
-          <FileBrowser disabled={loading || !isConnected} />
+          <FileBrowser disabled={!isConnected} />
         </>
       ) : (
         <>
-          <TerminalOutput commands={terminalCommands} disabled={loading} />
+          <TerminalOutput commands={terminalCommands} disabled={false} />
         </>
       )}
 
@@ -325,11 +204,12 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
                   尝试使用以下 MCP 命令：
                 </p>
                 <ul className="mt-2 list-disc list-inside space-y-1">
-                  <li><code>add_plan("表征分析任务", "XRD数据解析和相组成分析")</code></li>
-                  <li><code>toggle_plan("plan_id")</code> - 标记任务完成</li>
-                  <li><code>delete_plan("plan_id")</code> - 删除任务</li>
-                  <li><code>update_plan("plan_id", "新标题", "新描述")</code> - 更新任务</li>
-                  <li><code>list_plan()</code> - 查看所有任务</li>
+                  <li><code>add_plan("表征分析任务", "XRD数据解析和相组成分析")</code> - 创建新计划</li>
+                  <li><code>add_todo("plan_id", "具体步骤", "步骤描述")</code> - 在计划中添加步骤</li>
+                  <li><code>update_plan_status("plan_id", "completed")</code> - 更新计划状态</li>
+                  <li><code>toggle_todo("todo_id")</code> - 切换步骤完成状态</li>
+                  <li><code>delete_plan("plan_id")</code> - 删除计划</li>
+                  <li><code>list_plan()</code> - 查看所有计划</li>
                 </ul>
               </div>
             </div>
