@@ -25,7 +25,8 @@ async def create_todo(todo_data: TodoCreate, request: Request):
     todo = await todo_service.create_todo(
         title=todo_data.title,
         description=todo_data.description,
-        session_id=todo_data.session_id or "default_session"
+        session_id=todo_data.session_id or "default_session",
+        plan_id=todo_data.plan_id
     )
     
     await sse_service.send_event("plan_added", {"todo": todo.dict()})

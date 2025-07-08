@@ -137,6 +137,38 @@ class Database:
                         INDEX idx_type (type)
                     )
                 """)
+                
+                await cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS plans (
+                        id VARCHAR(36) PRIMARY KEY,
+                        session_id VARCHAR(255) NOT NULL,
+                        title TEXT NOT NULL,
+                        description TEXT,
+                        status VARCHAR(50) DEFAULT 'active',
+                        created_at BIGINT NOT NULL,
+                        updated_at BIGINT NOT NULL,
+                        INDEX idx_session_id (session_id),
+                        INDEX idx_status (status)
+                    )
+                """)
+                
+                try:
+                    await cursor.execute("""
+                        ALTER TABLE todos 
+                        ADD COLUMN plan_id VARCHAR(36)
+                    """)
+                    await cursor.execute("""
+                        ALTER TABLE todos 
+                        ADD INDEX idx_plan_id (plan_id)
+                    """)
+                    await cursor.execute("""
+                        ALTER TABLE todos 
+                        ADD FOREIGN KEY (plan_id) REFERENCES plans(id) ON DELETE CASCADE
+                    """)
+                except Exception as e:
+                    if "Duplicate column name" not in str(e):
+                        print(f"Warning: Could not add plan_id column: {e}")
+                
                 await conn.commit()
     
     @asynccontextmanager
