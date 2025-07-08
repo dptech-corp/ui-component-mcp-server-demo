@@ -68,6 +68,19 @@ class Database:
                     )
                 """)
                 
+                try:
+                    await cursor.execute("""
+                        ALTER TABLE todos 
+                        ADD COLUMN session_id VARCHAR(255) DEFAULT 'default_session'
+                    """)
+                    await cursor.execute("""
+                        ALTER TABLE todos 
+                        ADD INDEX idx_session_id (session_id)
+                    """)
+                except Exception as e:
+                    if "Duplicate column name" not in str(e):
+                        print(f"Warning: Could not add session_id column: {e}")
+                
                 await cursor.execute("""
                     CREATE TABLE IF NOT EXISTS backlog (
                         id VARCHAR(36) PRIMARY KEY,

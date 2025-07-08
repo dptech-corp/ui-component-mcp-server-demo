@@ -9,6 +9,7 @@ class TodoBase(BaseModel):
     title: str
     description: Optional[str] = ""
     completed: bool = False
+    session_id: Optional[str] = "default_session"
 
 
 class TodoCreate(TodoBase):
@@ -21,6 +22,7 @@ class TodoUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     completed: Optional[bool] = None
+    session_id: Optional[str] = None
 
 
 class Todo(TodoBase):

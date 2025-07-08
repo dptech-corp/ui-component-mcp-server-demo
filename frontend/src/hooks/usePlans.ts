@@ -7,11 +7,11 @@ interface UsePlansReturn {
   backlogItems: BacklogItem[];
   loading: boolean;
   error: string | null;
-  addPlan: (title: string, description?: string) => Promise<void>;
+  addPlan: (title: string, description?: string, sessionId?: string) => Promise<void>;
   updatePlan: (id: string, updates: Partial<PlanItem>) => Promise<void>;
   deletePlan: (id: string) => Promise<void>;
   togglePlan: (id: string) => Promise<void>;
-  fetchPlans: () => Promise<void>;
+  fetchPlans: (sessionId?: string) => Promise<void>;
   addBacklogItem: (title: string, description?: string) => Promise<void>;
   updateBacklogItem: (id: string, updates: Partial<BacklogItem>) => Promise<void>;
   deleteBacklogItem: (id: string) => Promise<void>;
@@ -103,12 +103,16 @@ export function usePlans(): UsePlansReturn {
     }
   }, [lastEvent]);
 
-  const fetchPlans = useCallback(async () => {
+  const fetchPlans = useCallback(async (sessionId?: string) => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`${apiUrl}/api/todos`);
+      const url = sessionId 
+        ? `${apiUrl}/api/todos?session_id=${encodeURIComponent(sessionId)}`
+        : `${apiUrl}/api/todos`;
+      
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -124,12 +128,16 @@ export function usePlans(): UsePlansReturn {
     }
   }, [apiUrl]);
 
-  const addPlan = useCallback(async (title: string, description?: string) => {
+  const addPlan = useCallback(async (title: string, description?: string, sessionId?: string) => {
     try {
       setLoading(true);
       setError(null);
       
-      const planData: PlanCreateRequest = { title, description };
+      const planData: PlanCreateRequest = { 
+        title, 
+        description,
+        session_id: sessionId || "default_session"
+      };
       
       const response = await fetch(`${apiUrl}/api/todos`, {
         method: 'POST',
@@ -161,6 +169,7 @@ export function usePlans(): UsePlansReturn {
         title: updates.title,
         description: updates.description,
         completed: updates.completed,
+        session_id: updates.session_id,
       };
       
       const response = await fetch(`${apiUrl}/api/todos/${id}`, {

@@ -1,5 +1,6 @@
 """Plan component MCP tools."""
 
+import os
 import time
 import uuid
 from typing import Optional
@@ -31,6 +32,7 @@ def register_plan_tools(mcp: FastMCP, redis_client: RedisClient):
             "component": "plan",
             "payload": {
                 "action": "add",
+                "session_id": os.getenv("SESSION_ID", "default_session"),
                 "data": {
                     "title": title,
                     "description": description
@@ -60,6 +62,7 @@ def register_plan_tools(mcp: FastMCP, redis_client: RedisClient):
             "component": "plan",
             "payload": {
                 "action": "delete",
+                "session_id": os.getenv("SESSION_ID", "default_session"),
                 "planId": plan_id
             }
         }
@@ -98,6 +101,7 @@ def register_plan_tools(mcp: FastMCP, redis_client: RedisClient):
             "component": "plan",
             "payload": {
                 "action": "update",
+                "session_id": os.getenv("SESSION_ID", "default_session"),
                 "planId": plan_id,
                 "data": data
             }
@@ -125,6 +129,7 @@ def register_plan_tools(mcp: FastMCP, redis_client: RedisClient):
             "component": "plan",
             "payload": {
                 "action": "toggle",
+                "session_id": os.getenv("SESSION_ID", "default_session"),
                 "planId": plan_id
             }
         }
@@ -149,7 +154,8 @@ def register_plan_tools(mcp: FastMCP, redis_client: RedisClient):
             "target": "plan_component",
             "component": "plan",
             "payload": {
-                "action": "list"
+                "action": "list",
+                "session_id": os.getenv("SESSION_ID", "default_session")
             }
         }
         
