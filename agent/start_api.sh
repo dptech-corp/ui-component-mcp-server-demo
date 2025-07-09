@@ -61,48 +61,67 @@ async def run_sse(request: dict):
         from fastapi.responses import StreamingResponse
         import json
         
-        content_data = request.get("content", {})
-        parts = content_data.get("parts", [])
+        app_name = request.get("appName", "representation")
+        user_id = request.get("userId", "demo")
+        session_id = request.get("sessionId", "default")
+        new_message = request.get("newMessage", {})
+        streaming = request.get("streaming", True)
+        
+        parts = new_message.get("parts", [])
         if not parts or not parts[0].get("text"):
             raise HTTPException(status_code=400, detail="Invalid request format")
             
         content = types.Content(
-            role=content_data.get('role', 'user'),
+            role=new_message.get('role', 'user'),
             parts=[types.Part(text=parts[0]["text"])]
         )
         
         runner = Runner(
-            app_name="todo_agent_api",
+            app_name=app_name,
             agent=root_agent,
             session_service=session_service
         )
         
         async def generate_sse():
             events = []
-            session_id = request.get("sessionId", "default")
             
             try:
-                session = await session_service.get_or_create_session(
-                    session_id=session_id,
-                    state={},
-                    app_name="todo_agent_api",
-                    user_id="api_user"
-                )
-                actual_session_id = session.id
+                existing_session = await session_service.get_session(session_id)
             except:
-                actual_session_id = session_id
+                try:
+                    await session_service.create_session(
+                        session_id=session_id,
+                        app_name=app_name,
+                        user_id=user_id,
+                        state={}
+                    )
+                except Exception as create_error:
+                    print(f"Session creation error: {create_error}")
             
             async for event in runner.run_async(
-                session_id=actual_session_id,
-                user_id="api_user",
+                session_id=session_id,
+                user_id=user_id,
                 new_message=content
             ):
                 events.append(event)
-                event_data = json.dumps(event.model_dump() if hasattr(event, 'model_dump') else str(event))
-                yield f"data: {event_data}\n\n"
+                if hasattr(event, 'content') and hasattr(event.content, 'parts'):
+                    for part in event.content.parts:
+                        if hasattr(part, 'text') and part.text:
+                            event_data = {
+                                "content": {
+                                    "parts": [{"text": part.text}]
+                                },
+                                "partial": True
+                            }
+                            yield f"data: {json.dumps(event_data)}\n\n"
+                elif hasattr(event, 'model_dump'):
+                    event_data = event.model_dump()
+                    yield f"data: {json.dumps(event_data)}\n\n"
+                else:
+                    event_data = {"content": {"parts": [{"text": str(event)}]}, "partial": True}
+                    yield f"data: {json.dumps(event_data)}\n\n"
             
-            final_response = {"response": events, "session_id": request.get("sessionId", "default")}
-            yield f"data: {json.dumps(final_response)}\n\n"
+            yield f"data: {json.dumps({'done': True})}\n\n"
         
         return StreamingResponse(
             generate_sse(),
@@ -110,6 +129,29 @@ async def run_sse(request: dict):
             headers={"Cache-Control": "no-cache", "Connection": "keep-alive"}
         )
         
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/apps/representation/users/demo/sessions")
+async def create_session(request: dict = {}):
+    try:
+        import uuid
+        session_id = str(uuid.uuid4())
+        return {"id": session_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/apps/representation/users/demo/sessions/{session_id}")
+async def create_specific_session(session_id: str, request: dict = {}):
+    try:
+        return {"id": session_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/apps/representation/users/demo/sessions/{session_id}")
+async def get_session(session_id: str):
+    try:
+        return {"id": session_id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
