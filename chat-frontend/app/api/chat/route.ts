@@ -144,7 +144,7 @@ export async function POST(req: NextRequest) {
     }
 
     const lastMessage = messages[messages.length - 1]
-    const adkApiUrl = process.env.ADK_API_URL || 'http://agent:8002'
+    const adkApiUrl = process.env.ADK_API_URL || 'http://localhost:8002'
     let responseMessages: Array<{content: string, type: 'function' | 'text'}> = []
     
     try {
