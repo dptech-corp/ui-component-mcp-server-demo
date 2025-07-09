@@ -6,7 +6,7 @@ authors = [
     {name = "dptech-corp", email = "it@dp.tech"}
 ]
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "google-adk>=0.1.0",
     "python-dotenv>=1.0.0",
@@ -19,10 +19,12 @@ dependencies = [
     "aiomysql>=0.2.0",
     "lightrag-hku>=1.3.8",
     "networkx>=3.0.0",
+    "anyio>=4.5.0",
     "graspologic>=3.4.1",
     "openai>=1.88.0",
     "numpy>=1.26.4",
-    "nano_vectordb>=0.0.4.3"
+    "nano_vectordb>=0.0.4.3",
+    "fastmcp",
 ]
 
 [project.optional-dependencies]
@@ -36,7 +38,7 @@ dev = [
 
 [tool.black]
 line-length = 88
-target-version = ['py39']
+target-version = ['py310']
 
 [tool.isort]
 profile = "black"

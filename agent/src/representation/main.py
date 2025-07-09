@@ -44,10 +44,10 @@ def create_agent():
     
     mcp_toolset = MCPToolset(
         connection_params=SseServerParams(
-            url=f"{mcp_server_url}/sse",
+            url=mcp_server_url,
             headers={}
         ),
-        tool_filter=["add_plan", "delete_plan", "update_plan", "toggle_plan", "list_plan"]
+        # tool_filter=["add_plan", "delete_plan", "update_plan", "toggle_plan", "list_plan"]
     )
     
     agent = LlmAgent(
@@ -56,47 +56,9 @@ def create_agent():
         description="表征专家代理，协调和管理表征相关任务，可以委托给专业的子代理处理具体问题。",
         instruction=representation_agent_instruction,
         sub_agents=[planner, plan_runner],
-        tools=[mcp_toolset]
+        # tools=[mcp_toolset]
     )
     
     return agent
 
 root_agent = create_agent()
-
-# async def example_add_plan():
-#     """Example function demonstrating manual add_plan tool call."""
-#     try:
-#         mcp_toolset = MCPToolset(
-#             connection_params=SseServerParams(
-#                 url=f"{mcp_server_url}/sse",
-#                 headers={}
-#             ),
-#             tool_filter=["add_plan", "delete_plan", "update_plan", "toggle_plan", "list_plan"]
-#         )
-        
-#         title = "表征分析任务示例"
-#         description = "这是一个手动调用 add_plan 工具的示例"
-        
-#         tools = await mcp_toolset.get_tools()
-#         add_plan_tool = None
-#         for tool in tools:
-#             if tool.name == "add_plan":
-#                 add_plan_tool = tool
-#                 break
-        
-#         if add_plan_tool:
-#             result = await add_plan_tool.call(title=title, description=description)
-#             print(f"Successfully added plan: {result}")
-#             return result
-#         else:
-#             print("add_plan tool not found")
-#             return None
-            
-#     except Exception as e:
-#         print(f"Error calling add_plan: {e}")
-#         return None
-
-# if __name__ == "__main__":
-#     print("Running add_plan example...")
-#     result = asyncio.run(example_add_plan())
-#     print(f"Example completed with result: {result}")

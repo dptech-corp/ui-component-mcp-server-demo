@@ -5,7 +5,7 @@ from utils.config import llm, mcp_server_url
 # TODO add pocketflow tools
 microscopy_expert_mcp_toolset = MCPToolset(
     connection_params=SseServerParams(
-        url=f"{mcp_server_url}/sse",
+        url=mcp_server_url,
         headers={}
     ),
     tool_filter=[

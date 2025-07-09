@@ -3,6 +3,7 @@
 from .LightRAGTool import LightRAGTool
 
 lightragTool = LightRAGTool()
-lightragTool.initialize()
-lightrag_tools = lightragTool.create_tools()
+# TODO 因为性能问题暂时不初始化
+# lightragTool.initialize()
+# lightrag_tools = lightragTool.create_tools()
 

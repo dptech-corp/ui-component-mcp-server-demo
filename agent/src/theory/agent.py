@@ -6,8 +6,8 @@ from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, SseServerParams
 
 # Add the parent directory to sys.path to allow absolute imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from utils.config import llm, mcp_server_url
-from utils.lightrag_tool import lightrag_tools
+from utils.config import llm
+# from utils.lightrag_tool import lightrag_tools
 
 theory_expert_desc = """theory_expert (领域理论专家子代理)
 功能用途：
@@ -50,12 +50,12 @@ theory_expert_instruction = """
     请严格按照上述流程进行，不要遗漏任何步骤。
     
     """
-        
-theory_tools = lightrag_tools
+# TODO 因为性能问题暂时不使用工具 
+# theory_tools = lightrag_tools
 theory_expert = LlmAgent(
     model=llm,
     name="theory_expert",
-    tools=theory_tools,
+    # tools=theory_tools,
     description=theory_expert_desc,
     instruction=theory_expert_instruction,
 )

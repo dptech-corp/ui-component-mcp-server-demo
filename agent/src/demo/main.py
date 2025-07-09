@@ -15,11 +15,11 @@ load_dotenv()
 def create_agent():
     """Create and configure the ADK agent with MCP tools."""
 
-    mcp_server_url = os.getenv("MCP_SERVER_URL", "http://mcp-server:8001")
+    mcp_server_url = os.getenv("MCP_SERVER_URL", "http://mcp-server:8001/sse")
 
     mcp_toolset = MCPToolset(
         connection_params=SseServerParams(
-            url=f"{mcp_server_url}/sse",
+            url=mcp_server_url,
             headers={}
         ),
         tool_filter=["add_todo", "delete_todo", "update_todo", "toggle_todo", "list_todo", 

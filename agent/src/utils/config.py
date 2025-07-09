@@ -4,7 +4,7 @@ import os
 
 load_dotenv()
 
-mcp_server_url = os.getenv("MCP_SERVER_URL", "http://mcp-server:8001")
+mcp_server_url = os.getenv("MCP_SERVER_URL", "http://mcp-server:8001/sse")
 
 llm = LiteLlm(
     model=os.getenv("LLM_MODEL", "gemini/gemini-2.0-flash"),

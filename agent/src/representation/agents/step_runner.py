@@ -15,11 +15,9 @@ from software import software_expert_desc, software_expert
 from microscopy import microscopy_expert_desc, microscopy_expert
 from representation_analyze import representation_analyze_expert, representation_analyze_expert_desc
 from theory import theory_expert_desc, theory_expert
-from agent.src.utils.LongRunningLlmAgent import LongRunningLlmAgent
-from agent.src.utils.LongRunningMCPToolset import LongRunningMCPToolset
+from utils.LongRunningLlmAgent import LongRunningLlmAgent
+from utils.LongRunningMCPToolset import LongRunningMCPToolset
 from utils.database import get_approval
-load_dotenv()
-mcp_server_url = os.getenv("MCP_SERVER_URL", "http://mcp-server:8001")
 
 step_runner_instruction = f"""
 你是一个表征专家代理的任务执行者。你的目标是为用户执行任务。
@@ -53,7 +51,7 @@ print(step_runner_instruction)
 func_tools = [get_approval]
 mcp_toolset = LongRunningMCPToolset(
     connection_params=SseServerParams(
-        url=f"{mcp_server_url}/sse",
+        url=mcp_server_url,
         headers={}
     ),
     tool_filter=["add_plan", "delete_plan", "update_plan", "toggle_plan", "list_plan", 

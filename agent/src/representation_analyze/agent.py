@@ -24,7 +24,7 @@ representation_analyze_expert_instruction = """你是表征分析专家子代理
 
 representation_analyze_expert_mcp_toolset = MCPToolset(
     connection_params=SseServerParams(
-        url=f"{mcp_server_url}/sse",
+        url=mcp_server_url,
         headers={}
     ),
     tool_filter=["ls", "cat_run_sh", "bash_run_sh", 
