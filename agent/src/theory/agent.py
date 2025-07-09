@@ -2,7 +2,6 @@
 import os
 import sys
 from google.adk.agents import LlmAgent
-from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, SseServerParams
 
 # Add the parent directory to sys.path to allow absolute imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
