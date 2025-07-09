@@ -21,7 +21,7 @@ class LightRAGTool:
     
     def __init__(self):
         self._initialized = False
-        self._rag_list = [None, None]
+        self._rag_list = [None, None, None, None, None]
         
         # 工作目录配置
         self.base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -243,9 +243,9 @@ class LightRAGTool:
             self._tools = [
                 FunctionTool(self.knowledge_retrieval_tescan),
                 FunctionTool(self.knowledge_retrieval_guoyi),
-                # FunctionTool(self.knowledge_retrieval_xianweixue),
-                # FunctionTool(self.knowledge_retrieval_bopuxue),
-                # FunctionTool(self.knowledge_retrieval_yanshexue),
+                FunctionTool(self.knowledge_retrieval_xianweixue),
+                FunctionTool(self.knowledge_retrieval_bopuxue),
+                FunctionTool(self.knowledge_retrieval_yanshexue),
             ]
         return self._tools
 
