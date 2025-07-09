@@ -211,6 +211,14 @@ class RedisService:
                 todos = await todo_service.get_all_todos(session_id=session_id)
                 todos_data = [todo.dict() for todo in todos]
                 await sse_service.send_event("plan_list", {"plans": todos_data})
+                
+            elif action == "clear":
+                session_id = payload.get("session_id", "default_session")
+                cleared_count = await todo_service.clear_all_todos(session_id)
+                await sse_service.send_event("plans_cleared", {
+                    "session_id": session_id,
+                    "cleared_count": cleared_count
+                })
                         
         except Exception as e:
             print(f"Error handling plan action: {e}")

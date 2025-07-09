@@ -12,6 +12,7 @@ export const SSE_EVENTS = {
   PLAN_ADDED: 'plan_added',
   PLAN_UPDATED: 'plan_updated',
   PLAN_DELETED: 'plan_deleted',
+  PLANS_CLEARED: 'plans_cleared',
   BACKLOG_DELETED: 'backlog_deleted',
   APPROVAL_DELETED: 'approval_deleted',
   CODE_INTERPRETER_STATE_DELETED: 'code_interpreter_state_deleted',
