@@ -54,46 +54,71 @@ function parseAPIResponse(jsonLines: string[], fullJson: string): any {
 }
 
 /**
- * Extract response text from parsed data
+ * Extract response messages from parsed data with type information
  */
-function extractResponseText(data: any): string {
+function extractResponseMessages(data: any): Array<{content: string, type: 'function' | 'text'}> {
+  const messages: Array<{content: string, type: 'function' | 'text'}> = []
+  
   // Handle single object response
   if (data.content && data.content.parts) {
-    return data.content.parts
-      .map(extractTextFromPart)
-      .filter(Boolean)
-      .join(' ')
+    data.content.parts.forEach((part: any) => {
+      if (part.text) {
+        // Split text by lines for /run_see responses
+        const lines = part.text.split('\n').filter((line: string) => line.trim())
+        lines.forEach((line: string) => {
+          messages.push({ content: line, type: 'text' })
+        })
+      } else if (part.functionResponse) {
+        messages.push({ 
+          content: `Function called: ${part.functionResponse.name || 'unknown'}`, 
+          type: 'function' 
+        })
+      }
+    })
+    return messages
   }
   
-  // Handle array response
+  // Handle array response (streaming data)
   if (Array.isArray(data)) {
-    return data
-      .map(event => {
-        if (event.content && event.content.parts) {
-          return event.content.parts
-            .map(extractTextFromPart)
-            .filter(Boolean)
-            .join(' ')
-        }
-        return ''
-      })
-      .filter(Boolean)
-      .join('\n')
+    data.forEach(event => {
+      if (event.content && event.content.parts) {
+        event.content.parts.forEach((part: any) => {
+          if (part.text) {
+            // Split text by lines for /run_see responses
+            const lines = part.text.split('\n').filter((line: string) => line.trim())
+            lines.forEach((line: string) => {
+              messages.push({ content: line, type: 'text' })
+            })
+          } else if (part.functionResponse) {
+            messages.push({ 
+              content: `Function called: ${part.functionResponse.name || 'unknown'}`, 
+              type: 'function' 
+            })
+          }
+        })
+      }
+    })
+    return messages
   }
   
   // Fallback
-  return JSON.stringify(data)
+  return [{ content: JSON.stringify(data), type: 'text' }]
 }
 
 /**
- * Create a streaming response with the given text
+ * Create a streaming response with the given messages
  */
-function createStreamResponse(text: string): Response {
+function createStreamResponse(messages: Array<{content: string, type?: 'function' | 'text'}>): Response {
   const encoder = new TextEncoder()
   const stream = new ReadableStream({
     start(controller) {
-      controller.enqueue(encoder.encode(`0:"${text.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"
-`))
+      messages.forEach((msg, index) => {
+        const messageData = {
+          content: msg.content,
+          type: msg.type || 'text'
+        }
+        controller.enqueue(encoder.encode(`${index}:${JSON.stringify(messageData)}\n`))
+      })
       controller.close()
     },
   })
@@ -120,7 +145,7 @@ export async function POST(req: NextRequest) {
 
     const lastMessage = messages[messages.length - 1]
     const adkApiUrl = process.env.ADK_API_URL || 'http://agent:8002'
-    let responseText = ''
+    let responseMessages: Array<{content: string, type: 'function' | 'text'}> = []
     
     try {
       // Prepare request to ADK API
@@ -132,39 +157,27 @@ export async function POST(req: NextRequest) {
           parts: [{ text: lastMessage.content }],
           role: 'user'
         },
-        streaming: false
+        streaming: true
       }
       
       // Send request to ADK API
-      const response = await fetch(`${adkApiUrl}/run_sse`, {
+      const response = await fetch(`${adkApiUrl}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify({
+          message: lastMessage.content,
+          session_id: 'default_session'
+        }),
       })
       
       if (response.ok) {
-        // Get and process the raw response
-        const rawResponse = await response.text()
+        const data = await response.json()
         
-        // Process SSE format response
-        const { jsonLines, fullJson } = processSSEResponse(rawResponse)
-        
-        try {
-          // Parse the API response
-          const data = parseAPIResponse(jsonLines, fullJson)
-          
-          // Extract text from the parsed data
-          responseText = extractResponseText(data)
-        } catch (parseError) {
-          console.error('JSON parse error:', parseError)
-          
-          // Enhanced error logging for debugging
-          if (parseError instanceof SyntaxError && parseError.message.includes('position')) {
-            const position = parseInt(parseError.message.match(/position (\d+)/)?.[1] || '0')
-            console.error(`Error context around position ${position}:`, 
-              fullJson.substring(Math.max(0, position - 20), Math.min(fullJson.length, position + 20)))
-          }
-          throw parseError
+        // Extract messages from the ADK agent response
+        if (data.response && Array.isArray(data.response)) {
+          responseMessages = extractResponseMessages(data.response)
+        } else {
+          responseMessages = [{ content: JSON.stringify(data), type: 'text' }]
         }
       }
     } catch (adkError) {
@@ -172,11 +185,14 @@ export async function POST(req: NextRequest) {
     }
     
     // Fallback response if API call failed
-    if (!responseText) {
-      responseText = `收到您的消息："${lastMessage.content}"。ADK API服务异常，请稍后重试。`
+    if (responseMessages.length === 0) {
+      responseMessages = [{
+        content: `收到您的消息："${lastMessage.content}"。ADK API服务异常，请稍后重试。`,
+        type: 'text'
+      }]
     }
 
-    return createStreamResponse(responseText)
+    return createStreamResponse(responseMessages)
   } catch (error) {
     console.error('Chat API error:', error)
     return new Response(JSON.stringify({ 
