@@ -223,7 +223,7 @@ async def send_message_to_agent(message_data: AgentMessageRequest):
     agent_request = AgentRequest(
         appName="agent",
         userId="user", 
-        sessionId=message_data.sessionId or "demo",
+        sessionId=message_data.sessionId or "default_session",
         newMessage=NewMessage(
             parts=[MessagePart(text=message_data.message)],
             role="user"

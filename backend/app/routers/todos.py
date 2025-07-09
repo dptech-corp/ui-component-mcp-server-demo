@@ -1,6 +1,6 @@
 """Todo API router."""
 
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Request
 
 from ..models.todo import Todo, TodoCreate, TodoUpdate
@@ -9,10 +9,10 @@ router = APIRouter()
 
 
 @router.get("/todos", response_model=List[Todo])
-async def get_todos(request: Request):
-    """Get all todo items."""
+async def get_todos(request: Request, session_id: Optional[str] = None):
+    """Get all todo items, optionally filtered by session_id."""
     todo_service = request.app.state.todo_service
-    todos = await todo_service.get_all_todos()
+    todos = await todo_service.get_all_todos(session_id=session_id)
     return todos
 
 
@@ -24,7 +24,8 @@ async def create_todo(todo_data: TodoCreate, request: Request):
     
     todo = await todo_service.create_todo(
         title=todo_data.title,
-        description=todo_data.description
+        description=todo_data.description,
+        session_id=todo_data.session_id or "default_session"
     )
     
     await sse_service.send_event("plan_added", {"todo": todo.dict()})

@@ -1,14 +1,6 @@
-import os
-import sys
 from google.adk.agents import LlmAgent
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, SseServerParams
-from google.adk.tools import agent_tool
-from dotenv import load_dotenv
-from google.adk.models.lite_llm import LiteLlm
-
-load_dotenv()
-
-mcp_server_url = os.getenv("MCP_SERVER_URL", "http://mcp-server:8001")
+from utils.config import llm, mcp_server_url
 
 representation_analyze_expert_desc = """representation_analyze_expert (表征分析专家子代理 uni-aims)
 功能用途：
@@ -41,10 +33,7 @@ representation_analyze_expert_mcp_toolset = MCPToolset(
 )
 
 representation_analyze_expert = LlmAgent(
-    model=LiteLlm(
-        model=os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash"),
-        api_key=os.getenv("OPENAI_API_KEY"),
-        api_base=os.getenv("OPENAI_API_BASE_URL")),
+    model=llm,
     name="representation_analyze_expert",
     description=representation_analyze_expert_desc,
     instruction=representation_analyze_expert_instruction,

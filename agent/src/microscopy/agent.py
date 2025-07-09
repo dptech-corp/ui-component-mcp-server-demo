@@ -1,13 +1,6 @@
-import os
-import sys
 from google.adk.agents import LlmAgent
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, SseServerParams
-from google.adk.tools import agent_tool
-from dotenv import load_dotenv
-from google.adk.models.lite_llm import LiteLlm
-load_dotenv()
-
-mcp_server_url = os.getenv("MCP_SERVER_URL", "http://mcp-server:8001")
+from utils.config import llm, mcp_server_url
 
 # TODO add pocketflow tools
 microscopy_expert_mcp_toolset = MCPToolset(
@@ -45,14 +38,11 @@ microscopy_expert_instruction = """电镜操作专家子代理，专门处理各
 
   # TESCAN、国仪工具
 microscopy_expert = LlmAgent(
-    model=LiteLlm(
-        model=os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash"),
-        api_key=os.getenv("OPENAI_API_KEY"),
-        api_base=os.getenv("OPENAI_API_BASE_URL")),
+    model=llm,
     tools=[microscopy_expert_mcp_toolset],
     name="microscopy_expert",
     description=microscopy_expert_desc,
     instruction=microscopy_expert_instruction
 )
+
 root_agent = microscopy_expert
-    
