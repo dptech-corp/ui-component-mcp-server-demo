@@ -5,7 +5,7 @@ set -e
 echo "Starting Google ADK Agent API server..."
 
 export MCP_SERVER_URL=${MCP_SERVER_URL:-"http://localhost:8001"}
-export LLM_MODEL=${LLM_MODEL:-"gemini-1.5-flash"}
+export LLM_MODEL=${LLM_MODEL:-"gemini-2.0-flash"}
 export OPENAI_API_KEY=${OPENAI_API_KEY}
 export OPENAI_API_BASE_URL=${OPENAI_API_BASE_URL}
 export SESSION_DB_URL=${SESSION_DB_URL}

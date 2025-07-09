@@ -1,14 +1,6 @@
-from logging import root
-import os
 from google.adk.agents import LlmAgent
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, SseServerParams
-from google.adk.tools import agent_tool
-from dotenv import load_dotenv
-from google.adk.models.lite_llm import LiteLlm
-
-load_dotenv()
-
-mcp_server_url = os.getenv("MCP_SERVER_URL", "http://mcp-server:8001")
+from utils.config import llm, mcp_server_url
 
 software_expert_desc = """
 software_expert (软件工程专家子代理)
@@ -53,10 +45,7 @@ software_expert_mcp_toolset = MCPToolset(
 
 
 software_expert = LlmAgent(
-    model=LiteLlm(
-        model=os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash"),
-        api_key=os.getenv("OPENAI_API_KEY"),
-        api_base=os.getenv("OPENAI_API_BASE_URL")),
+    model=llm,
     name="software_expert",
     description="软件工程专家子代理，专门开发和优化表征数据处理的自动化工具、构建数据分析流水线和集成系统。",
     instruction=software_expert_instruction,

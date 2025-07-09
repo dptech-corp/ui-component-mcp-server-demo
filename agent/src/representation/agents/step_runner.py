@@ -7,20 +7,16 @@ import sys
 from google.adk.agents import LlmAgent
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, SseServerParams
 from google.adk.tools import agent_tool
-from dotenv import load_dotenv
-from google.adk.models.lite_llm import LiteLlm
 
 # Add the parent directory to sys.path to allow absolute imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+from utils.config import llm, mcp_server_url
 from software import software_expert_desc, software_expert
 from microscopy import microscopy_expert_desc, microscopy_expert
 from representation_analyze import representation_analyze_expert, representation_analyze_expert_desc
 from theory import theory_expert_desc, theory_expert
 
-load_dotenv()
-mcp_server_url = os.getenv("MCP_SERVER_URL", "http://mcp-server:8001")
-
-step_runner_instruction = """
+step_runner_instruction = f"""
 你是一个表征专家代理的任务执行者。你的目标是为用户执行任务。
 
 你具备强大的执行能力：
@@ -67,10 +63,7 @@ software_expert_tool = agent_tool.AgentTool(agent=software_expert)
 
 step_runner = LlmAgent(
     name="step_runner",
-    model=LiteLlm(
-        model=os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash"),
-        api_key=os.getenv("OPENAI_API_KEY"),
-    ),
+    model=llm,
     instruction=step_runner_instruction,
     tools=[mcp_toolset, theory_expert_tool, microscopy_expert_tool, representation_analyze_expert_tool, software_expert_tool]
 )

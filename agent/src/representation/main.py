@@ -8,16 +8,12 @@ control of the todo list component.
 import os
 import sys
 from google.adk.agents import LlmAgent
-from dotenv import load_dotenv
-from google.adk.models.lite_llm import LiteLlm
+from utils.config import llm
 
 # Add the parent directory to sys.path to allow absolute imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from representation.agents.planner import planner
 from representation.agents.plan_runner import plan_runner
-
-load_dotenv()
-
 representation_agent_instruction = f"""
 你是一个表征专家代理。你的目标是与人类用户协作解决复杂的表征问题。
 因为在处理科学问题，所以你需要严格、准确。
@@ -32,6 +28,7 @@ representation_agent_instruction = f"""
 你是一个严谨的面相科研的专家代理，你必须:
 - 清晰与透明：用户必须始终知道你在做什么，结果是什么，以及你计划下一步做什么。
 - 承认局限性：如果代理失败，报告失败，并建议不同的步骤或询问用户的指导。
+- **计划优先**：在没有计划的时候，你必须先创建计划(planner)，待用户确认后，再开始执行计划(plan_runner)。
 
 """
 
@@ -40,10 +37,7 @@ def create_agent():
     """Create and configure the ADK agent with MCP tools."""
     
     agent = LlmAgent(
-        model=LiteLlm(
-            model=os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash"),
-            api_key=os.getenv("OPENAI_API_KEY"),
-            api_base=os.getenv("OPENAI_API_BASE_URL")),
+        model=llm,
         name="representation_expert_agent",
         description="表征专家代理，协调和管理表征相关任务，可以委托给专业的子代理处理具体问题。",
         instruction=representation_agent_instruction,

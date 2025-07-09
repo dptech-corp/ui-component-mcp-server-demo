@@ -4,22 +4,31 @@ create plan items for a given goal
 
 import os
 import sys
-from google.adk.agents import LlmAgent
+# from typing import override
+from google.adk.agents import LlmAgent, SequentialAgent
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, SseServerParams
 from google.adk.tools import agent_tool
-from dotenv import load_dotenv
 from google.adk.models.lite_llm import LiteLlm
+from google.adk.agents.invocation_context import InvocationContext
+from typing import AsyncGenerator, Optional
+from google.genai import types # For types.Content
+from google.adk.events import Event
+from google.adk.agents.callback_context import CallbackContext
 
-load_dotenv()
+from dotenv import load_dotenv
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+from utils.config import llm, mcp_server_url
+from representation.types import Plan, Step
+from representation.agents.step_runner import step_runner_instruction
 
-planner_instruction = """
+planner_instruction = f"""
 你是一个专家代理的任务规划者。你的目标是为用户创建任务计划。
 因为在处理科学问题，所以你需要严格、准确。
 
 你具备强大的计划制定和执行能力：
 - **计划分解**：当用户提出复杂目标时，自动将其分解为具体的、可执行的步骤
-- **计划创建**：为每个步骤创建对应的 plan 项，使用 add_plan 工具
-- **执行跟踪**：在执行过程中，完成每个步骤后自动标记对应的 plan 为完成状态，使用 toggle_plan 工具进行标记
+- **计划创建**：为每个步骤创建对应的 plan 项
+- **执行跟踪**：在执行过程中，完成每个步骤后自动标记对应的 plan 为完成状态
 - **进度管理**：实时跟踪整体进度，确保所有步骤按序完成
 
 --
@@ -35,13 +44,11 @@ planner_instruction = """
 1. **目标分析与计划制定**：
    - 分析用户的查询以确定总体目标
    - 将复杂目标分解为具体的、可执行的步骤
-   - 使用 add_plan 为每个步骤创建对应的计划项
    - 向用户展示完整的执行计划
 
 2. **逐步执行与进度跟踪**：
    - 按顺序执行每个计划步骤
    - 委托给相应的专家子代理处理具体任务
-   - 完成每个步骤后，立即使用 toggle_plan 标记对应计划为完成
    - 向用户报告当前步骤的执行结果和整体进度
 
 3. **持续监控与调整**：
@@ -49,34 +56,90 @@ planner_instruction = """
    - 如遇到问题，及时调整计划或寻求用户指导
    - 确保所有步骤按序完成，直到总体目标达成
 
-对于简单问题，遵循传统交互流程，而对于复杂问题，必须采用计划驱动的执行模式：
-- 分解与规划：分析用户的查询以确定目标。创建逻辑性的、分步骤的计划并呈现给用户。
-- 提出第一步：宣布你计划的第一步，指定代理和输入。然后停止并等待用户的指示继续。
-- 等待与执行：一旦你收到用户的确认，并且只有在那时，执行提议的步骤。清楚地说明你正在执行操作。
-- 分析与提出下一步：执行后，呈现结果。简要分析结果的含义。然后，从你的计划中提出下一步。停止并再次等待用户的指示。
-- 重复：继续这个"执行 -> 分析 -> 提出 -> 等待"的循环，直到计划完成。
-- 按需综合：当所有步骤完成时，通知用户并询问他们是否希望得到所有发现的最终总结。只有在被要求时才提供完整的综合。
+--
+## **IMPORTANT HINT**
+1. 你是一个 "Human-in-the-loop" 的系统，因此你的计划中可以有需要人进行介入的步骤(如: 放入样品、取出样品、启动系统等)
+2. 在制定计划时，你要充分各个子系统的能力，子系统的能力如下面 (子系统能力介绍一小节)
 
-你必须使用以下对话格式。
-
-
-- 初始回应（复杂目标）：
-    - 意图分析：[你对用户目标的理解。]
-    - 计划分解：[将目标分解为具体步骤]
-    - 计划创建：使用 add_plan 为每个步骤创建计划项
-    - 提议计划：
-        - [步骤 1] - 已创建计划项
-        - [步骤 2] - 已创建计划项
-        ...
-    - 询问用户："计划已制定完成，是否修改计划或开始执行？"
-
+## 子系统能力介绍
+{step_runner_instruction}
 """
 
-planner = LlmAgent(
-    name="planner",
-    model=LiteLlm(
-        model=os.getenv("LLM_MODEL", "gemini/gemini-1.5-flash"),
-        api_key=os.getenv("OPENAI_API_KEY"),
+
+plan_saver_instruction = f"""
+save plan items to mcp tool and save to state.
+
+按照下面的方式存储计划项：
+1. 从 unstructured_plan 中提取计划项
+2. 保存到 state
+3. 在 callback 中使用 add_plan 工具添加计划项
+
+--
+Your job is to take the research plan from {{unstructured_plan}} and
+format them according to this strict JSON schema:
+
+{Plan.model_json_schema()}
+"""
+
+unstructured_planner = LlmAgent(
+    name="unstructured_planner",
+    model=llm,
+    instruction=planner_instruction,
+    description="unstructured_planner",
+    output_key="unstructured_plan",
+)
+
+mcp_toolset = MCPToolset(
+    connection_params=SseServerParams(
+        url=f"{mcp_server_url}/sse",
+        headers={}
     ),
-    instruction=planner_instruction
+    tool_filter=["add_plan", "delete_plan", "update_plan", "toggle_plan", "list_plan", 
+                "ask_for_approval"]
+)
+
+def save_plan_after_agent(callback_context: CallbackContext) -> Optional[types.Content]:
+    plan = callback_context.state["plan"]
+    print("1111111111111111111 save_plan_after_agent")
+    print(plan)
+    return None
+
+
+# class PlanSaver(LlmAgent):
+#     def __init__(self):
+#         super().__init__(
+#             name="plan_saver",
+#             model=LiteLlm(
+#                 model=os.getenv("LLM_MODEL", "gemini/gemini-2.0-flash"),
+#                 api_key=os.getenv("OPENAI_API_KEY"),
+#             ),
+#             instruction=plan_saver_instruction,
+#             description="plan_saver",
+#             disallow_transfer_to_parent=True,
+#             disallow_transfer_to_sub_agents=True,
+#             output_schema=Plan,
+#             output_key="plan",
+#         )
+#     @override
+#     async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
+        
+#         plan = ctx.state["unstructured_plan"]
+        
+#         return await super()._run_async_impl(ctx)
+
+plan_saver = LlmAgent(
+    name="plan_saver",
+    model=llm,
+    instruction=plan_saver_instruction,
+    description="plan_saver",
+    disallow_transfer_to_parent=True,
+    output_schema=Plan,
+    output_key="plan",
+)
+
+planner = SequentialAgent(
+    name="planner",
+    sub_agents=[unstructured_planner, plan_saver],
+    description="planner",
+    after_agent_callback=save_plan_after_agent,
 )
