@@ -161,23 +161,35 @@ export async function POST(req: NextRequest) {
       }
       
       // Send request to ADK API
-      const response = await fetch(`${adkApiUrl}/chat`, {
+      const response = await fetch(`${adkApiUrl}/run_sse`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: lastMessage.content,
-          session_id: 'default_session'
-        }),
+        body: JSON.stringify(requestBody),
       })
       
       if (response.ok) {
-        const data = await response.json()
+        // Get and process the raw response
+        const rawResponse = await response.text()
         
-        // Extract messages from the ADK agent response
-        if (data.response && Array.isArray(data.response)) {
-          responseMessages = extractResponseMessages(data.response)
-        } else {
-          responseMessages = [{ content: JSON.stringify(data), type: 'text' }]
+        // Process SSE format response
+        const { jsonLines, fullJson } = processSSEResponse(rawResponse)
+        
+        try {
+          // Parse the API response
+          const data = parseAPIResponse(jsonLines, fullJson)
+          
+          // Extract messages from the parsed data
+          responseMessages = extractResponseMessages(data)
+        } catch (parseError) {
+          console.error('JSON parse error:', parseError)
+          
+          // Enhanced error logging for debugging
+          if (parseError instanceof SyntaxError && parseError.message.includes('position')) {
+            const position = parseInt(parseError.message.match(/position (\d+)/)?.[1] || '0')
+            console.error(`Error context around position ${position}:`, 
+              fullJson.substring(Math.max(0, position - 20), Math.min(fullJson.length, position + 20)))
+          }
+          throw parseError
         }
       }
     } catch (adkError) {
