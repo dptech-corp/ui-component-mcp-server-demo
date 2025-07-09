@@ -106,18 +106,15 @@ function extractResponseMessages(data: any): Array<{content: string, type: 'func
 }
 
 /**
- * Create a streaming response with the given messages
+ * Create a streaming response compatible with useChat hook
  */
 function createStreamResponse(messages: Array<{content: string, type?: 'function' | 'text'}>): Response {
   const encoder = new TextEncoder()
   const stream = new ReadableStream({
     start(controller) {
       messages.forEach((msg, index) => {
-        const messageData = {
-          content: msg.content,
-          type: msg.type || 'text'
-        }
-        controller.enqueue(encoder.encode(`${index}:${JSON.stringify(messageData)}\n`))
+        const chunk = `0:"${msg.content.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"\n`
+        controller.enqueue(encoder.encode(chunk))
       })
       controller.close()
     },
