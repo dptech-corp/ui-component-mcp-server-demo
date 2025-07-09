@@ -4,6 +4,11 @@ class Step(BaseModel):
     title: str = Field(
         ..., description="Title of the step",
     )
+
+    sub_agent: str = Field(
+        ..., description="candidate sub agent of the step, e.g. software_expert, microscopy_expert, representation_analyze_expert, theory_expert",
+    )
+
     description: str = Field(
         ..., description="Description of the step",
     )

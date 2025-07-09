@@ -104,29 +104,6 @@ def save_plan_after_agent(callback_context: CallbackContext) -> Optional[types.C
     print(plan)
     return None
 
-
-# class PlanSaver(LlmAgent):
-#     def __init__(self):
-#         super().__init__(
-#             name="plan_saver",
-#             model=LiteLlm(
-#                 model=os.getenv("LLM_MODEL", "gemini/gemini-2.0-flash"),
-#                 api_key=os.getenv("OPENAI_API_KEY"),
-#             ),
-#             instruction=plan_saver_instruction,
-#             description="plan_saver",
-#             disallow_transfer_to_parent=True,
-#             disallow_transfer_to_sub_agents=True,
-#             output_schema=Plan,
-#             output_key="plan",
-#         )
-#     @override
-#     async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
-        
-#         plan = ctx.state["unstructured_plan"]
-        
-#         return await super()._run_async_impl(ctx)
-
 plan_saver = LlmAgent(
     name="plan_saver",
     model=llm,
