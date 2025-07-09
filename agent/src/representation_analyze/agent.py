@@ -1,5 +1,6 @@
 from google.adk.agents import LlmAgent
-from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, SseServerParams
+from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
+from google.adk.tools.mcp_tool.mcp_session_manager import SseServerParams
 from utils.config import llm, mcp_server_url
 
 representation_analyze_expert_desc = """representation_analyze_expert (表征分析专家子代理 uni-aims)
@@ -22,22 +23,22 @@ representation_analyze_expert_instruction = """你是表征分析专家子代理
 
 请根据用户提供的表征数据或分析需求，提供专业、详细的分析结果和解释。"""
 
-representation_analyze_expert_mcp_toolset = MCPToolset(
-    connection_params=SseServerParams(
-        url=mcp_server_url,
-        headers={}
-    ),
-    tool_filter=["ls", "cat_run_sh", "bash_run_sh", 
-                "create_python_notebook", "get_notebook_state",
-                "create_file_tool", "list_files_tool"]
-)
+# representation_analyze_expert_mcp_toolset = MCPToolset(
+#     connection_params=SseServerParams(
+#         url=mcp_server_url,
+#         headers={}
+#     ),
+#     tool_filter=["ls", "cat_run_sh", "bash_run_sh", 
+#                 "create_python_notebook", "get_notebook_state",
+#                 "create_file_tool", "list_files_tool"]
+# )
 
 representation_analyze_expert = LlmAgent(
     model=llm,
     name="representation_analyze_expert",
     description=representation_analyze_expert_desc,
     instruction=representation_analyze_expert_instruction,
-    tools=[representation_analyze_expert_mcp_toolset]
+    # tools=[representation_analyze_expert_mcp_toolset]
 )
 
 root_agent = representation_analyze_expert    

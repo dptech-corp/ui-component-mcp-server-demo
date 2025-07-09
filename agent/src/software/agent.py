@@ -1,5 +1,6 @@
 from google.adk.agents import LlmAgent
-from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, SseServerParams
+from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
+from google.adk.tools.mcp_tool.mcp_session_manager import SseServerParams
 from utils.config import llm, mcp_server_url
 
 software_expert_desc = """

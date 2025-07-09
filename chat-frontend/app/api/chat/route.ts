@@ -154,6 +154,7 @@ export async function POST(req: NextRequest) {
           parts: [{ text: lastMessage.content }],
           role: 'user'
         },
+        // streaming: false
         streaming: true
       }
       
