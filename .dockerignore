@@ -1,3 +1,5 @@
 .env
 .git
 ui_component_agent.egg-info
+.venv
+agent/.venv
