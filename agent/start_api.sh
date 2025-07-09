@@ -79,8 +79,21 @@ async def run_sse(request: dict):
         
         async def generate_sse():
             events = []
+            session_id = request.get("sessionId", "default")
+            
+            try:
+                session = await session_service.get_or_create_session(
+                    session_id=session_id,
+                    state={},
+                    app_name="todo_agent_api",
+                    user_id="api_user"
+                )
+                actual_session_id = session.id
+            except:
+                actual_session_id = session_id
+            
             async for event in runner.run_async(
-                session_id="default_session",
+                session_id=actual_session_id,
                 user_id="api_user",
                 new_message=content
             ):
@@ -88,7 +101,7 @@ async def run_sse(request: dict):
                 event_data = json.dumps(event.model_dump() if hasattr(event, 'model_dump') else str(event))
                 yield f"data: {event_data}\n\n"
             
-            final_response = {"response": events, "session_id": "default_session"}
+            final_response = {"response": events, "session_id": request.get("sessionId", "default")}
             yield f"data: {json.dumps(final_response)}\n\n"
         
         return StreamingResponse(
