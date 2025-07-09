@@ -179,3 +179,26 @@ def register_plan_tools(mcp: FastMCP, redis_client: RedisClient):
                 "error": f"Failed to get plans: {str(e)}",
                 "plans": []
             }
+    
+    @mcp.tool()
+    async def clear_plan() -> dict:
+        """清除所有 plan 项
+        
+        Returns:
+            操作结果
+        """
+        message = {
+            "id": str(uuid.uuid4()),
+            "type": "plan_action",
+            "timestamp": int(time.time() * 1000),
+            "source": "mcp",
+            "target": "plan_component",
+            "component": "plan",
+            "payload": {
+                "action": "clear",
+                "session_id": os.getenv("SESSION_ID", "default_session")
+            }
+        }
+        
+        await redis_client.publish_message("plan:actions", message)
+        return {"success": True, "message": "All plans cleared successfully"}
