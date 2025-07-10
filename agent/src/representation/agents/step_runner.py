@@ -17,8 +17,8 @@ from representation_analyze import representation_analyze_expert, representation
 from theory import theory_expert_desc, theory_expert
 from agent.src.utils.LongRunningLlmAgent import LongRunningLlmAgent
 from agent.src.utils.LongRunningMCPToolset import LongRunningMCPToolset
-from utils.database import get_approval
-load_dotenv()
+from utils.func_tool.database import get_approval_state_by_id_async
+
 mcp_server_url = os.getenv("MCP_SERVER_URL", "http://mcp-server:8001")
 
 step_runner_instruction = f"""
@@ -50,7 +50,7 @@ step_runner_instruction = f"""
 
 """
 print(step_runner_instruction)
-func_tools = [get_approval]
+func_tools = [get_approval_state_by_id_async]
 mcp_toolset = LongRunningMCPToolset(
     connection_params=SseServerParams(
         url=f"{mcp_server_url}/sse",

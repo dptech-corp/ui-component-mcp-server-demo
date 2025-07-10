@@ -6,7 +6,7 @@ from google.adk.agents.invocation_context import InvocationContext
 from google.adk.events import Event
 from google.genai import types
 from typing_extensions import override
-from utils.database import get_approval
+from utils.func_tool.database import get_approval_state_by_id_async
 
 
 class LongRunningLlmAgent(LlmAgent):
@@ -70,10 +70,10 @@ class LongRunningLlmAgent(LlmAgent):
             # 检测到了初始审批状态，等待数据库查询状态
             if self.ticket_id:
                 
-                for i in range(10):
+                for i in range(15):
                     await asyncio.sleep(2)
                     print("waiting for approval...")
-                    self.approval_status = await get_approval(self.ticket_id)
+                    self.approval_status = await get_approval_state_by_id_async(self.ticket_id)
                     if self.approval_status['status'] == 'approved':
                         break
                     elif self.approval_status['status'] == 'rejected':
