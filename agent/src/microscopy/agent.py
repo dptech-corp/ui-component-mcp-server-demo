@@ -2,6 +2,7 @@ from google.adk.agents import LlmAgent
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
 from google.adk.tools.mcp_tool.mcp_session_manager import SseServerParams
 from utils.config import llm, mcp_server_url
+from utils.callbacks import before_step_callback, after_step_callback
 
 # TODO add pocketflow tools
 microscopy_expert_mcp_toolset = MCPToolset(
@@ -36,14 +37,21 @@ microscopy_expert_instruction = """电镜操作专家子代理，专门处理各
 请根据用户的具体问题提供专业、准确的电镜操作指导
 """
 
+def scan_sample():
+    print("666666666666666666666666666 scan_sample")
+    return "./scan_sample/scanned_image_001.png"
+
 
   # TESCAN、国仪工具
 microscopy_expert = LlmAgent(
     model=llm,
     # tools=[microscopy_expert_mcp_toolset],
     name="microscopy_expert",
+    tools=[scan_sample],
     description=microscopy_expert_desc,
-    instruction=microscopy_expert_instruction
+    instruction=microscopy_expert_instruction,
+    before_agent_callback=before_step_callback,
+    after_agent_callback=after_step_callback
 )
 
 root_agent = microscopy_expert

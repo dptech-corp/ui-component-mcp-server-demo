@@ -8,9 +8,13 @@ from google.adk.agents import LlmAgent
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
 from google.adk.tools.mcp_tool.mcp_session_manager import SseServerParams
 from google.adk.tools.agent_tool import AgentTool
+from google.adk.agents.callback_context import CallbackContext
+from google.adk.models.llm_request import LlmRequest
+from google.genai import types
 
 # Add the parent directory to sys.path to allow absolute imports
 # sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+from representation.types import Plan, Step
 from utils.config import llm, mcp_server_url
 from software import software_expert_desc, software_expert
 from microscopy import microscopy_expert_desc, microscopy_expert
@@ -23,12 +27,17 @@ from utils.func_tool.database import get_approval_state_by_id_async
 step_runner_instruction = f"""
 ## 概述
 你是一个表征专家代理的任务执行者。你的目标是为用户执行任务。
+**你必须确保调用 planner 生成 plan 后才能调我**
 
 你具备强大的执行能力：
 - **任务执行**：执行计划项的详细步骤
 - **结果反馈**：向用户展示执行结果和整体进度
 - **step by step**：每完成一步后，必须等待用户确认后，再开始执行下一步
 - **进度跟踪**：实时跟踪执行进度，任务完成后调用 toggle_plan 工具标记为完成
+
+
+--
+
 
 ## 常见任务划分
 对于不同问题你可以选用不同的工作流程，一般来讲，大体是下面几种：
@@ -51,7 +60,6 @@ step_runner_instruction = f"""
 - {software_expert_desc}
 
 """
-print(step_runner_instruction)
 func_tools = [get_approval_state_by_id_async]
 mcp_toolset = LongRunningMCPToolset(
     connection_params=SseServerParams(
@@ -70,11 +78,50 @@ software_expert_tool = AgentTool(agent=software_expert)
 
 agent_tools = [theory_expert_tool, microscopy_expert_tool, representation_analyze_expert_tool, software_expert_tool]
 cu_tools = func_tools+[mcp_toolset]+agent_tools
+
+def before_agent_callback(callback_context: CallbackContext):
+    agent_name = callback_context.agent_name
+    print("before step_runner callback")
+    if not callback_context.state.get("plan"):
+        print("1111111111111111111111111111111111111111111111111111111")
+        print("skip step_runner due to no plan found in state!!!!")
+        return types.Content(
+            parts=[types.Part(text=f"Agent {agent_name} skipped by before_agent_callback due to no plan.")],
+            role="model" # Assign model role to the overriding response
+        )
+    plan_dict = callback_context.state.get("plan")
+    plan = Plan(**plan_dict)
+
+    if not callback_context.state.get("step_index"):
+        print("2222222222222222222222222222222222222222222222222222222")
+        callback_context.state["step_index"] = 0
+        callback_context.state["step"] = plan.steps[0].model_dump()
+        # return types.Content(
+        #     parts=[types.Part(text=f"Agent {agent_name} skipped by before_agent_callback due to init plan.")],
+        #     role="model" # Assign model role to the overriding response
+        # )
+    # elif callback_context.state.get("step_index") + 1< len(plan.steps):
+    #     callback_context.state["step_index"] += 1
+    #     callback_context.state["step"] = plan.steps[callback_context.state["step_index"]].model_dump()
+
+def after_agent_callback(callback_context: CallbackContext):
+    if not callback_context.state.get("plan"):
+        print("3333333333333333333333333333333333333333333333333333333")
+        print("skip step_runner due to no plan found in state!!!!")
+        return
+    plan_dict = callback_context.state.get("plan")
+    plan = Plan(**plan_dict)
     
-step_runner = LongRunningLlmAgent(
+    if callback_context.state.get("step_index") + 1< len(plan.steps):
+        callback_context.state["step_index"] += 1
+        callback_context.state["step"] = plan.steps[callback_context.state["step_index"]].model_dump()
+    
+    
+step_runner = LlmAgent(
     name="step_runner",
     model=llm,
     instruction=step_runner_instruction,
-    tools=cu_tools,
-    # sub_agents=[theory_expert, microscopy_expert, representation_analyze_expert, software_expert],
+    tools=agent_tools,
+    before_agent_callback=before_agent_callback,
+    after_agent_callback=after_agent_callback,
     )

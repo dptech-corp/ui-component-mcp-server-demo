@@ -10,11 +10,9 @@ from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
 from google.adk.tools.mcp_tool.mcp_session_manager import SseServerParams
 from google.adk.agents.invocation_context import InvocationContext
 from typing import AsyncGenerator, Optional
-from google.genai import types # For types.Content
+from google.genai import types
 from google.adk.events import Event
 from google.adk.agents.callback_context import CallbackContext
-from fastmcp import Client
-
 
 # sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 from utils.config import llm, mcp_server_url
@@ -101,13 +99,24 @@ async def add_steps(plan: Plan):
         await add_plan(f"{i+1}. {step.title}", step.sub_agent, step.description)
     return None
 
-async def save_plan_after_agent(callback_context: CallbackContext) -> Optional[types.Content]:
-    print("0000000000000000000000000000000000000000000000")
-    await clear_plan()
-    plan_dict = callback_context.state["plan"]
-    plan = Plan(**plan_dict)
-    await add_steps(plan)
+async def skip_if_plan_exists(callback_context: CallbackContext):
+    agent_name = callback_context.agent_name
+
+    if callback_context.state.get("plan"):
+        print("skip planner due to plan exists in state!!!!")
+        return types.Content(
+            parts=[types.Part(text=f"Agent {agent_name} skipped by skip_if_plan_exists due to plan exists.")],
+            role="model" # Assign model role to the overriding response
+        )
     return None
+
+async def save_plan_after_agent(callback_context: CallbackContext) -> Optional[types.Content]:
+    if not callback_context.state.get("plan_saved"):
+        await clear_plan()
+        plan_dict = callback_context.state["plan"]
+        plan = Plan(**plan_dict)
+        await add_steps(plan)
+    callback_context.state["plan_saved"] = True
 
 plan_saver = LlmAgent(
     name="plan_saver",
@@ -124,5 +133,6 @@ planner = SequentialAgent(
     name="planner",
     sub_agents=[unstructured_planner, plan_saver],
     description="planner",
+    before_agent_callback=skip_if_plan_exists,
     after_agent_callback=save_plan_after_agent,
 )

@@ -7,6 +7,8 @@ from google.adk.agents import LlmAgent
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from utils.config import llm
 # from utils.lightrag_tool import lightrag_tools
+from utils.callbacks import before_step_callback, after_step_callback
+
 
 theory_expert_desc = """theory_expert (领域理论专家子代理)
 功能用途：
@@ -57,6 +59,8 @@ theory_expert = LlmAgent(
     # tools=theory_tools,
     description=theory_expert_desc,
     instruction=theory_expert_instruction,
+    before_agent_callback=before_step_callback,
+    after_agent_callback=after_step_callback
 )
 
 

@@ -2,6 +2,7 @@ from google.adk.agents import LlmAgent
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
 from google.adk.tools.mcp_tool.mcp_session_manager import SseServerParams
 from utils.config import llm, mcp_server_url
+from utils.callbacks import before_step_callback, after_step_callback
 
 software_expert_desc = """
 software_expert (软件工程专家子代理)
@@ -50,7 +51,9 @@ software_expert = LlmAgent(
     name="software_expert",
     description="软件工程专家子代理，专门开发和优化表征数据处理的自动化工具、构建数据分析流水线和集成系统。",
     instruction=software_expert_instruction,
-    tools=[software_expert_mcp_toolset]
+    tools=[software_expert_mcp_toolset],
+    before_agent_callback=before_step_callback,
+    after_agent_callback=after_step_callback
 )
 
 root_agent = software_expert
