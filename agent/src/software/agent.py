@@ -1,5 +1,6 @@
 from google.adk.agents import LlmAgent
-from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, SseServerParams
+from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
+from google.adk.tools.mcp_tool.mcp_session_manager import SseServerParams
 from utils.config import llm, mcp_server_url
 
 software_expert_desc = """
@@ -35,7 +36,7 @@ software_expert_instruction = """你是软件工程专家子代理。你的专�
 # Software expert MCP toolset for file system and notebook tools
 software_expert_mcp_toolset = MCPToolset(
     connection_params=SseServerParams(
-        url=f"{mcp_server_url}/sse",
+        url=mcp_server_url,
         headers={}
     ),
     tool_filter=["ls", "cat_run_sh", "bash_run_sh", 

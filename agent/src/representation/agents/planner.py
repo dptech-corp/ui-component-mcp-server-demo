@@ -6,19 +6,24 @@ import os
 import sys
 # from typing import override
 from google.adk.agents import LlmAgent, SequentialAgent
-from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, SseServerParams
+from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
+from google.adk.tools.mcp_tool.mcp_session_manager import SseServerParams
 from google.adk.agents.invocation_context import InvocationContext
 from typing import AsyncGenerator, Optional
 from google.genai import types # For types.Content
 from google.adk.events import Event
 from google.adk.agents.callback_context import CallbackContext
+from fastmcp import Client
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+
+# sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 from utils.config import llm, mcp_server_url
 from representation.types import Plan, Step
 from representation.agents.step_runner import step_runner_instruction
+from representation.service.plan import add_plan, clear_plan
 
 planner_instruction = f"""
+## 概述
 你是一个专家代理的任务规划者。你的目标是为用户创建任务计划。
 因为在处理科学问题，所以你需要严格、准确。
 
@@ -27,9 +32,7 @@ planner_instruction = f"""
 - **计划创建**：为每个步骤创建对应的 plan 项
 - **执行跟踪**：在执行过程中，完成每个步骤后自动标记对应的 plan 为完成状态
 - **进度管理**：实时跟踪整体进度，确保所有步骤按序完成
-
---
-在没有收集到足够的信息制定计划时，你必须停止并等待用户提供更多信息。
+- 人是系统中关键的一环， human 可以作为一个 sub_agent，因此你的计划中可以有需要人进行介入的步骤(如: 放入样品、取出样品、启动系统等)
 
 --
 
@@ -55,8 +58,9 @@ planner_instruction = f"""
 
 --
 ## **IMPORTANT HINT**
-1. 你是一个 "Human-in-the-loop" 的系统，因此你的计划中可以有需要人进行介入的步骤(如: 放入样品、取出样品、启动系统等)
+1. 你是一个 "Human-in-the-loop" 的系统，人是系统中关键的一环， human 可以作为一个 sub_agent，因此你的计划中可以有需要人进行介入的步骤(如: 放入样品、取出样品、启动系统等)
 2. 在制定计划时，你要充分各个子系统的能力，子系统的能力如下面 (子系统能力介绍一小节)
+在没有收集到足够的信息制定计划时，你必须停止并等待用户提供更多信息。
 
 ## 子系统能力介绍
 {step_runner_instruction}
@@ -86,19 +90,23 @@ unstructured_planner = LlmAgent(
     output_key="unstructured_plan",
 )
 
-mcp_toolset = MCPToolset(
-    connection_params=SseServerParams(
-        url=f"{mcp_server_url}/sse",
-        headers={}
-    ),
-    tool_filter=["add_plan", "delete_plan", "update_plan", "toggle_plan", "list_plan", 
-                "ask_for_approval"]
-)
 
-def save_plan_after_agent(callback_context: CallbackContext) -> Optional[types.Content]:
-    plan = callback_context.state["plan"]
-    print("1111111111111111111 save_plan_after_agent")
+async def add_steps(plan: Plan):
+    print("aaaaaaaaaaaaa add plan")
     print(plan)
+    steps = plan.steps
+    for i in range(len(steps)):
+        step = steps[i]
+        # TODO 更新计划 id 到 state 中
+        await add_plan(f"{i+1}. {step.title}", step.sub_agent, step.description)
+    return None
+
+async def save_plan_after_agent(callback_context: CallbackContext) -> Optional[types.Content]:
+    print("0000000000000000000000000000000000000000000000")
+    await clear_plan()
+    plan_dict = callback_context.state["plan"]
+    plan = Plan(**plan_dict)
+    await add_steps(plan)
     return None
 
 plan_saver = LlmAgent(
@@ -107,6 +115,7 @@ plan_saver = LlmAgent(
     instruction=plan_saver_instruction,
     description="plan_saver",
     disallow_transfer_to_parent=True,
+    disallow_transfer_to_peers=True,
     output_schema=Plan,
     output_key="plan",
 )

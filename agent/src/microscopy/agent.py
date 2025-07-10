@@ -1,11 +1,12 @@
 from google.adk.agents import LlmAgent
-from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, SseServerParams
+from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
+from google.adk.tools.mcp_tool.mcp_session_manager import SseServerParams
 from utils.config import llm, mcp_server_url
 
 # TODO add pocketflow tools
 microscopy_expert_mcp_toolset = MCPToolset(
     connection_params=SseServerParams(
-        url=f"{mcp_server_url}/sse",
+        url=mcp_server_url,
         headers={}
     ),
     tool_filter=[
@@ -39,7 +40,7 @@ microscopy_expert_instruction = """电镜操作专家子代理，专门处理各
   # TESCAN、国仪工具
 microscopy_expert = LlmAgent(
     model=llm,
-    tools=[microscopy_expert_mcp_toolset],
+    # tools=[microscopy_expert_mcp_toolset],
     name="microscopy_expert",
     description=microscopy_expert_desc,
     instruction=microscopy_expert_instruction

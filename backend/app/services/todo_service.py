@@ -155,3 +155,15 @@ class TodoService:
         todo.completed = new_completed
         todo.updated_at = timestamp
         return todo
+        
+    async def clear_all_todos(self, session_id: str = "default_session") -> int:
+        """Clear all todo items for a session."""
+        async with database.get_connection() as conn:
+            async with conn.cursor() as cursor:
+                await cursor.execute(
+                    "DELETE FROM todos WHERE session_id = %s", 
+                    (session_id,)
+                )
+                await conn.commit()
+                
+                return cursor.rowcount

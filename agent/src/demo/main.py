@@ -6,7 +6,8 @@ control of the todo list component.
 
 import os
 from google.adk.agents import LlmAgent
-from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, SseServerParams
+from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
+from google.adk.tools.mcp_tool.mcp_session_manager import SseServerParams
 from dotenv import load_dotenv
 from google.adk.models.lite_llm import LiteLlm
 
@@ -15,11 +16,11 @@ load_dotenv()
 def create_agent():
     """Create and configure the ADK agent with MCP tools."""
 
-    mcp_server_url = os.getenv("MCP_SERVER_URL", "http://mcp-server:8001")
+    mcp_server_url = os.getenv("MCP_SERVER_URL", "http://mcp-server:8001/sse")
 
     mcp_toolset = MCPToolset(
         connection_params=SseServerParams(
-            url=f"{mcp_server_url}/sse",
+            url=mcp_server_url,
             headers={}
         ),
         tool_filter=["add_todo", "delete_todo", "update_todo", "toggle_todo", "list_todo", 

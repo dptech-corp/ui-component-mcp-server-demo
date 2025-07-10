@@ -13,7 +13,7 @@ def register_plan_tools(mcp: FastMCP, redis_client: RedisClient):
     """Register plan-related MCP tools."""
     
     @mcp.tool()
-    async def add_plan(title: str, description: str = "") -> dict:
+    async def add_plan(title: str, description: str = "", session_id: str = "default_session") -> dict:
         """添加新的 plan 项
         
         Args:
@@ -32,7 +32,7 @@ def register_plan_tools(mcp: FastMCP, redis_client: RedisClient):
             "component": "plan",
             "payload": {
                 "action": "add",
-                "session_id": os.getenv("SESSION_ID", "default_session"),
+                "session_id": session_id,
                 "data": {
                     "title": title,
                     "description": description
@@ -44,11 +44,12 @@ def register_plan_tools(mcp: FastMCP, redis_client: RedisClient):
         return {"success": True, "message": f"Plan '{title}' added successfully"}
     
     @mcp.tool()
-    async def delete_plan(plan_id: str) -> dict:
+    async def delete_plan(plan_id: str, session_id: str = "default_session") -> dict:
         """删除指定的 plan 项
         
         Args:
             plan_id: Plan 项的 ID
+            session_id: 会话 ID
             
         Returns:
             操作结果
@@ -62,7 +63,7 @@ def register_plan_tools(mcp: FastMCP, redis_client: RedisClient):
             "component": "plan",
             "payload": {
                 "action": "delete",
-                "session_id": os.getenv("SESSION_ID", "default_session"),
+                "session_id": session_id,
                 "planId": plan_id
             }
         }
@@ -74,7 +75,8 @@ def register_plan_tools(mcp: FastMCP, redis_client: RedisClient):
     async def update_plan(
         plan_id: str, 
         title: str = "", 
-        description: str = ""
+        description: str = "",
+        session_id: str = "default_session"
     ) -> dict:
         """更新 plan 项内容
         
@@ -101,7 +103,7 @@ def register_plan_tools(mcp: FastMCP, redis_client: RedisClient):
             "component": "plan",
             "payload": {
                 "action": "update",
-                "session_id": os.getenv("SESSION_ID", "default_session"),
+                "session_id": session_id,
                 "planId": plan_id,
                 "data": data
             }
@@ -111,11 +113,12 @@ def register_plan_tools(mcp: FastMCP, redis_client: RedisClient):
         return {"success": True, "message": f"Plan {plan_id} updated successfully"}
     
     @mcp.tool()
-    async def toggle_plan(plan_id: str) -> dict:
+    async def toggle_plan(plan_id: str, session_id: str = "default_session") -> dict:
         """切换 plan 完成状态
         
         Args:
             plan_id: Plan 项的 ID
+            session_id: 会话 ID
             
         Returns:
             操作结果
@@ -129,7 +132,7 @@ def register_plan_tools(mcp: FastMCP, redis_client: RedisClient):
             "component": "plan",
             "payload": {
                 "action": "toggle",
-                "session_id": os.getenv("SESSION_ID", "default_session"),
+                "session_id": session_id,
                 "planId": plan_id
             }
         }
@@ -138,9 +141,12 @@ def register_plan_tools(mcp: FastMCP, redis_client: RedisClient):
         return {"success": True, "message": f"Plan {plan_id} status toggled successfully"}
     
     @mcp.tool()
-    async def list_plan() -> dict:
+    async def list_plan(session_id: str = "default_session") -> dict:
         """获取所有 plan 项列表
         
+        Args:
+            session_id: 会话 ID
+            
         Returns:
             包含所有 plan 项的列表
         """
@@ -155,7 +161,7 @@ def register_plan_tools(mcp: FastMCP, redis_client: RedisClient):
             "component": "plan",
             "payload": {
                 "action": "list",
-                "session_id": os.getenv("SESSION_ID", "default_session")
+                "session_id": session_id
             }
         }
         
@@ -179,3 +185,27 @@ def register_plan_tools(mcp: FastMCP, redis_client: RedisClient):
                 "error": f"Failed to get plans: {str(e)}",
                 "plans": []
             }
+    
+    @mcp.tool()
+    async def clear_plan(session_id: str = "default_session") -> dict:
+        """清除所有 plan 项
+        收 session_id 参数, 删除 session_id 对应的 plan 项
+        
+        Returns:
+            操作结果
+        """
+        message = {
+            "id": str(uuid.uuid4()),
+            "type": "plan_action",
+            "timestamp": int(time.time() * 1000),
+            "source": "mcp",
+            "target": "plan_component",
+            "component": "plan",
+            "payload": {
+                "action": "clear",
+                "session_id": session_id
+            }
+        }
+        
+        await redis_client.publish_message("plan:actions", message)
+        return {"success": True, "message": "All plans cleared successfully"}
