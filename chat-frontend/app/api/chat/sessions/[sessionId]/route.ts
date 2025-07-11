@@ -14,8 +14,10 @@ export async function GET(
       })
     }
 
-    const adkApiUrl = process.env.ADK_API_URL || 'http://localhost:8002'
+    const adkApiUrl = process.env.ADK_API_URL || 'http://agent:8002'
     const historyUrl = `${adkApiUrl}/apps/representation/users/demo/sessions/${sessionId}`
+    console.log("start fetch chat history")
+    console.log(historyUrl)
     
     try {
       const response = await fetch(historyUrl, {
@@ -37,6 +39,8 @@ export async function GET(
       }
 
       const data = await response.json()
+      console.log("fetch chat history success")
+      console.log(data)
       
       return new Response(JSON.stringify(data), {
         status: 200,

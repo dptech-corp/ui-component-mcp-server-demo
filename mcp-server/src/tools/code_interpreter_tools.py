@@ -70,7 +70,7 @@ def register_code_interpreter_tools(mcp: FastMCP, redis_client: RedisClient):
                 
                 await redis_client.publish_message("code_interpreter:actions", message)
                 
-                widget_url = f"https://uni-interpreter.mlops.dp.tech/widget?instance_id={state_id}"
+                widget_url = f"https://uni-interpreter.mlops.dp.tech/widget?instance_id={state_id}&token={token}"
                 
                 return {
                     "success": True,

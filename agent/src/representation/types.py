@@ -1,6 +1,9 @@
 from pydantic import BaseModel, Field
 from typing import List
 class Step(BaseModel):
+    id: str = Field(
+        ..., description="id of the step",
+    )
     title: str = Field(
         ..., description="Title of the step",
     )
