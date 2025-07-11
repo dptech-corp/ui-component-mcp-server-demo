@@ -8,9 +8,12 @@ import { TerminalOutput } from './TerminalOutput';
 import { ApprovalList } from '../Approval/ApprovalList';
 import { CodeInterpreterList } from '../CodeInterpreter/CodeInterpreterList';
 import { CodeInterpreterWidget } from '../CodeInterpreter/CodeInterpreterWidget';
+import { MicroscopeOperationList } from '../MicroscopeOperation/MicroscopeOperationList';
+import { MicroscopeOperationWidget } from '../MicroscopeOperation/MicroscopeOperationWidget';
 import { usePlans } from '@/hooks/usePlans';
 import { useApprovals } from '@/hooks/useApprovals';
 import { useCodeInterpreter } from '@/hooks/useCodeInterpreter';
+import { useMicroscopeOperation } from '@/hooks/useMicroscopeOperation';
 import { useSSE } from '@/contexts/SSEContext';
 import { FileBrowser } from './FileBrowser';
 
@@ -39,6 +42,7 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
   const { lastEvent } = useSSE();
   const { approvals, loading: approvalsLoading, error: approvalsError, approveRequest, rejectRequest, deleteApproval, refetch: refetchApprovals } = useApprovals();
   const { states: codeInterpreterStates, selectedState, loading: codeInterpreterLoading, error: codeInterpreterError, selectState, deleteState, updateState } = useCodeInterpreter();
+  const { workflows: microscopeWorkflows, selectedWorkflow, loading: microscopeLoading, error: microscopeError, selectWorkflow, deleteWorkflow } = useMicroscopeOperation();
 
   useEffect(() => {
     if (lastEvent) {
@@ -268,22 +272,21 @@ export function Tools({ activeTab, setActiveTab, terminalCommands, isConnected }
         </>
       ) : activeTab === 'microscope-operation' ? (
         <>
-          <div className="h-full">
-            <div className="mb-4">
-              <h3 className="text-lg font-medium text-gray-900">显微镜操作 - Hyper-Fib 工作流</h3>
-              <p className="text-sm text-gray-600">集成的 hyper-fib 前端应用，提供工作流程可视化和实时控制功能</p>
-            </div>
-            <div className="border border-gray-200 rounded-lg overflow-hidden" style={{ height: 'calc(100vh - 300px)' }}>
-              <iframe
-                src="http://localhost:3001"
-                className="w-full h-full"
-                title="Hyper-Fib Frontend"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals"
-              />
-            </div>
-          </div>
+          {selectedWorkflow ? (
+            <MicroscopeOperationWidget 
+              workflow={selectedWorkflow}
+              onBack={() => selectWorkflow(null)}
+            />
+          ) : (
+            <MicroscopeOperationList
+              workflows={microscopeWorkflows}
+              loading={microscopeLoading}
+              error={microscopeError}
+              onSelectWorkflow={selectWorkflow}
+              onDeleteWorkflow={deleteWorkflow}
+              selectedWorkflow={selectedWorkflow}
+            />
+          )}
         </>
       ) : activeTab === 'code-interpreter' ? (
         <>
