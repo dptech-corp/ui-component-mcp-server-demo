@@ -58,7 +58,7 @@ async def wait_for_approval(description: str, redis_client: RedisClient) -> Dict
     
     return {
         "status": "pending",
-        "ticketId": ticket_id,
+        "ticket_id": ticket_id,
         "message": f"Approval request submitted. Waiting for human decision on: {description}"
     }
 
