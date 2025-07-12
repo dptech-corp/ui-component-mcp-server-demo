@@ -12,7 +12,7 @@ class CodeInterpreterService:
         """Create a new code interpreter state."""
         ticket_id = f"code-interpreter-{uuid.uuid4().hex[:8]}"
         timestamp = int(time.time() * 1000)
-        widget_url = f"https://uni-interpreter.mlops.dp.tech/widget?instance_id={state_id}"
+        widget_url = f"https://uni-interpreter.mlops.dp.tech/widget?instance_id={state_id}&token=1234"
         
         state = CodeInterpreterState(
             id=state_id,
